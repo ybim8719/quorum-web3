@@ -1,2 +1,8 @@
-# ago-web3
-web3 training project for graduation
+# quorum-web3
+
+web3 final training project for graduation
+
+## About 
+
+## Launch the project :
+
