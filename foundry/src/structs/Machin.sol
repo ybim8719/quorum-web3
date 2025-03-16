@@ -11,19 +11,16 @@ struct Customer {
 struct Condominium {
     uint256 id;
     uint256 nbOfLots;
-    uint256 totalShares;
+    uint256 currenttotalShares;
     string postalAddress;
     string description;
     CondominiumLot[] lots;
 }
 
 struct CondominiumLot {
-    uint256 id;
     address ownerAddress;
-    string lastName;
-    string firstName;
     uint256 shares;
-    uint256 lotNumber;
+    string lotInternalNumber;
 }
 
 struct GeneralMeeting {

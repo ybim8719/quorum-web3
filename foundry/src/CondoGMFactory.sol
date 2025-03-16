@@ -3,11 +3,13 @@
 pragma solidity ^0.8.26;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Customer, Condominium, CondominiumLot, GeneralMeeting} from "./structs/Machin.sol";
 
 /// @title CondominiumGMFactory
 /// @author Pascal Thao
 /// @dev Bfsfsefse
 /// @notice dedse
+
 contract CondomGMFactory is Ownable {
     /*//////////////////////////////////////////////////////////////
                             EVENTS
@@ -20,22 +22,60 @@ contract CondomGMFactory is Ownable {
     //////////////////////////////////////////////////////////////*/
     error CondomGMFactory__NotACustomer(address unauthorizedVoter);
     error CondomGMFactory__NotAnAdmin(address unauthorizedVoter);
+    error CondomGMFactory__Unauthorized(address unauthorizedVoter);
+    error CondomGMFactory__CustomerAlreadyRegistered(address customer);
+    error CondomGMFactory__EmptyString();
+    error CondomGMFactory__AddressCantBeZero();
 
+    uint256 private constant SHARES_LIMIT = 1000;
     /*//////////////////////////////////////////////////////////////
                             STATES
     //////////////////////////////////////////////////////////////*/
+    address[] private s_adminList;
     address[] private s_customers;
     mapping(address customerAddress => Customer customer) private s_customersInfo;
     Condominium[] private s_condominiumList;
+
+    modifier isAdminOrOwner() {
+        if (_msgSender() != owner()) {
+            bool isAdmin = false;
+            for (uint256 i = 0; i < s_adminList.length; i++) {
+                if (s_adminList[i] == _msgSender()) {
+                    isAdmin = true;
+                }
+            }
+            if (isAdmin) {
+                revert CondomGMFactory__Unauthorized(_msgSender());
+            }
+        }
+        _;
+    }
+
+    modifier hasAccess() {
+        if (s_customersInfo[_msgSender()].isRegistered == false && _msgSender() != owner()) {
+            bool isAdmin = false;
+            for (uint256 i = 0; i < s_adminList.length; i++) {
+                if (s_adminList[i] == _msgSender()) {
+                    isAdmin = true;
+                }
+            }
+            if (isAdmin) {
+                revert CondomGMFactory__Unauthorized(_msgSender());
+            }
+        }
+        _;
+    }
 
     constructor() Ownable(_msgSender()) {}
     // WRITE  INTERFACES
 
     /// @dev add a new condo with minimal description
     function createCondominium(string calldata _postalAddress, string calldata _description) external {
+        if (bytes(_postalAddress).length == 0 || bytes(_description).length == 0) {
+            revert CondomGMFactory__EmptyString();
+        }
         Condominium memory newCondo;
-        newCondo.id = 1;
-        newCondo.totalShares = 1000;
+        newCondo.id = s_condominiumList.length + 1;
         newCondo.postalAddress = _postalAddress;
         newCondo.description = _description;
         s_condominiumList.push(newCondo);
@@ -46,9 +86,16 @@ contract CondomGMFactory is Ownable {
     function registerCustomer(string calldata _firstName, string calldata _lastName, address _customerAddress)
         external
     {
-        // TODO require customer doesnt already exist
-        // TODO first and lastname cant be empty string
-        // TODO address can be zero address
+        if (s_customersInfo[_customerAddress].isRegistered == true) {
+            revert CondomGMFactory__CustomerAlreadyRegistered(_customerAddress);
+        }
+        if (_customerAddress == address(0)) {
+            revert CondomGMFactory__AddressCantBeZero();
+        }
+        if (bytes(_firstName).length == 0 || bytes(_lastName).length == 0) {
+            revert CondomGMFactory__EmptyString();
+        }
+
         s_customers.push(_customerAddress);
         Customer memory newCustomer;
         newCustomer.lastName = _lastName;
@@ -60,9 +107,12 @@ contract CondomGMFactory is Ownable {
 
     // todo remove customer
 
-    function addLotToCondominium(uint256 shares, uint256 condoId) external {
+    function addLotToCondominium(uint256 _shares, uint256 _condoId, string memory _condoLotId) external {
+        // condoId must exist
+        //
         // total must exceed 1000
     }
+    function setCustomerToLot() external {}
     function addAdmin() external {}
     function createGMSharesToken() external {}
     function createGM() external {}
@@ -81,21 +131,6 @@ contract CondomGMFactory is Ownable {
     // get condomium lots of a given condo
     // get full list of clients address and names
     // get lots of a client
-    //
-
-    // modifier whitelistedOnly() {
-    //     if (s_whiteList[_msgSender()].isRegistered == false) {
-    //         revert VotingOpti__NotInWhiteList(_msgSender());
-    //     }
-    //     _;
-    // }
-
-    // modifier isOwnerOrVoter() {
-    //     if (_msgSender() != owner() && s_whiteList[_msgSender()].isRegistered == false) {
-    //         revert VotingOpti__NotInWhiteList(_msgSender());
-    //     }
-    //     _;
-    // }
 
     /// @dev override Ownable owner() which is not protected
     // function owner() public view override returns (address) {
