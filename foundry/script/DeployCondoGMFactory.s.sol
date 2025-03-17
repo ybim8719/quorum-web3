@@ -5,13 +5,16 @@ import {Script, console} from "forge-std/Script.sol";
 import {CondoGMFactory} from "../src/CondoGMFactory.sol";
 
 contract DeployCondoGMFactory is Script {
-    CondoGMFactory public condo;
+    CondoGMFactory public s_condoFactory;
 
-    function setUp() public {}
-
-    function run() public {
+    function deployApp() public {
         vm.startBroadcast();
-        condo = new CondoGMFactory();
+        s_condoFactory = new CondoGMFactory();
         vm.stopBroadcast();
+    }
+
+    function run() external returns (CondoGMFactory) {
+        deployApp();
+        return s_condoFactory;
     }
 }

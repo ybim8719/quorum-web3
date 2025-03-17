@@ -3,19 +3,22 @@
 pragma solidity ^0.8.26;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {Customer, Condominium, CondominiumLot, GeneralMeeting} from "./structs/Machin.sol";
+import {Customer, Condominium, CondominiumLot, GeneralMeeting, Admin} from "./structs/Machin.sol";
 
 /// @title CondominiumGMFactory
 /// @author Pascal Thao
 /// @dev Bfsfsefse
 /// @notice dedse
 
-contract CondomGMFactory is Ownable {
+contract CondoGMFactory is Ownable {
     /*//////////////////////////////////////////////////////////////
                             EVENTS
     //////////////////////////////////////////////////////////////*/
     event CondiminiumCreated(uint256 indexed condoId);
+    event CondiminiumLotAdded(string indexed condoLotId);
+    event CondiminiumLotOwnerSet(uint256 indexed lotId, address owner);
     event CustomerCreated(address customerAddress);
+    event AdminRegistered(address adminAddress, string firstName, string lastName);
 
     /*//////////////////////////////////////////////////////////////
                             ERRORS
@@ -31,16 +34,21 @@ contract CondomGMFactory is Ownable {
     /*//////////////////////////////////////////////////////////////
                             STATES
     //////////////////////////////////////////////////////////////*/
-    address[] private s_adminList;
+    Admin[] private s_adminList;
     address[] private s_customers;
     mapping(address customerAddress => Customer customer) private s_customersInfo;
-    Condominium[] private s_condominiumList;
+    mapping(uint256 condoId => Condominium) private s_condominiumList;
+    mapping(string lotId => CondominiumLot lot) private s_condoLotsList;
+    uint256 s_nextCondoId = 1;
 
+    /*//////////////////////////////////////////////////////////////
+                            MODIFIERS
+    //////////////////////////////////////////////////////////////*/
     modifier isAdminOrOwner() {
         if (_msgSender() != owner()) {
             bool isAdmin = false;
             for (uint256 i = 0; i < s_adminList.length; i++) {
-                if (s_adminList[i] == _msgSender()) {
+                if (s_adminList[i].adminAddress == _msgSender()) {
                     isAdmin = true;
                 }
             }
@@ -55,7 +63,7 @@ contract CondomGMFactory is Ownable {
         if (s_customersInfo[_msgSender()].isRegistered == false && _msgSender() != owner()) {
             bool isAdmin = false;
             for (uint256 i = 0; i < s_adminList.length; i++) {
-                if (s_adminList[i] == _msgSender()) {
+                if (s_adminList[i].adminAddress == _msgSender()) {
                     isAdmin = true;
                 }
             }
@@ -67,19 +75,20 @@ contract CondomGMFactory is Ownable {
     }
 
     constructor() Ownable(_msgSender()) {}
-    // WRITE  INTERFACES
 
     /// @dev add a new condo with minimal description
-    function createCondominium(string calldata _postalAddress, string calldata _description) external {
+    function createCondominium(string calldata _postalAddress, string calldata _description, string calldata _trigram)
+        external
+    {
         if (bytes(_postalAddress).length == 0 || bytes(_description).length == 0) {
             revert CondomGMFactory__EmptyString();
         }
-        Condominium memory newCondo;
-        newCondo.id = s_condominiumList.length + 1;
+        Condominium storage newCondo = s_condominiumList[s_nextCondoId];
         newCondo.postalAddress = _postalAddress;
+        newCondo.trigram = _trigram;
         newCondo.description = _description;
-        s_condominiumList.push(newCondo);
-        emit CondiminiumCreated(newCondo.id);
+        emit CondiminiumCreated(s_nextCondoId);
+        ++s_nextCondoId;
     }
 
     /// @dev add a new customer (owner) to admin db
@@ -105,15 +114,37 @@ contract CondomGMFactory is Ownable {
         emit CustomerCreated(_customerAddress);
     }
 
-    // todo remove customer
-
-    function addLotToCondominium(uint256 _shares, uint256 _condoId, string memory _condoLotId) external {
+    function addLotToCondominium(uint256 _shares, uint256 _condoId, string memory _lotInternalNumber) external {
+        //https://ethereum.stackexchange.com/questions/10811/solidity-concatenate-uint-into-a-string
         // condoId must exist
-        //
         // total must exceed 1000
+        Condominium memory condo = s_condominiumList[_condoId];
+        // condo.share += _shares;
+        // condo.trigram
+        // condo.lots.push(CondominiumLot({}));
+
+        // emit CondiminiumLotAdded(lot.lotInternalNumber);
     }
-    function setCustomerToLot() external {}
-    function addAdmin() external {}
+
+    // function linkCustomerToLot(address _customerAddress, uint256 _condoId, uint256 _lotId) external {
+    //     // lot must have no customer yet
+    //     // customer must exist in customer list
+    //     CondominiumLot storage lot = s_condominiumList[_condoId].lots[_lotId];
+    //     lot.ownerAddress = _customerAddress;
+    //     emit CondiminiumLotOwnerSet(_lotId, _customerAddress);
+    // }
+
+    function addAdmin(address _adminAddress, string memory _firstName, string memory _lastName) external {
+        // todo not already added
+        // not a customer
+        Admin memory admin;
+        admin.firstName = _firstName;
+        admin.lastName = _lastName;
+        admin.adminAddress = _adminAddress;
+        s_adminList.push(admin);
+        emit AdminRegistered(_adminAddress, _firstName, _lastName);
+    }
+
     function createGMSharesToken() external {}
     function createGM() external {}
     // set to client who is owner of a given lot his token shares (transfer)
@@ -126,11 +157,19 @@ contract CondomGMFactory is Ownable {
     // for a given condo
     function modifyStatus() external {}
 
-    // VIEW  INTERFACES
-    // get all condos
-    // get condomium lots of a given condo
-    // get full list of clients address and names
-    // get lots of a client
+    /*//////////////////////////////////////////////////////////////
+                            VIEW FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+    // function getAllCondos() external view returns (Condominium[] memory) {
+    //     return s_condominiumList;
+    // }
+
+    // function getCondoDetails(uint256 _condoId) external view returns (Condominium memory) {
+    //     return s_condominiumList[_condoId];
+    // }
+
+    function getCustomers() external {}
+    function getCustomerLots(address customerAddress) external {}
 
     /// @dev override Ownable owner() which is not protected
     // function owner() public view override returns (address) {

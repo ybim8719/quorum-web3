@@ -5,22 +5,38 @@ struct Customer {
     bool isRegistered;
     string lastName;
     string firstName;
-    CondominiumLot[] lots;
+    uint256[] lotIds;
+}
+
+struct Admin {
+    string lastName;
+    string firstName;
+    address adminAddress;
 }
 
 struct Condominium {
-    uint256 id;
     uint256 nbOfLots;
-    uint256 currenttotalShares;
+    uint256 currentTotalShares;
     string postalAddress;
     string description;
-    CondominiumLot[] lots;
+    string trigram;
+    string nextLotId;
+    uint256[] lotIds;
 }
 
 struct CondominiumLot {
     address ownerAddress;
     uint256 shares;
     string lotInternalNumber;
+    uint256 condoId;
+}
+
+struct CondominiumLotView {
+    address customerAddress;
+    uint256 shares;
+    string lotInternalNumber;
+    string lastName;
+    string firstName;
 }
 
 struct GeneralMeeting {
