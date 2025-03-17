@@ -3,7 +3,7 @@
 pragma solidity ^0.8.26;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {Customer, Condominium, CondominiumLot, GeneralMeeting, Admin} from "./structs/Machin.sol";
+import {Customer, CondominiumLot, GeneralMeeting, Admin} from "./structs/Manager.sol";
 
 /// @title CondominiumGMFactory
 /// @author Pascal Thao
@@ -14,11 +14,11 @@ contract CondoGMFactory is Ownable {
     /*//////////////////////////////////////////////////////////////
                             EVENTS
     //////////////////////////////////////////////////////////////*/
-    event CondiminiumCreated(uint256 indexed condoId);
-    event CondiminiumLotAdded(string indexed condoLotId);
-    event CondiminiumLotOwnerSet(uint256 indexed lotId, address owner);
-    event CustomerCreated(address customerAddress);
+    event LotAdded(string indexed condoLotId);
+    event LotOwnerSet(uint256 indexed lotId, address owner);
+    event CustomerCreated(address customerAddress, string firstName, string lastName);
     event AdminRegistered(address adminAddress, string firstName, string lastName);
+    event LotsAllRegistered();
 
     /*//////////////////////////////////////////////////////////////
                             ERRORS
@@ -29,17 +29,33 @@ contract CondoGMFactory is Ownable {
     error CondomGMFactory__CustomerAlreadyRegistered(address customer);
     error CondomGMFactory__EmptyString();
     error CondomGMFactory__AddressCantBeZero();
+    error CondomGMFactory__LotAlreadyRegistered(string lotOfficialNumber);
+    error CondomGMFactory__TotalSharesExceedsMaxLimit(string lotOfficialNumber);
+    error CondomGMFactory__LotAlreadyHasOwner(uint256 lotId, address customerAddress);
+    error CondomGMFactory__CustomerNotFound(address customerAddress);
+    error CondomGMFactory__LotNotFound(uint256 lotId);
+    error CondomGMFactory__RegisteredLotIsLocked(string lotOfficialNumber);
 
     uint256 private constant SHARES_LIMIT = 1000;
+    uint256 private constant ADMIN_NUMBER_LIMIT = 10;
+
+    string i_postalAddress;
+    string i_description;
+    string i_condoName;
+
     /*//////////////////////////////////////////////////////////////
                             STATES
     //////////////////////////////////////////////////////////////*/
     Admin[] private s_adminList;
     address[] private s_customers;
     mapping(address customerAddress => Customer customer) private s_customersInfo;
-    mapping(uint256 condoId => Condominium) private s_condominiumList;
-    mapping(string lotId => CondominiumLot lot) private s_condoLotsList;
-    uint256 s_nextCondoId = 1;
+    mapping(uint256 lotId => CondominiumLot lot) private s_condoLotsList;
+    mapping(string lotOfficalNumber => bool isRegistered) private s_lotsOfficialNumbers;
+
+    uint256 s_nbOfLots;
+    uint256 s_currentTotalShares;
+    uint256 s_nextLotIndex;
+    bool s_addingLotIsLocked;
 
     /*//////////////////////////////////////////////////////////////
                             MODIFIERS
@@ -74,21 +90,11 @@ contract CondoGMFactory is Ownable {
         _;
     }
 
-    constructor() Ownable(_msgSender()) {}
-
-    /// @dev add a new condo with minimal description
-    function createCondominium(string calldata _postalAddress, string calldata _description, string calldata _trigram)
-        external
-    {
-        if (bytes(_postalAddress).length == 0 || bytes(_description).length == 0) {
-            revert CondomGMFactory__EmptyString();
-        }
-        Condominium storage newCondo = s_condominiumList[s_nextCondoId];
-        newCondo.postalAddress = _postalAddress;
-        newCondo.trigram = _trigram;
-        newCondo.description = _description;
-        emit CondiminiumCreated(s_nextCondoId);
-        ++s_nextCondoId;
+    constructor(string memory _name, string memory _description, string memory _postalAddress) Ownable(_msgSender()) {
+        s_nextLotIndex = 1;
+        i_postalAddress = _postalAddress;
+        i_description = _description;
+        i_condoName = _name;
     }
 
     /// @dev add a new customer (owner) to admin db
@@ -111,32 +117,57 @@ contract CondoGMFactory is Ownable {
         newCustomer.firstName = _firstName;
         newCustomer.isRegistered = true;
         s_customersInfo[_customerAddress] = newCustomer;
-        emit CustomerCreated(_customerAddress);
+        emit CustomerCreated(_customerAddress, _firstName, _lastName);
     }
 
-    function addLotToCondominium(uint256 _shares, uint256 _condoId, string memory _lotInternalNumber) external {
-        //https://ethereum.stackexchange.com/questions/10811/solidity-concatenate-uint-into-a-string
-        // condoId must exist
-        // total must exceed 1000
-        Condominium memory condo = s_condominiumList[_condoId];
-        // condo.share += _shares;
-        // condo.trigram
-        // condo.lots.push(CondominiumLot({}));
+    function registerLot(uint256 _shares, string memory _lotOfficialNumber) external {
+        if (s_addingLotIsLocked) {
+            revert CondomGMFactory__RegisteredLotIsLocked(_lotOfficialNumber);
+        }
+        if (s_lotsOfficialNumbers[_lotOfficialNumber]) {
+            revert CondomGMFactory__LotAlreadyRegistered(_lotOfficialNumber);
+        }
+        if (s_currentTotalShares + _shares > SHARES_LIMIT) {
+            revert CondomGMFactory__TotalSharesExceedsMaxLimit(_lotOfficialNumber);
+        }
 
-        // emit CondiminiumLotAdded(lot.lotInternalNumber);
+        CondominiumLot storage newLot = s_condoLotsList[s_nextLotIndex];
+        newLot.shares = _shares;
+        newLot.lotOfficalNumber = _lotOfficialNumber;
+        s_currentTotalShares += _shares;
+        ++s_nbOfLots;
+        ++s_nextLotIndex;
+        s_lotsOfficialNumbers[_lotOfficialNumber] = true;
+        emit LotAdded(_lotOfficialNumber);
+        if (s_currentTotalShares == SHARES_LIMIT) {
+            s_addingLotIsLocked = true;
+            emit LotsAllRegistered();
+        }
     }
 
-    // function linkCustomerToLot(address _customerAddress, uint256 _condoId, uint256 _lotId) external {
-    //     // lot must have no customer yet
-    //     // customer must exist in customer list
-    //     CondominiumLot storage lot = s_condominiumList[_condoId].lots[_lotId];
-    //     lot.ownerAddress = _customerAddress;
-    //     emit CondiminiumLotOwnerSet(_lotId, _customerAddress);
-    // }
+    function linkCustomerToLot(address _customerAddress, uint256 _lotId) external {
+        if (s_condoLotsList[_lotId].ownerAddress != address(0)) {
+            revert CondomGMFactory__LotAlreadyHasOwner(_lotId, _customerAddress);
+        }
 
-    function addAdmin(address _adminAddress, string memory _firstName, string memory _lastName) external {
+        if (s_customersInfo[_customerAddress].isRegistered == false) {
+            // customer must exist in customer list
+            revert CondomGMFactory__CustomerNotFound(_customerAddress);
+        }
+
+        if (bytes(s_condoLotsList[_lotId].lotOfficalNumber).length == 0) {
+            // lot not  be found
+            revert CondomGMFactory__LotNotFound(_lotId);
+        }
+
+        CondominiumLot storage lot = s_condoLotsList[_lotId];
+        lot.ownerAddress = _customerAddress;
+        emit LotOwnerSet(_lotId, _customerAddress);
+    }
+
+    function registeringAdmin(address _adminAddress, string memory _firstName, string memory _lastName) external {
         // todo not already added
-        // not a customer
+        // if (s_adminList[_adminAddress].) {}
         Admin memory admin;
         admin.firstName = _firstName;
         admin.lastName = _lastName;
@@ -153,23 +184,34 @@ contract CondoGMFactory is Ownable {
     // if gmId is open
     // if erc status is ok
     // and ERC20 rules
-    function assignShares(address customer, uint256 gmId) external {}
+    function convertSharesToToken(address customer, uint256 gmId) external {}
     // for a given condo
     function modifyStatus() external {}
 
     /*//////////////////////////////////////////////////////////////
                             VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
-    // function getAllCondos() external view returns (Condominium[] memory) {
-    //     return s_condominiumList;
-    // }
+    function getCustomersLength() internal view returns (uint256) {
+        return s_customers.length;
+    }
 
-    // function getCondoDetails(uint256 _condoId) external view returns (Condominium memory) {
-    //     return s_condominiumList[_condoId];
-    // }
+    function getCustomerLots(address _customerAddress) external view returns (CondominiumLot[] memory truc) {
+        uint256[] memory lotIds = s_customersInfo[_customerAddress].lotIds;
+        uint256 size = lotIds.length;
+        if (lotIds.length > 0) {
+            CondominiumLot[] memory lotsToReturn = new CondominiumLot[](size);
+            for (uint256 i = 0; i < lotIds.length; ++i) {
+                lotsToReturn[0] = s_condoLotsList[lotIds[i]];
+            }
+            return lotsToReturn;
+        } else {
+            revert("dessfsefe");
+        }
+    }
 
-    function getCustomers() external {}
-    function getCustomerLots(address customerAddress) external {}
+    function getLotDetail(uint256 _lotId) external view returns (CondominiumLot memory) {
+        return s_condoLotsList[_lotId];
+    }
 
     /// @dev override Ownable owner() which is not protected
     // function owner() public view override returns (address) {
