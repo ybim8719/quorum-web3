@@ -1,5 +1,3 @@
-
-
 // import './App.css'
 // import { useState, useEffect, useContext } from "react";
 // import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
@@ -24,10 +22,8 @@
 //     const { data: fetchedStatusData, error: fetchedStatusError, isPending: fetchStatusIsPending, refetch: refetchCurrentStatus } = usefetchedCurrentStatus;
 //     const { data: fetchedVotersData, error: fetchVotersError, isPending: fetchVotersIsPending, refetch: refetchVoters } = usefetchedVoters;
 
-
 //     const { data: hash, error: writeError, isPending: writeIsPending, writeContract } = useWriteContract();
 //     const { isLoading: txIsConfirming, isSuccess: txIsSuccess, error: txError } = useWaitForTransactionReceipt({ hash });
-
 
 //     const addVoterHandler = (e: React.MouseEvent<HTMLFormElement>) => {
 //         e.preventDefault();
@@ -48,8 +44,6 @@
 //             setStatus(fetchedStatusData.toString());
 //         }
 //     }, [fetchedStatusData]);
-
-
 
 //     const testFetch = async () => {
 //         await refetchCurrentStatus();
@@ -113,4 +107,3 @@
 // }
 
 // export default Example
-

@@ -25,19 +25,19 @@
 //       fromBlock: 0n,
 //       toBlock: 1000n
 //     });
-  
+
 //     const getJobTakenLogs = publicClient.getLogs({
 //       event: parseAbiItem('event jobTaken(address indexed worker, uint id)'),
 //       fromBlock: 0n,
 //       toBlock: 1000n
 //     });
-  
+
 //     const getJobIsFinishedAndPaidLogs = publicClient.getLogs({
 //       event: parseAbiItem('event jobIsFinishedAndPaid(address indexed author, address indexed worker, uint id, uint pricePaid)'),
 //       fromBlock: 0n,
 //       toBlock: 1000n
 //     });
-  
+
 //     const [jobAddedLogs, jobTakenLogs, jobIsFinishedAndPaidLogs] = await Promise.all([
 //       getJobAddedLogs,
 //       getJobTakenLogs,
@@ -45,7 +45,7 @@
 //     ]);
 
 //     console.log(jobAddedLogs, jobTakenLogs, jobIsFinishedAndPaidLogs)
-  
+
 //     /*
 //       0:true
 //       1:true
@@ -58,7 +58,7 @@
 //       }
 //       return map;
 //     }, {});
-  
+
 //     const jobFinishedMap = jobIsFinishedAndPaidLogs.reduce<Record<number, boolean>>((map, jobFinished) => {
 //       const id = jobFinished.args.id !== undefined ? parseInt(jobFinished.args.id.toString()) : -1;
 //       if (id !== -1) {
@@ -66,7 +66,7 @@
 //       }
 //       return map;
 //     }, {});
-  
+
 //     const allTheJobs = jobAddedLogs.map((jobAdded) => {
 //       const id = jobAdded.args.id !== undefined ? parseInt(jobAdded.args.id.toString()) : -1;
 //       const price = jobAdded.args.price !== undefined ? jobAdded.args.price : BigInt(0);

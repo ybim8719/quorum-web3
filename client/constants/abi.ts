@@ -1,689 +1,687 @@
-
 export const abi = [
-    {
-        "type": "constructor",
-        "inputs": [],
-        "stateMutability": "nonpayable"
-    },
-    {
-        "type": "function",
-        "name": "getCurrentStatus",
-        "inputs": [],
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint8",
-                "internalType": "enum VotingOpti.WorkflowStatus"
-            }
+  {
+    type: "constructor",
+    inputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "getCurrentStatus",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "uint8",
+        internalType: "enum VotingOpti.WorkflowStatus",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getDescription",
+    inputs: [
+      {
+        name: "_proposalId",
+        type: "uint16",
+        internalType: "uint16",
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "string",
+        internalType: "string",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getNbOfProposals",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "uint16",
+        internalType: "uint16",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getNextProposalId",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "uint16",
+        internalType: "uint16",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getProposalInfo",
+    inputs: [
+      {
+        name: "_proposalId",
+        type: "uint16",
+        internalType: "uint16",
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "tuple",
+        internalType: "struct VotingOpti.Proposal",
+        components: [
+          {
+            name: "voteCount",
+            type: "uint16",
+            internalType: "uint16",
+          },
+          {
+            name: "description",
+            type: "string",
+            internalType: "string",
+          },
         ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "getDescription",
-        "inputs": [
-            {
-                "name": "_proposalId",
-                "type": "uint16",
-                "internalType": "uint16"
-            }
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getTiedProposalsId",
+    inputs: [
+      {
+        name: "_proposalIndex",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getTiedProposalsIds",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "uint16[]",
+        internalType: "uint16[]",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getTiedProposalsIdsLength",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getVoteCount",
+    inputs: [
+      {
+        name: "_proposalId",
+        type: "uint16",
+        internalType: "uint16",
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "uint16",
+        internalType: "uint16",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getVotedProposalId",
+    inputs: [
+      {
+        name: "_voter",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "uint16",
+        internalType: "uint16",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getVoterInfo",
+    inputs: [
+      {
+        name: "_voter",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "tuple",
+        internalType: "struct VotingOpti.Voter",
+        components: [
+          {
+            name: "isRegistered",
+            type: "bool",
+            internalType: "bool",
+          },
+          {
+            name: "votedProposalId",
+            type: "uint16",
+            internalType: "uint16",
+          },
         ],
-        "outputs": [
-            {
-                "name": "",
-                "type": "string",
-                "internalType": "string"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "getNbOfProposals",
-        "inputs": [],
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint16",
-                "internalType": "uint16"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "getNextProposalId",
-        "inputs": [],
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint16",
-                "internalType": "uint16"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "getProposalInfo",
-        "inputs": [
-            {
-                "name": "_proposalId",
-                "type": "uint16",
-                "internalType": "uint16"
-            }
-        ],
-        "outputs": [
-            {
-                "name": "",
-                "type": "tuple",
-                "internalType": "struct VotingOpti.Proposal",
-                "components": [
-                    {
-                        "name": "voteCount",
-                        "type": "uint16",
-                        "internalType": "uint16"
-                    },
-                    {
-                        "name": "description",
-                        "type": "string",
-                        "internalType": "string"
-                    }
-                ]
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "getTiedProposalsId",
-        "inputs": [
-            {
-                "name": "_proposalIndex",
-                "type": "uint256",
-                "internalType": "uint256"
-            }
-        ],
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint256",
-                "internalType": "uint256"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "getTiedProposalsIds",
-        "inputs": [],
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint16[]",
-                "internalType": "uint16[]"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "getTiedProposalsIdsLength",
-        "inputs": [],
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint256",
-                "internalType": "uint256"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "getVoteCount",
-        "inputs": [
-            {
-                "name": "_proposalId",
-                "type": "uint16",
-                "internalType": "uint16"
-            }
-        ],
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint16",
-                "internalType": "uint16"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "getVotedProposalId",
-        "inputs": [
-            {
-                "name": "_voter",
-                "type": "address",
-                "internalType": "address"
-            }
-        ],
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint16",
-                "internalType": "uint16"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "getVoterInfo",
-        "inputs": [
-            {
-                "name": "_voter",
-                "type": "address",
-                "internalType": "address"
-            }
-        ],
-        "outputs": [
-            {
-                "name": "",
-                "type": "tuple",
-                "internalType": "struct VotingOpti.Voter",
-                "components": [
-                    {
-                        "name": "isRegistered",
-                        "type": "bool",
-                        "internalType": "bool"
-                    },
-                    {
-                        "name": "votedProposalId",
-                        "type": "uint16",
-                        "internalType": "uint16"
-                    }
-                ]
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "getVotersLength",
-        "inputs": [],
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint256",
-                "internalType": "uint256"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "getVotersList",
-        "inputs": [],
-        "outputs": [
-            {
-                "name": "",
-                "type": "address[]",
-                "internalType": "address[]"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "getWinner",
-        "inputs": [],
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint16",
-                "internalType": "uint16"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "getWinnerDescription",
-        "inputs": [],
-        "outputs": [
-            {
-                "name": "",
-                "type": "string",
-                "internalType": "string"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "getWinnerInfo",
-        "inputs": [],
-        "outputs": [
-            {
-                "name": "id",
-                "type": "uint16",
-                "internalType": "uint16"
-            },
-            {
-                "name": "voteCount",
-                "type": "uint16",
-                "internalType": "uint16"
-            },
-            {
-                "name": "description",
-                "type": "string",
-                "internalType": "string"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "handleFinalDecision",
-        "inputs": [
-            {
-                "name": "_chosenProposalId",
-                "type": "uint16",
-                "internalType": "uint16"
-            }
-        ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-    },
-    {
-        "type": "function",
-        "name": "hasVoted",
-        "inputs": [
-            {
-                "name": "_voter",
-                "type": "address",
-                "internalType": "address"
-            }
-        ],
-        "outputs": [
-            {
-                "name": "",
-                "type": "bool",
-                "internalType": "bool"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "isRegistered",
-        "inputs": [
-            {
-                "name": "_voter",
-                "type": "address",
-                "internalType": "address"
-            }
-        ],
-        "outputs": [
-            {
-                "name": "",
-                "type": "bool",
-                "internalType": "bool"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "owner",
-        "inputs": [],
-        "outputs": [
-            {
-                "name": "",
-                "type": "address",
-                "internalType": "address"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "pickWinner",
-        "inputs": [],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-    },
-    {
-        "type": "function",
-        "name": "proposalExists",
-        "inputs": [
-            {
-                "name": "_proposalId",
-                "type": "uint16",
-                "internalType": "uint16"
-            }
-        ],
-        "outputs": [
-            {
-                "name": "",
-                "type": "bool",
-                "internalType": "bool"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "registerVoter",
-        "inputs": [
-            {
-                "name": "_voter",
-                "type": "address",
-                "internalType": "address"
-            }
-        ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-    },
-    {
-        "type": "function",
-        "name": "renounceOwnership",
-        "inputs": [],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-    },
-    {
-        "type": "function",
-        "name": "setWorkflowStatus",
-        "inputs": [
-            {
-                "name": "_statusNum",
-                "type": "uint16",
-                "internalType": "uint16"
-            }
-        ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-    },
-    {
-        "type": "function",
-        "name": "submitProposal",
-        "inputs": [
-            {
-                "name": "_description",
-                "type": "string",
-                "internalType": "string"
-            }
-        ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-    },
-    {
-        "type": "function",
-        "name": "transferOwnership",
-        "inputs": [
-            {
-                "name": "newOwner",
-                "type": "address",
-                "internalType": "address"
-            }
-        ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-    },
-    {
-        "type": "function",
-        "name": "vote",
-        "inputs": [
-            {
-                "name": "_proposalId",
-                "type": "uint16",
-                "internalType": "uint16"
-            }
-        ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-    },
-    {
-        "type": "event",
-        "name": "NeedsOwnersDecision",
-        "inputs": [],
-        "anonymous": false
-    },
-    {
-        "type": "event",
-        "name": "OwnershipTransferred",
-        "inputs": [
-            {
-                "name": "previousOwner",
-                "type": "address",
-                "indexed": true,
-                "internalType": "address"
-            },
-            {
-                "name": "newOwner",
-                "type": "address",
-                "indexed": true,
-                "internalType": "address"
-            }
-        ],
-        "anonymous": false
-    },
-    {
-        "type": "event",
-        "name": "ProposalRegistered",
-        "inputs": [
-            {
-                "name": "proposalId",
-                "type": "uint16",
-                "indexed": true,
-                "internalType": "uint16"
-            }
-        ],
-        "anonymous": false
-    },
-    {
-        "type": "event",
-        "name": "Voted",
-        "inputs": [
-            {
-                "name": "voter",
-                "type": "address",
-                "indexed": true,
-                "internalType": "address"
-            },
-            {
-                "name": "proposalId",
-                "type": "uint16",
-                "indexed": true,
-                "internalType": "uint16"
-            }
-        ],
-        "anonymous": false
-    },
-    {
-        "type": "event",
-        "name": "VoterRegistered",
-        "inputs": [
-            {
-                "name": "voterAddress",
-                "type": "address",
-                "indexed": true,
-                "internalType": "address"
-            }
-        ],
-        "anonymous": false
-    },
-    {
-        "type": "event",
-        "name": "WinnerSelected",
-        "inputs": [
-            {
-                "name": "proposalId",
-                "type": "uint16",
-                "indexed": false,
-                "internalType": "uint16"
-            }
-        ],
-        "anonymous": false
-    },
-    {
-        "type": "event",
-        "name": "WorkflowStatusChange",
-        "inputs": [
-            {
-                "name": "previousStatus",
-                "type": "uint8",
-                "indexed": false,
-                "internalType": "enum VotingOpti.WorkflowStatus"
-            },
-            {
-                "name": "newStatus",
-                "type": "uint8",
-                "indexed": false,
-                "internalType": "enum VotingOpti.WorkflowStatus"
-            }
-        ],
-        "anonymous": false
-    },
-    {
-        "type": "error",
-        "name": "OwnableInvalidOwner",
-        "inputs": [
-            {
-                "name": "owner",
-                "type": "address",
-                "internalType": "address"
-            }
-        ]
-    },
-    {
-        "type": "error",
-        "name": "OwnableUnauthorizedAccount",
-        "inputs": [
-            {
-                "name": "account",
-                "type": "address",
-                "internalType": "address"
-            }
-        ]
-    },
-    {
-        "type": "error",
-        "name": "VotingOpti__AlreadyVoted",
-        "inputs": [
-            {
-                "name": "voter",
-                "type": "address",
-                "internalType": "address"
-            }
-        ]
-    },
-    {
-        "type": "error",
-        "name": "VotingOpti__CantSetToRegisteringVoters",
-        "inputs": []
-    },
-    {
-        "type": "error",
-        "name": "VotingOpti__DescriptionCantBeEmpty",
-        "inputs": []
-    },
-    {
-        "type": "error",
-        "name": "VotingOpti__InexistentStatus",
-        "inputs": []
-    },
-    {
-        "type": "error",
-        "name": "VotingOpti__InvalidPeriod",
-        "inputs": []
-    },
-    {
-        "type": "error",
-        "name": "VotingOpti__InvalidRequestedWorkflowStatus",
-        "inputs": [
-            {
-                "name": "_requestedStatusChange",
-                "type": "uint16",
-                "internalType": "uint16"
-            }
-        ]
-    },
-    {
-        "type": "error",
-        "name": "VotingOpti__NoProposals",
-        "inputs": []
-    },
-    {
-        "type": "error",
-        "name": "VotingOpti__NoVoters",
-        "inputs": []
-    },
-    {
-        "type": "error",
-        "name": "VotingOpti__NotInWhiteList",
-        "inputs": [
-            {
-                "name": "unauthorizedVoter",
-                "type": "address",
-                "internalType": "address"
-            }
-        ]
-    },
-    {
-        "type": "error",
-        "name": "VotingOpti__ProposalNotFound",
-        "inputs": [
-            {
-                "name": "proposalId",
-                "type": "uint16",
-                "internalType": "uint16"
-            }
-        ]
-    },
-    {
-        "type": "error",
-        "name": "VotingOpti__SelectedProposalNotInTiedList",
-        "inputs": [
-            {
-                "name": "wrongProposalId",
-                "type": "uint16",
-                "internalType": "uint16"
-            }
-        ]
-    },
-    {
-        "type": "error",
-        "name": "VotingOpti__StateNotReachable",
-        "inputs": [
-            {
-                "name": "unauthorized",
-                "type": "address",
-                "internalType": "address"
-            }
-        ]
-    },
-    {
-        "type": "error",
-        "name": "VotingOpti__VoterAlreadyRegistered",
-        "inputs": []
-    },
-    {
-        "type": "error",
-        "name": "VotingOpti__VotingAchievedOrToBeAchieved",
-        "inputs": []
-    },
-    {
-        "type": "error",
-        "name": "VotingOpti__VotingAlreadyClosed",
-        "inputs": []
-    },
-    {
-        "type": "error",
-        "name": "VotingOpti__WinnerAlreadyPicked",
-        "inputs": []
-    }
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getVotersLength",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getVotersList",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address[]",
+        internalType: "address[]",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getWinner",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "uint16",
+        internalType: "uint16",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getWinnerDescription",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "string",
+        internalType: "string",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getWinnerInfo",
+    inputs: [],
+    outputs: [
+      {
+        name: "id",
+        type: "uint16",
+        internalType: "uint16",
+      },
+      {
+        name: "voteCount",
+        type: "uint16",
+        internalType: "uint16",
+      },
+      {
+        name: "description",
+        type: "string",
+        internalType: "string",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "handleFinalDecision",
+    inputs: [
+      {
+        name: "_chosenProposalId",
+        type: "uint16",
+        internalType: "uint16",
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "hasVoted",
+    inputs: [
+      {
+        name: "_voter",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "bool",
+        internalType: "bool",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "isRegistered",
+    inputs: [
+      {
+        name: "_voter",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "bool",
+        internalType: "bool",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "owner",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "pickWinner",
+    inputs: [],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "proposalExists",
+    inputs: [
+      {
+        name: "_proposalId",
+        type: "uint16",
+        internalType: "uint16",
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "bool",
+        internalType: "bool",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "registerVoter",
+    inputs: [
+      {
+        name: "_voter",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "renounceOwnership",
+    inputs: [],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "setWorkflowStatus",
+    inputs: [
+      {
+        name: "_statusNum",
+        type: "uint16",
+        internalType: "uint16",
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "submitProposal",
+    inputs: [
+      {
+        name: "_description",
+        type: "string",
+        internalType: "string",
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "transferOwnership",
+    inputs: [
+      {
+        name: "newOwner",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "vote",
+    inputs: [
+      {
+        name: "_proposalId",
+        type: "uint16",
+        internalType: "uint16",
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "event",
+    name: "NeedsOwnersDecision",
+    inputs: [],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "OwnershipTransferred",
+    inputs: [
+      {
+        name: "previousOwner",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "newOwner",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "ProposalRegistered",
+    inputs: [
+      {
+        name: "proposalId",
+        type: "uint16",
+        indexed: true,
+        internalType: "uint16",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "Voted",
+    inputs: [
+      {
+        name: "voter",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "proposalId",
+        type: "uint16",
+        indexed: true,
+        internalType: "uint16",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "VoterRegistered",
+    inputs: [
+      {
+        name: "voterAddress",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "WinnerSelected",
+    inputs: [
+      {
+        name: "proposalId",
+        type: "uint16",
+        indexed: false,
+        internalType: "uint16",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "WorkflowStatusChange",
+    inputs: [
+      {
+        name: "previousStatus",
+        type: "uint8",
+        indexed: false,
+        internalType: "enum VotingOpti.WorkflowStatus",
+      },
+      {
+        name: "newStatus",
+        type: "uint8",
+        indexed: false,
+        internalType: "enum VotingOpti.WorkflowStatus",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "error",
+    name: "OwnableInvalidOwner",
+    inputs: [
+      {
+        name: "owner",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "OwnableUnauthorizedAccount",
+    inputs: [
+      {
+        name: "account",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "VotingOpti__AlreadyVoted",
+    inputs: [
+      {
+        name: "voter",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "VotingOpti__CantSetToRegisteringVoters",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "VotingOpti__DescriptionCantBeEmpty",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "VotingOpti__InexistentStatus",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "VotingOpti__InvalidPeriod",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "VotingOpti__InvalidRequestedWorkflowStatus",
+    inputs: [
+      {
+        name: "_requestedStatusChange",
+        type: "uint16",
+        internalType: "uint16",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "VotingOpti__NoProposals",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "VotingOpti__NoVoters",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "VotingOpti__NotInWhiteList",
+    inputs: [
+      {
+        name: "unauthorizedVoter",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "VotingOpti__ProposalNotFound",
+    inputs: [
+      {
+        name: "proposalId",
+        type: "uint16",
+        internalType: "uint16",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "VotingOpti__SelectedProposalNotInTiedList",
+    inputs: [
+      {
+        name: "wrongProposalId",
+        type: "uint16",
+        internalType: "uint16",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "VotingOpti__StateNotReachable",
+    inputs: [
+      {
+        name: "unauthorized",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "VotingOpti__VoterAlreadyRegistered",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "VotingOpti__VotingAchievedOrToBeAchieved",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "VotingOpti__VotingAlreadyClosed",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "VotingOpti__WinnerAlreadyPicked",
+    inputs: [],
+  },
 ] as const;
-
