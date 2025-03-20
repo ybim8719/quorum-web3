@@ -1,10 +1,11 @@
 import React, { createContext, useState } from "react";
+import { ADMIN_ROLE } from "../models/roles";
 
 type UserContextType = {
   role: string;
-  username: string;
+  isAuthorized: boolean;
   setRole: React.Dispatch<React.SetStateAction<string>>;
-  setUsername: React.Dispatch<React.SetStateAction<string>>;
+  setIsAuthorized: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export const UserContext = createContext<UserContextType>(
@@ -16,14 +17,14 @@ type ContextProviderProps = {
 };
 
 export const UserContextProvider = ({ children }: ContextProviderProps) => {
-  const [role, setRole] = useState("ADMIN");
-  const [username, setUsername] = useState("MARCO");
+  const [role, setRole] = useState(ADMIN_ROLE);
+  const [isAuthorized, setIsAuthorized] = useState(true);
 
   const value = {
     role,
-    username,
+    isAuthorized,
     setRole,
-    setUsername,
+    setIsAuthorized,
   };
 
   return (

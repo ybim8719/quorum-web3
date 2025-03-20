@@ -1,21 +1,30 @@
 import { useAccount } from "wagmi";
 import "./App.css";
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { UserContext } from "./context/userContext";
 import { BrowserRouter, Routes, Route } from "react-router";
-import HomeAdmin from "./pages/AdminHome";
-import CustomerHome from "./pages/CustomerHome";
+import Home from "./pages/Home";
+import Unauthorized from "./components/shared/Unauthorized";
+import Layout from "./components/UI/Layout";
 
 function App() {
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
   const userCtx = useContext(UserContext);
 
+  let routes = <Route path="/*" element={<Unauthorized />} />;
+  if (userCtx.isAuthorized) {
+    routes = <>
+      <Route path="/" element={<Home />} />
+    </>
+  }
+
   return (
+
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<HomeAdmin />} />
-        <Route path="/truc" element={<CustomerHome />} />
-
+        <Route path="/" element={<Layout />}>
+          {routes}
+        </Route>
       </Routes>
     </BrowserRouter>
   )

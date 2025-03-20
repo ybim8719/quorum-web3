@@ -5,10 +5,26 @@
   text-align: center;
 }
 
-.card {
+.circled {
   padding: 2em;
+  border: 2px solid red;
+  margin: 1em;
+  min-width: 400px;
+  min-height: 400px;
+  border-radius: 5px;
 }
 
-.read-the-docs {
-  color: #888;
+header {
+  padding: 10px;
+  background-color: aquamarine;
+  width: 100%;
+}
+
+.flex-wrapper {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-around;
+  width: 100%;
+  align-items: center;
+  padding: 10px;
 }
