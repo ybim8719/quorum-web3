@@ -6,3 +6,11 @@ web3 final training project for graduation
 
 ## Launch the project :
 
+
+## Failles Solidity 
+CondoGMFactory : constructor 0 for maxAdminNb ?
+
+
+## Improvements 
+
+

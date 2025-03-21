@@ -1,687 +1,521 @@
 export const abi = [
   {
-    type: "constructor",
-    inputs: [],
-    stateMutability: "nonpayable",
+    "type": "constructor",
+    "inputs": [
+      {
+        "name": "_name",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "_description",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "_postalAddress",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "_maxAdminNb",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable"
   },
   {
-    type: "function",
-    name: "getCurrentStatus",
-    inputs: [],
-    outputs: [
+    "type": "function",
+    "name": "convertSharesToToken",
+    "inputs": [
       {
-        name: "",
-        type: "uint8",
-        internalType: "enum VotingOpti.WorkflowStatus",
+        "name": "customer",
+        "type": "address",
+        "internalType": "address"
       },
+      {
+        "name": "gmId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ],
-    stateMutability: "view",
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
-    type: "function",
-    name: "getDescription",
-    inputs: [
-      {
-        name: "_proposalId",
-        type: "uint16",
-        internalType: "uint16",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "string",
-        internalType: "string",
-      },
-    ],
-    stateMutability: "view",
+    "type": "function",
+    "name": "createGM",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
-    type: "function",
-    name: "getNbOfProposals",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "uint16",
-        internalType: "uint16",
-      },
-    ],
-    stateMutability: "view",
+    "type": "function",
+    "name": "createGMSharesToken",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
-    type: "function",
-    name: "getNextProposalId",
-    inputs: [],
-    outputs: [
+    "type": "function",
+    "name": "getCustomerLots",
+    "inputs": [
       {
-        name: "",
-        type: "uint16",
-        internalType: "uint16",
-      },
+        "name": "_customerAddress",
+        "type": "address",
+        "internalType": "address"
+      }
     ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "getProposalInfo",
-    inputs: [
+    "outputs": [
       {
-        name: "_proposalId",
-        type: "uint16",
-        internalType: "uint16",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "tuple",
-        internalType: "struct VotingOpti.Proposal",
-        components: [
+        "name": "",
+        "type": "tuple[]",
+        "internalType": "struct CondominiumLot[]",
+        "components": [
           {
-            name: "voteCount",
-            type: "uint16",
-            internalType: "uint16",
+            "name": "ownerAddress",
+            "type": "address",
+            "internalType": "address"
           },
           {
-            name: "description",
-            type: "string",
-            internalType: "string",
-          },
-        ],
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "getTiedProposalsId",
-    inputs: [
-      {
-        name: "_proposalIndex",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "getTiedProposalsIds",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "uint16[]",
-        internalType: "uint16[]",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "getTiedProposalsIdsLength",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "getVoteCount",
-    inputs: [
-      {
-        name: "_proposalId",
-        type: "uint16",
-        internalType: "uint16",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "uint16",
-        internalType: "uint16",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "getVotedProposalId",
-    inputs: [
-      {
-        name: "_voter",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "uint16",
-        internalType: "uint16",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "getVoterInfo",
-    inputs: [
-      {
-        name: "_voter",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "tuple",
-        internalType: "struct VotingOpti.Voter",
-        components: [
-          {
-            name: "isRegistered",
-            type: "bool",
-            internalType: "bool",
+            "name": "shares",
+            "type": "uint256",
+            "internalType": "uint256"
           },
           {
-            name: "votedProposalId",
-            type: "uint16",
-            internalType: "uint16",
+            "name": "lotOfficalNumber",
+            "type": "string",
+            "internalType": "string"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getCustomersLength",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getLotDetail",
+    "inputs": [
+      {
+        "name": "_lotId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct CondominiumLot",
+        "components": [
+          {
+            "name": "ownerAddress",
+            "type": "address",
+            "internalType": "address"
           },
-        ],
-      },
+          {
+            "name": "shares",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "lotOfficalNumber",
+            "type": "string",
+            "internalType": "string"
+          }
+        ]
+      }
     ],
-    stateMutability: "view",
+    "stateMutability": "view"
   },
   {
-    type: "function",
-    name: "getVotersLength",
-    inputs: [],
-    outputs: [
+    "type": "function",
+    "name": "linkCustomerToLot",
+    "inputs": [
       {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
+        "name": "_customerAddress",
+        "type": "address",
+        "internalType": "address"
       },
+      {
+        "name": "_lotId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ],
-    stateMutability: "view",
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
-    type: "function",
-    name: "getVotersList",
-    inputs: [],
-    outputs: [
+    "type": "function",
+    "name": "modifyStatus",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "owner",
+    "inputs": [],
+    "outputs": [
       {
-        name: "",
-        type: "address[]",
-        internalType: "address[]",
-      },
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
     ],
-    stateMutability: "view",
+    "stateMutability": "view"
   },
   {
-    type: "function",
-    name: "getWinner",
-    inputs: [],
-    outputs: [
+    "type": "function",
+    "name": "registerCustomer",
+    "inputs": [
       {
-        name: "",
-        type: "uint16",
-        internalType: "uint16",
+        "name": "_firstName",
+        "type": "string",
+        "internalType": "string"
       },
+      {
+        "name": "_lastName",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "_customerAddress",
+        "type": "address",
+        "internalType": "address"
+      }
     ],
-    stateMutability: "view",
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
-    type: "function",
-    name: "getWinnerDescription",
-    inputs: [],
-    outputs: [
+    "type": "function",
+    "name": "registerLot",
+    "inputs": [
       {
-        name: "",
-        type: "string",
-        internalType: "string",
+        "name": "_lotOfficialNumber",
+        "type": "string",
+        "internalType": "string"
       },
+      {
+        "name": "_shares",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ],
-    stateMutability: "view",
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
-    type: "function",
-    name: "getWinnerInfo",
-    inputs: [],
-    outputs: [
+    "type": "function",
+    "name": "registeringAdmin",
+    "inputs": [
       {
-        name: "id",
-        type: "uint16",
-        internalType: "uint16",
+        "name": "_firstName",
+        "type": "string",
+        "internalType": "string"
       },
       {
-        name: "voteCount",
-        type: "uint16",
-        internalType: "uint16",
+        "name": "_lastName",
+        "type": "string",
+        "internalType": "string"
       },
       {
-        name: "description",
-        type: "string",
-        internalType: "string",
-      },
+        "name": "_adminAddress",
+        "type": "address",
+        "internalType": "address"
+      }
     ],
-    stateMutability: "view",
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
-    type: "function",
-    name: "handleFinalDecision",
-    inputs: [
+    "type": "function",
+    "name": "renounceOwnership",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferOwnership",
+    "inputs": [
       {
-        name: "_chosenProposalId",
-        type: "uint16",
-        internalType: "uint16",
-      },
+        "name": "newOwner",
+        "type": "address",
+        "internalType": "address"
+      }
     ],
-    outputs: [],
-    stateMutability: "nonpayable",
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
-    type: "function",
-    name: "hasVoted",
-    inputs: [
+    "type": "event",
+    "name": "AdminRegistered",
+    "inputs": [
       {
-        name: "_voter",
-        type: "address",
-        internalType: "address",
+        "name": "adminAddress",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
       },
+      {
+        "name": "firstName",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
+      },
+      {
+        "name": "lastName",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
+      }
     ],
-    outputs: [
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "CustomerCreated",
+    "inputs": [
       {
-        name: "",
-        type: "bool",
-        internalType: "bool",
+        "name": "customerAddress",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
       },
+      {
+        "name": "firstName",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
+      },
+      {
+        "name": "lastName",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
+      }
     ],
-    stateMutability: "view",
+    "anonymous": false
   },
   {
-    type: "function",
-    name: "isRegistered",
-    inputs: [
+    "type": "event",
+    "name": "LotAdded",
+    "inputs": [
       {
-        name: "_voter",
-        type: "address",
-        internalType: "address",
-      },
+        "name": "condoLotId",
+        "type": "string",
+        "indexed": true,
+        "internalType": "string"
+      }
     ],
-    outputs: [
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "LotOwnerSet",
+    "inputs": [
       {
-        name: "",
-        type: "bool",
-        internalType: "bool",
+        "name": "lotId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
       },
+      {
+        "name": "owner",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
     ],
-    stateMutability: "view",
+    "anonymous": false
   },
   {
-    type: "function",
-    name: "owner",
-    inputs: [],
-    outputs: [
+    "type": "event",
+    "name": "LotsAllRegistered",
+    "inputs": [],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "OwnershipTransferred",
+    "inputs": [
       {
-        name: "",
-        type: "address",
-        internalType: "address",
+        "name": "previousOwner",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
       },
+      {
+        "name": "newOwner",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
     ],
-    stateMutability: "view",
+    "anonymous": false
   },
   {
-    type: "function",
-    name: "pickWinner",
-    inputs: [],
-    outputs: [],
-    stateMutability: "nonpayable",
+    "type": "error",
+    "name": "CondomGMFactory__AddressCantBeZero",
+    "inputs": []
   },
   {
-    type: "function",
-    name: "proposalExists",
-    inputs: [
+    "type": "error",
+    "name": "CondomGMFactory__AdminAlreadyAdded",
+    "inputs": [
       {
-        name: "_proposalId",
-        type: "uint16",
-        internalType: "uint16",
-      },
-    ],
-    outputs: [
+        "name": "adminAddress",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "CondomGMFactory__AdminListFull",
+    "inputs": [
       {
-        name: "",
-        type: "bool",
-        internalType: "bool",
-      },
-    ],
-    stateMutability: "view",
+        "name": "adminAddress",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
   },
   {
-    type: "function",
-    name: "registerVoter",
-    inputs: [
+    "type": "error",
+    "name": "CondomGMFactory__CustomerAlreadyRegistered",
+    "inputs": [
       {
-        name: "_voter",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
+        "name": "customer",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
   },
   {
-    type: "function",
-    name: "renounceOwnership",
-    inputs: [],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "setWorkflowStatus",
-    inputs: [
+    "type": "error",
+    "name": "CondomGMFactory__CustomerNotFound",
+    "inputs": [
       {
-        name: "_statusNum",
-        type: "uint16",
-        internalType: "uint16",
-      },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
+        "name": "customerAddress",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
   },
   {
-    type: "function",
-    name: "submitProposal",
-    inputs: [
+    "type": "error",
+    "name": "CondomGMFactory__EmptyString",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CondomGMFactory__LotAlreadyHasOwner",
+    "inputs": [
       {
-        name: "_description",
-        type: "string",
-        internalType: "string",
-      },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "transferOwnership",
-    inputs: [
-      {
-        name: "newOwner",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "vote",
-    inputs: [
-      {
-        name: "_proposalId",
-        type: "uint16",
-        internalType: "uint16",
-      },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "event",
-    name: "NeedsOwnersDecision",
-    inputs: [],
-    anonymous: false,
-  },
-  {
-    type: "event",
-    name: "OwnershipTransferred",
-    inputs: [
-      {
-        name: "previousOwner",
-        type: "address",
-        indexed: true,
-        internalType: "address",
+        "name": "lotId",
+        "type": "uint256",
+        "internalType": "uint256"
       },
       {
-        name: "newOwner",
-        type: "address",
-        indexed: true,
-        internalType: "address",
-      },
-    ],
-    anonymous: false,
+        "name": "customerAddress",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
   },
   {
-    type: "event",
-    name: "ProposalRegistered",
-    inputs: [
+    "type": "error",
+    "name": "CondomGMFactory__LotAlreadyRegistered",
+    "inputs": [
       {
-        name: "proposalId",
-        type: "uint16",
-        indexed: true,
-        internalType: "uint16",
-      },
-    ],
-    anonymous: false,
+        "name": "lotOfficialNumber",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
   },
   {
-    type: "event",
-    name: "Voted",
-    inputs: [
+    "type": "error",
+    "name": "CondomGMFactory__LotNotFound",
+    "inputs": [
       {
-        name: "voter",
-        type: "address",
-        indexed: true,
-        internalType: "address",
-      },
+        "name": "lotId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "CondomGMFactory__RegisteredLotIsLocked",
+    "inputs": [
       {
-        name: "proposalId",
-        type: "uint16",
-        indexed: true,
-        internalType: "uint16",
-      },
-    ],
-    anonymous: false,
+        "name": "lotOfficialNumber",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
   },
   {
-    type: "event",
-    name: "VoterRegistered",
-    inputs: [
+    "type": "error",
+    "name": "CondomGMFactory__TotalSharesExceedsMaxLimit",
+    "inputs": [
       {
-        name: "voterAddress",
-        type: "address",
-        indexed: true,
-        internalType: "address",
-      },
-    ],
-    anonymous: false,
+        "name": "lotOfficialNumber",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
   },
   {
-    type: "event",
-    name: "WinnerSelected",
-    inputs: [
+    "type": "error",
+    "name": "CondomGMFactory__Unauthorized",
+    "inputs": [
       {
-        name: "proposalId",
-        type: "uint16",
-        indexed: false,
-        internalType: "uint16",
-      },
-    ],
-    anonymous: false,
+        "name": "unauthorizedVoter",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
   },
   {
-    type: "event",
-    name: "WorkflowStatusChange",
-    inputs: [
+    "type": "error",
+    "name": "OwnableInvalidOwner",
+    "inputs": [
       {
-        name: "previousStatus",
-        type: "uint8",
-        indexed: false,
-        internalType: "enum VotingOpti.WorkflowStatus",
-      },
+        "name": "owner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OwnableUnauthorizedAccount",
+    "inputs": [
       {
-        name: "newStatus",
-        type: "uint8",
-        indexed: false,
-        internalType: "enum VotingOpti.WorkflowStatus",
-      },
-    ],
-    anonymous: false,
-  },
-  {
-    type: "error",
-    name: "OwnableInvalidOwner",
-    inputs: [
-      {
-        name: "owner",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-  },
-  {
-    type: "error",
-    name: "OwnableUnauthorizedAccount",
-    inputs: [
-      {
-        name: "account",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-  },
-  {
-    type: "error",
-    name: "VotingOpti__AlreadyVoted",
-    inputs: [
-      {
-        name: "voter",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-  },
-  {
-    type: "error",
-    name: "VotingOpti__CantSetToRegisteringVoters",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "VotingOpti__DescriptionCantBeEmpty",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "VotingOpti__InexistentStatus",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "VotingOpti__InvalidPeriod",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "VotingOpti__InvalidRequestedWorkflowStatus",
-    inputs: [
-      {
-        name: "_requestedStatusChange",
-        type: "uint16",
-        internalType: "uint16",
-      },
-    ],
-  },
-  {
-    type: "error",
-    name: "VotingOpti__NoProposals",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "VotingOpti__NoVoters",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "VotingOpti__NotInWhiteList",
-    inputs: [
-      {
-        name: "unauthorizedVoter",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-  },
-  {
-    type: "error",
-    name: "VotingOpti__ProposalNotFound",
-    inputs: [
-      {
-        name: "proposalId",
-        type: "uint16",
-        internalType: "uint16",
-      },
-    ],
-  },
-  {
-    type: "error",
-    name: "VotingOpti__SelectedProposalNotInTiedList",
-    inputs: [
-      {
-        name: "wrongProposalId",
-        type: "uint16",
-        internalType: "uint16",
-      },
-    ],
-  },
-  {
-    type: "error",
-    name: "VotingOpti__StateNotReachable",
-    inputs: [
-      {
-        name: "unauthorized",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-  },
-  {
-    type: "error",
-    name: "VotingOpti__VoterAlreadyRegistered",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "VotingOpti__VotingAchievedOrToBeAchieved",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "VotingOpti__VotingAlreadyClosed",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "VotingOpti__WinnerAlreadyPicked",
-    inputs: [],
-  },
-] as const;
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  }
+]
