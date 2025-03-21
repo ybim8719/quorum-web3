@@ -3,14 +3,14 @@ import { ANVIL_VOTINGOPTI_ADRESS } from "../../constants/deployed";
 import { useReadContract } from "wagmi";
 import { useAccount } from "wagmi";
 
-export const useQueries = () => {
+export const useWalletQueries = () => {
   const { address } = useAccount();
 
-  const usefetchedCurrentStatus = useReadContract(
+  const useFetchedLots = useReadContract(
     {
       address: ANVIL_VOTINGOPTI_ADRESS,
       abi: abi,
-      functionName: "getCurrentStatus",
+      functionName: "getCustomerLots",
       account: address,
       query: {
         enabled: true,
@@ -18,11 +18,11 @@ export const useQueries = () => {
     }
   );
 
-  const usefetchedVoters = useReadContract(
+  const useFetchedCustomers = useReadContract(
     {
       address: ANVIL_VOTINGOPTI_ADRESS,
       abi: abi,
-      functionName: "getVotersList",
+      functionName: "getCustomers",
       account: address,
       query: {
         enabled: true,
@@ -31,7 +31,7 @@ export const useQueries = () => {
   );
 
   return {
-    usefetchedCurrentStatus,
-    usefetchedVoters,
+    useFetchedLots,
+    useFetchedCustomers,
   };
 };

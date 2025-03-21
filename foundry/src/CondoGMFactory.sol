@@ -3,7 +3,9 @@
 pragma solidity ^0.8.26;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {Customer, CondominiumLot, GeneralMeeting, Admin} from "./structs/Manager.sol";
+import {
+    Customer, CondominiumLot, GeneralMeeting, Admin, CustomerView, CondominiumLotView
+} from "./structs/Manager.sol";
 
 /// @title CondominiumGMFactory
 /// @author Pascal Thao
@@ -197,7 +199,7 @@ contract CondoGMFactory is Ownable {
     }
 
     function createGMSharesToken() external {}
-    function createGM() external {}
+    function createGMBallot() external {}
     // set to client who is owner of a given lot his token shares (transfer)
     // if is not really owner
     // if gmId is linked to the owner lot and condo
@@ -211,9 +213,7 @@ contract CondoGMFactory is Ownable {
     /*//////////////////////////////////////////////////////////////
                             VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
-    function getCustomersLength() external view returns (uint256) {
-        return s_customers.length;
-    }
+    function getCustomers() external view returns (CustomerView[] memory) {}
 
     function getCustomerLots(address _customerAddress) external view returns (CondominiumLot[] memory) {
         uint256[] memory lotIds = s_customersInfo[_customerAddress].lotIds;
@@ -229,6 +229,8 @@ contract CondoGMFactory is Ownable {
             return emptyTable;
         }
     }
+
+    function getLots() external view returns (CondominiumLotView[] memory) {}
 
     function getLotDetail(uint256 _lotId) external view returns (CondominiumLot memory) {
         return s_condoLotsList[_lotId];

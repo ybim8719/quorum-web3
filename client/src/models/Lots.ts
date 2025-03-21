@@ -1,4 +1,5 @@
 export type Lot = {
+    id: number;
     lotOfficialCode: string;
     shares: number;
     customer?: {
