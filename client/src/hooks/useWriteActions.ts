@@ -1,5 +1,5 @@
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { ANVIL_VOTINGOPTI_ADRESS } from "../../constants/deployed";
+import { ANVIL_FACTORY_ADRESS } from "../../constants/deployed";
 import { abi } from "../../constants/abi";
 
 export const useAddCustomer = () => {
@@ -9,7 +9,7 @@ export const useAddCustomer = () => {
     const addCustomerWrite = (firstName: string, lastName: string, customerAddress: string, account: string | undefined) => {
         if (account) {
             writeContract({
-                address: ANVIL_VOTINGOPTI_ADRESS,
+                address: ANVIL_FACTORY_ADRESS,
                 abi: abi,
                 functionName: "registerCustomer",
                 args: [firstName, lastName, customerAddress],
@@ -28,7 +28,7 @@ export const useAddLot = () => {
     const addLotWrite = (officialCode: string, shares: number, account: string | undefined) => {
         if (account) {
             writeContract({
-                address: ANVIL_VOTINGOPTI_ADRESS,
+                address: ANVIL_FACTORY_ADRESS,
                 abi: abi,
                 functionName: "registerLot",
                 args: [officialCode, shares],

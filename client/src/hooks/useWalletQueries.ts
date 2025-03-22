@@ -1,5 +1,5 @@
 import { abi } from "../../constants/abi";
-import { ANVIL_VOTINGOPTI_ADRESS } from "../../constants/deployed";
+import { ANVIL_FACTORY_ADRESS } from "../../constants/deployed";
 import { useReadContract } from "wagmi";
 import { useAccount } from "wagmi";
 
@@ -8,7 +8,7 @@ export const useWalletQueries = () => {
 
   const useFetchedLots = useReadContract(
     {
-      address: ANVIL_VOTINGOPTI_ADRESS,
+      address: ANVIL_FACTORY_ADRESS,
       abi: abi,
       functionName: "getCustomerLots",
       account: address,
@@ -20,9 +20,33 @@ export const useWalletQueries = () => {
 
   const useFetchedCustomers = useReadContract(
     {
-      address: ANVIL_VOTINGOPTI_ADRESS,
+      address: ANVIL_FACTORY_ADRESS,
       abi: abi,
       functionName: "getCustomers",
+      account: address,
+      query: {
+        enabled: true,
+      }
+    }
+  );
+
+  const useFetchedOwner = useReadContract(
+    {
+      address: ANVIL_FACTORY_ADRESS,
+      abi: abi,
+      functionName: "owner",
+      account: address,
+      query: {
+        enabled: true,
+      }
+    }
+  );
+
+  const useFetchedCustomersAddresses = useReadContract(
+    {
+      address: ANVIL_FACTORY_ADRESS,
+      abi: abi,
+      functionName: "customersList",
       account: address,
       query: {
         enabled: true,
@@ -33,5 +57,7 @@ export const useWalletQueries = () => {
   return {
     useFetchedLots,
     useFetchedCustomers,
+    useFetchedOwner,
+    useFetchedCustomersAddresses,
   };
 };
