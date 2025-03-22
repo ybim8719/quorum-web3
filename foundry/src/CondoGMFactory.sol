@@ -20,6 +20,7 @@ contract CondoGMFactory is Ownable {
     event CustomerCreated(address customerAddress, string firstName, string lastName);
     event AdminRegistered(address adminAddress, string firstName, string lastName);
     event LotsAllRegistered();
+    event ERC20Deployed(address tokenAddress);
 
     /*//////////////////////////////////////////////////////////////
                             ERRORS
@@ -36,6 +37,7 @@ contract CondoGMFactory is Ownable {
     error CondomGMFactory__RegisteredLotIsLocked(string lotOfficialNumber);
     error CondomGMFactory__AdminAlreadyAdded(address adminAddress);
     error CondomGMFactory__AdminListFull(address adminAddress);
+    error CondomGMFactory__CantRevertAnotherERC20();
 
     uint256 private constant SHARES_LIMIT = 1000;
 
@@ -57,6 +59,7 @@ contract CondoGMFactory is Ownable {
     uint256 s_currentTotalShares;
     uint256 s_nextLotIndex;
     bool s_addingLotIsLocked;
+    address s_deployedErc20;
 
     /*//////////////////////////////////////////////////////////////
                             MODIFIERS
@@ -198,17 +201,28 @@ contract CondoGMFactory is Ownable {
         emit AdminRegistered(_adminAddress, _firstName, _lastName);
     }
 
-    function createGMSharesToken() external {}
+    /// @dev add a new customer (owner) of
+    function createGMSharesToken() external {
+        if (s_deployedErc20 != address(0)) {
+            revert CondomGMFactory__CantRevertAnotherERC20();
+        }
+        // instantiate ERC20 with copro name, adress(this), no decimals, 1000 as max shares
+
+        // save address of token
+
+        // set to 1000 token and no decimals
+    }
+
     function createGMBallot() external {}
-    // set to client who is owner of a given lot his token shares (transfer)
     // if is not really owner
     // if gmId is linked to the owner lot and condo
     // if gmId is open
     // if erc status is ok
     // and ERC20 rules
-    function convertSharesToToken(address customer, uint256 gmId) external {}
-    // for a given condo
-    function modifyStatus() external {}
+    function convertSharesToToken(address customerAddress, uint256 lotId) external {}
+
+    // open and locked ERC20 transfert
+    function setTokenStatus() external {}
 
     /*//////////////////////////////////////////////////////////////
                             VIEW FUNCTIONS
@@ -230,10 +244,29 @@ contract CondoGMFactory is Ownable {
         }
     }
 
-    function getLots() external view returns (CondominiumLotView[] memory) {}
+    function getNbOfCustomers() external view returns (uint256) {
+        return s_customers.length;
+    }
+
+    function getLots() external view returns (CondominiumLotView[] memory) {
+        CondominiumLotView[] memory lots = new CondominiumLotView[](s_nextLotIndex);
+        for (uint256 i = 1; i < s_nextLotIndex; ++i) {
+            CondominiumLotView memory lot = CondominiumLotView({
+                shares: s_condoLotsList[i].customerAddress,
+                lotInternalNumber: s_condoLotsList[i].customerAddress,
+                lastName: s_condoLotsList[i].customerAddress,
+                firstName: s_condoLotsList[i].customerAddress,
+                customerAddress: s_condoLotsList[i].customerAddress
+            });
+        }
+    }
 
     function getLotDetail(uint256 _lotId) external view returns (CondominiumLot memory) {
         return s_condoLotsList[_lotId];
+    }
+
+    function getCustomerDetail(address _customerAddress) external view returns (Customer memory) {
+        return s_customersInfo[_customerAddress];
     }
 
     /// @dev override Ownable owner() which is not protected

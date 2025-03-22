@@ -19,12 +19,12 @@ function Home() {
     const { address: connectedAccount } = useAccount();
     const { useFetchedCustomers, useFetchedLots } = useWalletQueries();
     // read hooks 
-    const { data: fetchedCustomersData, error: fetchedCustomersError, isPending: fetchStatusIsPending, refetch: refetchCustomers } = useFetchedCustomers;
-    const { data: fetchedLotsData, error: fetchedLotsError, isPending: fetchedLotsIsPending, refetch: refetchLots } = useFetchedLots;
+    const { data: fetchedCustomersData, error: fetchedCustomersError, refetch: refetchCustomers } = useFetchedCustomers;
+    const { data: fetchedLotsData, error: fetchedLotsError, refetch: refetchLots } = useFetchedLots;
     // write hooks 
-    const { hash: addCustomerHash, error: addCustomerError, isConfirming: addCustomerIsConfirming, isConfirmed: addCustomerIsConfirmed, addCustomerWrite } = useAddCustomer();
-    const { hash: addLotHash, error: addLotError, isConfirming: addLotIsConfirming, isConfirmed: addLotIsConfirmed, addLotWrite } = useAddLot();
-    const { hash: linkCustomerToLotHash, error: linkCustomerToLotError, isConfirming: linkCustomerToLotIsConfirming, isConfirmed: linkCustomerToLotIsConfirmed, linkCustomerToLotWrite } = useLinkCustomerToLot();
+    const { hash: addCustomerHash, error: addCustomerError, isConfirmed: addCustomerIsConfirmed, addCustomerWrite } = useAddCustomer();
+    const { hash: addLotHash, error: addLotError, isConfirmed: addLotIsConfirmed, addLotWrite } = useAddLot();
+    const { hash: linkCustomerToLotHash, error: linkCustomerToLotError, isConfirmed: linkCustomerToLotIsConfirmed, linkCustomerToLotWrite } = useLinkCustomerToLot();
     // states
     const [customers, setCustomers] = useState<CustomerProfile[]>([]);
     const [lots, setLots] = useState<Lot[]>([]);
@@ -50,6 +50,13 @@ function Home() {
         refreshLotsInfo();
     }, [addLotIsConfirmed]);
 
+    useEffect(() => {
+        const refreshAll = async () => {
+            await refetchLots();
+            await refetchCustomers();
+        };
+        refreshAll();
+    }, [linkCustomerToLotIsConfirmed]);
 
     // 
     useEffect(() => {
