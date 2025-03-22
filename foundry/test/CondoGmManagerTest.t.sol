@@ -2,12 +2,12 @@
 pragma solidity ^0.8.28;
 
 import {Test, console} from "forge-std/Test.sol";
-import {CondoGMFactory} from "../src/CondoGMFactory.sol";
-import {DeployCondoGMFactory} from "../script/DeployCondoGMFactory.s.sol";
+import {CondoGmManager} from "../src/CondoGmManager.sol";
+import {DeployCondoGmManager} from "../script/DeployCondoGmManager.s.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Customer, CondominiumLot, GeneralMeeting, Admin} from "../src/structs/Manager.sol";
 
-contract CondoGMFactoryTest is Test {
+contract CondoGmManagerTest is Test {
     // PROUT
 
     //https://book.getfoundry.sh/guides/best-practices#internal-functions
@@ -15,7 +15,7 @@ contract CondoGMFactoryTest is Test {
     /*//////////////////////////////////////////////////////////////
                                 STORAGE
     //////////////////////////////////////////////////////////////*/
-    CondoGMFactory public s_factory;
+    CondoGmManager public s_manager;
 
     /*//////////////////////////////////////////////////////////////
                             MOCK CONSTANTS / constructor
@@ -48,23 +48,23 @@ contract CondoGMFactoryTest is Test {
     uint256 public constant LOT3_SHARES = 600;
 
     function setUp() public {
-        DeployCondoGMFactory script = new DeployCondoGMFactory();
-        s_factory = script.run(NAME, DESCRIPTION, POSTAL_ADDRESS, MAX_ADMIN_NB);
+        DeployCondoGmManager script = new DeployCondoGmManager();
+        s_manager = script.run(NAME, DESCRIPTION, POSTAL_ADDRESS, MAX_ADMIN_NB);
     }
 
     modifier adminAdded() {
         vm.prank(msg.sender);
-        s_factory.registeringAdmin(ADMIN_FIRST_NAME, ADMIN_LAST_NAME, ADMIN_ADDRESS);
-        // assertEq(s_factory.getAdmin(0).adminAddress, ADMIN_ADDRESS);
+        s_manager.registeringAdmin(ADMIN_FIRST_NAME, ADMIN_LAST_NAME, ADMIN_ADDRESS);
+        // assertEq(s_manager.getAdmin(0).adminAddress, ADMIN_ADDRESS);
         vm.stopPrank();
         _;
     }
 
     modifier lotAndCustomerAdded() {
         vm.startPrank(msg.sender);
-        s_factory.registerLot(LOT1_OFFICIAL_CODE, LOT1_SHARES);
-        s_factory.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
-        uint256 nbCustomers = s_factory.getCustomersLength();
+        s_manager.registerLot(LOT1_OFFICIAL_CODE, LOT1_SHARES);
+        s_manager.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
+        uint256 nbCustomers = s_manager.getCustomersLength();
         assertEq(nbCustomers, 1);
         vm.stopPrank();
         _;
@@ -75,28 +75,28 @@ contract CondoGMFactoryTest is Test {
     //////////////////////////////////////////////////////////////*/
     function test_revert_registerAdmin_alreadyAdded() public {
         vm.startPrank(msg.sender);
-        s_factory.registeringAdmin(ADMIN_FIRST_NAME, ADMIN_LAST_NAME, ADMIN_ADDRESS);
+        s_manager.registeringAdmin(ADMIN_FIRST_NAME, ADMIN_LAST_NAME, ADMIN_ADDRESS);
         vm.expectRevert(
-            abi.encodeWithSelector(CondoGMFactory.CondomGMFactory__AdminAlreadyAdded.selector, ADMIN_ADDRESS)
+            abi.encodeWithSelector(CondoGmManager.CondoGmManager__AdminAlreadyAdded.selector, ADMIN_ADDRESS)
         );
-        s_factory.registeringAdmin(ADMIN2_FIRST_NAME, ADMIN2_LAST_NAME, ADMIN_ADDRESS);
+        s_manager.registeringAdmin(ADMIN2_FIRST_NAME, ADMIN2_LAST_NAME, ADMIN_ADDRESS);
 
         vm.stopPrank();
     }
 
     function test_revert_registerAdmin_maxSizeReached() public {
         vm.startPrank(msg.sender);
-        s_factory.registeringAdmin(ADMIN_FIRST_NAME, ADMIN_LAST_NAME, ADMIN_ADDRESS);
-        s_factory.registeringAdmin(ADMIN2_FIRST_NAME, ADMIN2_LAST_NAME, ADMIN2_ADDRESS);
-        vm.expectRevert(abi.encodeWithSelector(CondoGMFactory.CondomGMFactory__AdminListFull.selector, NOT_REGISTERED));
-        s_factory.registeringAdmin("firstName3", "lastName3", NOT_REGISTERED);
+        s_manager.registeringAdmin(ADMIN_FIRST_NAME, ADMIN_LAST_NAME, ADMIN_ADDRESS);
+        s_manager.registeringAdmin(ADMIN2_FIRST_NAME, ADMIN2_LAST_NAME, ADMIN2_ADDRESS);
+        vm.expectRevert(abi.encodeWithSelector(CondoGmManager.CondoGmManager__AdminListFull.selector, NOT_REGISTERED));
+        s_manager.registeringAdmin("firstName3", "lastName3", NOT_REGISTERED);
         vm.stopPrank();
     }
 
     function test_revert_registerAdmin_unauthorized() public {
         vm.prank(NOT_REGISTERED);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, NOT_REGISTERED));
-        s_factory.registeringAdmin(ADMIN_FIRST_NAME, ADMIN_LAST_NAME, ADMIN_ADDRESS);
+        s_manager.registeringAdmin(ADMIN_FIRST_NAME, ADMIN_LAST_NAME, ADMIN_ADDRESS);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -104,45 +104,43 @@ contract CondoGMFactoryTest is Test {
     //////////////////////////////////////////////////////////////*/
     function test_revert_registerCustomer_alreadyAdded() public {
         vm.startPrank(msg.sender);
-        s_factory.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
+        s_manager.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                CondoGMFactory.CondomGMFactory__CustomerAlreadyRegistered.selector, CUSTOMER1_ADDRESS
-            )
+            abi.encodeWithSelector(CondoGmManager.CondoGmManager__CustomerAlreadyRegistered.selector, CUSTOMER1_ADDRESS)
         );
-        s_factory.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
+        s_manager.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
         vm.stopPrank();
     }
 
     function test_revert_registerCustomer_zeroAddress() public {
         vm.startPrank(msg.sender);
-        vm.expectRevert(abi.encodeWithSelector(CondoGMFactory.CondomGMFactory__AddressCantBeZero.selector));
-        s_factory.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, address(0));
+        vm.expectRevert(abi.encodeWithSelector(CondoGmManager.CondoGmManager__AddressCantBeZero.selector));
+        s_manager.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, address(0));
         vm.stopPrank();
     }
 
     function test_revert_registerCustomer_emptyStrings() public {
         vm.startPrank(msg.sender);
-        vm.expectRevert(abi.encodeWithSelector(CondoGMFactory.CondomGMFactory__EmptyString.selector));
-        s_factory.registerCustomer(CUSTOMER1_FIRST_NAME, "", CUSTOMER1_ADDRESS);
+        vm.expectRevert(abi.encodeWithSelector(CondoGmManager.CondoGmManager__EmptyString.selector));
+        s_manager.registerCustomer(CUSTOMER1_FIRST_NAME, "", CUSTOMER1_ADDRESS);
         vm.stopPrank();
     }
 
     function test_revert_registerCustomer_unauthorized() public {
         vm.prank(NOT_REGISTERED);
-        vm.expectRevert(abi.encodeWithSelector(CondoGMFactory.CondomGMFactory__Unauthorized.selector, NOT_REGISTERED));
-        s_factory.registerCustomer(CUSTOMER1_FIRST_NAME, "", CUSTOMER1_ADDRESS);
+        vm.expectRevert(abi.encodeWithSelector(CondoGmManager.CondoGmManager__Unauthorized.selector, NOT_REGISTERED));
+        s_manager.registerCustomer(CUSTOMER1_FIRST_NAME, "", CUSTOMER1_ADDRESS);
     }
 
     function test_succeed_registerCustomer_asAdmin() public adminAdded {
         vm.prank(ADMIN_ADDRESS);
-        s_factory.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
+        s_manager.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
     }
 
     // function test_fuzz_registerCustomer(address fuzzedAddress) public {
     //     //     vm.startPrank(msg.sender);
-    //     //     s_factory.registerCustomer(fuzzedAddress);
-    //     //     CondoGMFactory.Customer memory voter = s_factory.getVoterInfo(fuzzedAddress);
+    //     //     s_manager.registerCustomer(fuzzedAddress);
+    //     //     CondoGmManager.Customer memory voter = s_manager.getVoterInfo(fuzzedAddress);
     //     //     assertEq(voter.isRegistered, true);
     //     //     vm.stopPrank();
     // }
@@ -152,8 +150,8 @@ contract CondoGMFactoryTest is Test {
     //////////////////////////////////////////////////////////////*/
     function test_succeeded_registerLot_completed() public {
         vm.startPrank(msg.sender);
-        s_factory.registerLot(LOT1_OFFICIAL_CODE, LOT1_SHARES);
-        s_factory.registerLot(LOT2_OFFICIAL_CODE, LOT2_SHARES);
+        s_manager.registerLot(LOT1_OFFICIAL_CODE, LOT1_SHARES);
+        s_manager.registerLot(LOT2_OFFICIAL_CODE, LOT2_SHARES);
         vm.stopPrank();
         // TODO lot 1 name and code are OK
         // assertEq()
@@ -161,49 +159,49 @@ contract CondoGMFactoryTest is Test {
 
     function test_revert_registerLot_isLocked() public {
         vm.startPrank(msg.sender);
-        s_factory.registerLot(LOT1_OFFICIAL_CODE, LOT1_SHARES);
-        s_factory.registerLot(LOT2_OFFICIAL_CODE, LOT2_SHARES);
+        s_manager.registerLot(LOT1_OFFICIAL_CODE, LOT1_SHARES);
+        s_manager.registerLot(LOT2_OFFICIAL_CODE, LOT2_SHARES);
         vm.expectRevert(
-            abi.encodeWithSelector(CondoGMFactory.CondomGMFactory__RegisteredLotIsLocked.selector, LOT3_OFFICIAL_CODE)
+            abi.encodeWithSelector(CondoGmManager.CondoGmManager__RegisteredLotIsLocked.selector, LOT3_OFFICIAL_CODE)
         );
-        s_factory.registerLot(LOT3_OFFICIAL_CODE, LOT3_SHARES);
+        s_manager.registerLot(LOT3_OFFICIAL_CODE, LOT3_SHARES);
 
         vm.stopPrank();
     }
 
     function test_revert_registerLot_lotAlreadyRegistered() public {
         vm.startPrank(msg.sender);
-        s_factory.registerLot(LOT1_OFFICIAL_CODE, LOT1_SHARES);
+        s_manager.registerLot(LOT1_OFFICIAL_CODE, LOT1_SHARES);
         vm.expectRevert(
-            abi.encodeWithSelector(CondoGMFactory.CondomGMFactory__LotAlreadyRegistered.selector, LOT1_OFFICIAL_CODE)
+            abi.encodeWithSelector(CondoGmManager.CondoGmManager__LotAlreadyRegistered.selector, LOT1_OFFICIAL_CODE)
         );
-        s_factory.registerLot(LOT1_OFFICIAL_CODE, LOT2_SHARES);
+        s_manager.registerLot(LOT1_OFFICIAL_CODE, LOT2_SHARES);
 
         vm.stopPrank();
     }
 
     function test_revert_registerLot_maxSharesOverReached() public {
         vm.startPrank(msg.sender);
-        s_factory.registerLot(LOT1_OFFICIAL_CODE, LOT1_SHARES);
+        s_manager.registerLot(LOT1_OFFICIAL_CODE, LOT1_SHARES);
         vm.expectRevert(
             abi.encodeWithSelector(
-                CondoGMFactory.CondomGMFactory__TotalSharesExceedsMaxLimit.selector, LOT3_OFFICIAL_CODE
+                CondoGmManager.CondoGmManager__TotalSharesExceedsMaxLimit.selector, LOT3_OFFICIAL_CODE
             )
         );
-        s_factory.registerLot(LOT3_OFFICIAL_CODE, LOT3_SHARES);
+        s_manager.registerLot(LOT3_OFFICIAL_CODE, LOT3_SHARES);
 
         vm.stopPrank();
     }
 
     function test_revert_registerLot_unauthorized() public {
         vm.prank(NOT_REGISTERED);
-        vm.expectRevert(abi.encodeWithSelector(CondoGMFactory.CondomGMFactory__Unauthorized.selector, NOT_REGISTERED));
-        s_factory.registerLot(LOT3_OFFICIAL_CODE, LOT3_SHARES);
+        vm.expectRevert(abi.encodeWithSelector(CondoGmManager.CondoGmManager__Unauthorized.selector, NOT_REGISTERED));
+        s_manager.registerLot(LOT3_OFFICIAL_CODE, LOT3_SHARES);
     }
 
     function test_succeed_registerLot_asAdmin() public adminAdded {
         vm.prank(ADMIN_ADDRESS);
-        s_factory.registerLot(LOT1_OFFICIAL_CODE, LOT1_SHARES);
+        s_manager.registerLot(LOT1_OFFICIAL_CODE, LOT1_SHARES);
         // TODO expect lot1 ok
     }
 
@@ -221,43 +219,43 @@ contract CondoGMFactoryTest is Test {
     // }
     function test_revert_linkCustomerToLot_unauthorized() public lotAndCustomerAdded {
         vm.prank(NOT_REGISTERED);
-        vm.expectRevert(abi.encodeWithSelector(CondoGMFactory.CondomGMFactory__Unauthorized.selector, NOT_REGISTERED));
-        s_factory.linkCustomerToLot(CUSTOMER1_ADDRESS, 1);
+        vm.expectRevert(abi.encodeWithSelector(CondoGmManager.CondoGmManager__Unauthorized.selector, NOT_REGISTERED));
+        s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, 1);
     }
 
     function test_revert_linkCustomerToLot_customerNotRegistered() public lotAndCustomerAdded {
         vm.prank(msg.sender);
         vm.expectRevert(
-            abi.encodeWithSelector(CondoGMFactory.CondomGMFactory__CustomerNotFound.selector, CUSTOMER2_ADDRESS)
+            abi.encodeWithSelector(CondoGmManager.CondoGmManager__CustomerNotFound.selector, CUSTOMER2_ADDRESS)
         );
-        s_factory.linkCustomerToLot(CUSTOMER2_ADDRESS, 1);
+        s_manager.linkCustomerToLot(CUSTOMER2_ADDRESS, 1);
     }
 
     function test_revert_linkCustomerToLot_lotIdNotFound() public lotAndCustomerAdded {
         vm.prank(msg.sender);
-        vm.expectRevert(abi.encodeWithSelector(CondoGMFactory.CondomGMFactory__LotNotFound.selector, 2));
-        s_factory.linkCustomerToLot(CUSTOMER1_ADDRESS, 2);
+        vm.expectRevert(abi.encodeWithSelector(CondoGmManager.CondoGmManager__LotNotFound.selector, 2));
+        s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, 2);
     }
 
     function test_revert_linkCustomerToLot_lotAlreadyHasOwner() public lotAndCustomerAdded {
         vm.startPrank(msg.sender);
-        s_factory.registerCustomer(CUSTOMER2_FIRST_NAME, CUSTOMER2_LAST_NAME, CUSTOMER2_ADDRESS);
-        s_factory.linkCustomerToLot(CUSTOMER1_ADDRESS, 1);
+        s_manager.registerCustomer(CUSTOMER2_FIRST_NAME, CUSTOMER2_LAST_NAME, CUSTOMER2_ADDRESS);
+        s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, 1);
         vm.expectRevert(
-            abi.encodeWithSelector(CondoGMFactory.CondomGMFactory__LotAlreadyHasOwner.selector, 1, CUSTOMER2_ADDRESS)
+            abi.encodeWithSelector(CondoGmManager.CondoGmManager__LotAlreadyHasOwner.selector, 1, CUSTOMER2_ADDRESS)
         );
-        s_factory.linkCustomerToLot(CUSTOMER2_ADDRESS, 1);
+        s_manager.linkCustomerToLot(CUSTOMER2_ADDRESS, 1);
         vm.stopPrank();
     }
 
     function test_succeed_linkCustomerToLot_asAdmin() public adminAdded lotAndCustomerAdded {
         vm.prank(ADMIN_ADDRESS);
-        s_factory.linkCustomerToLot(CUSTOMER1_ADDRESS, 1);
-        CondominiumLot memory detail = s_factory.getLotDetail(1);
-        assertEq(detail.ownerAddress, CUSTOMER1_ADDRESS);
+        s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, 1);
+        CondominiumLot memory detail = s_manager.getLotDetail(1);
+        assertEq(detail.customerAddress, CUSTOMER1_ADDRESS);
         assertEq(detail.shares, LOT1_SHARES);
         assertEq(detail.lotOfficalNumber, LOT1_OFFICIAL_CODE);
-        CondominiumLot[] memory lots = s_factory.getCustomerLots(CUSTOMER1_ADDRESS);
+        CondominiumLot[] memory lots = s_manager.getCustomerLots(CUSTOMER1_ADDRESS);
         assertEq(lots[0].lotOfficalNumber, LOT1_OFFICIAL_CODE);
     }
 }

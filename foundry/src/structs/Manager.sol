@@ -23,15 +23,15 @@ struct Admin {
 }
 
 struct CondominiumLot {
-    address ownerAddress;
+    address customerAddress;
     uint256 shares;
-    string lotOfficalNumber;
+    string lotOfficialNumber;
 }
 
 struct CondominiumLotView {
     address customerAddress;
     uint256 shares;
-    string lotInternalNumber;
+    string lotOfficalNumber;
     string lastName;
     string firstName;
 }

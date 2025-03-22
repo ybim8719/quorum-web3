@@ -7,16 +7,16 @@ import {
     Customer, CondominiumLot, GeneralMeeting, Admin, CustomerView, CondominiumLotView
 } from "./structs/Manager.sol";
 
-/// @title CondominiumGMFactory
+/// @title CondoGmManager
 /// @author Pascal Thao
 /// @dev pass in constructor the main information of the targeted condominium
 /// @notice Contract designed to handle state of a given condominium
-contract CondoGMFactory is Ownable {
+contract CondoGmManager is Ownable {
     /*//////////////////////////////////////////////////////////////
                             EVENTS
     //////////////////////////////////////////////////////////////*/
     event LotAdded(string indexed condoLotId);
-    event LotOwnerSet(uint256 indexed lotId, address owner);
+    event CustomerOfLotSet(uint256 indexed lotId, address customer);
     event CustomerCreated(address customerAddress, string firstName, string lastName);
     event AdminRegistered(address adminAddress, string firstName, string lastName);
     event LotsAllRegistered();
@@ -25,19 +25,19 @@ contract CondoGMFactory is Ownable {
     /*//////////////////////////////////////////////////////////////
                             ERRORS
     //////////////////////////////////////////////////////////////*/
-    error CondomGMFactory__Unauthorized(address unauthorizedVoter);
-    error CondomGMFactory__CustomerAlreadyRegistered(address customer);
-    error CondomGMFactory__EmptyString();
-    error CondomGMFactory__AddressCantBeZero();
-    error CondomGMFactory__LotAlreadyRegistered(string lotOfficialNumber);
-    error CondomGMFactory__TotalSharesExceedsMaxLimit(string lotOfficialNumber);
-    error CondomGMFactory__LotAlreadyHasOwner(uint256 lotId, address customerAddress);
-    error CondomGMFactory__CustomerNotFound(address customerAddress);
-    error CondomGMFactory__LotNotFound(uint256 lotId);
-    error CondomGMFactory__RegisteredLotIsLocked(string lotOfficialNumber);
-    error CondomGMFactory__AdminAlreadyAdded(address adminAddress);
-    error CondomGMFactory__AdminListFull(address adminAddress);
-    error CondomGMFactory__CantRevertAnotherERC20();
+    error CondoGmManager__Unauthorized(address unauthorizedVoter);
+    error CondoGmManager__CustomerAlreadyRegistered(address customer);
+    error CondoGmManager__EmptyString();
+    error CondoGmManager__AddressCantBeZero();
+    error CondoGmManager__LotAlreadyRegistered(string lotOfficialNumber);
+    error CondoGmManager__TotalSharesExceedsMaxLimit(string lotOfficialNumber);
+    error CondoGmManager__LotAlreadyHasOwner(uint256 lotId, address customerAddress);
+    error CondoGmManager__CustomerNotFound(address customerAddress);
+    error CondoGmManager__LotNotFound(uint256 lotId);
+    error CondoGmManager__RegisteredLotIsLocked(string lotOfficialNumber);
+    error CondoGmManager__AdminAlreadyAdded(address adminAddress);
+    error CondoGmManager__AdminListFull(address adminAddress);
+    error CondoGmManager__CantRevertAnotherERC20();
 
     uint256 private constant SHARES_LIMIT = 1000;
 
@@ -74,7 +74,7 @@ contract CondoGMFactory is Ownable {
                 }
             }
             if (isAdmin == false) {
-                revert CondomGMFactory__Unauthorized(_msgSender());
+                revert CondoGmManager__Unauthorized(_msgSender());
             }
         }
         _;
@@ -90,7 +90,7 @@ contract CondoGMFactory is Ownable {
                 }
             }
             if (isAdmin) {
-                revert CondomGMFactory__Unauthorized(_msgSender());
+                revert CondoGmManager__Unauthorized(_msgSender());
             }
         }
         _;
@@ -112,13 +112,13 @@ contract CondoGMFactory is Ownable {
         isAdminOrOwner
     {
         if (s_customersInfo[_customerAddress].isRegistered == true) {
-            revert CondomGMFactory__CustomerAlreadyRegistered(_customerAddress);
+            revert CondoGmManager__CustomerAlreadyRegistered(_customerAddress);
         }
         if (_customerAddress == address(0)) {
-            revert CondomGMFactory__AddressCantBeZero();
+            revert CondoGmManager__AddressCantBeZero();
         }
         if (bytes(_firstName).length == 0 || bytes(_lastName).length == 0) {
-            revert CondomGMFactory__EmptyString();
+            revert CondoGmManager__EmptyString();
         }
 
         s_customers.push(_customerAddress);
@@ -133,13 +133,13 @@ contract CondoGMFactory is Ownable {
     /// @notice : lot are the "parts" of the condominium
     function registerLot(string memory _lotOfficialNumber, uint256 _shares) external isAdminOrOwner {
         if (s_addingLotIsLocked) {
-            revert CondomGMFactory__RegisteredLotIsLocked(_lotOfficialNumber);
+            revert CondoGmManager__RegisteredLotIsLocked(_lotOfficialNumber);
         }
         if (s_lotsOfficialNumbers[_lotOfficialNumber]) {
-            revert CondomGMFactory__LotAlreadyRegistered(_lotOfficialNumber);
+            revert CondoGmManager__LotAlreadyRegistered(_lotOfficialNumber);
         }
         if (s_currentTotalShares + _shares > SHARES_LIMIT) {
-            revert CondomGMFactory__TotalSharesExceedsMaxLimit(_lotOfficialNumber);
+            revert CondoGmManager__TotalSharesExceedsMaxLimit(_lotOfficialNumber);
         }
 
         CondominiumLot storage newLot = s_condoLotsList[s_nextLotIndex];
@@ -157,24 +157,24 @@ contract CondoGMFactory is Ownable {
         }
     }
 
-    /// @notice : when a lot is added, it has to be linked to its owner. The owner can own multiple lots from the same condo.
+    /// @notice : when a lot is added, it has to be linked to its customer. The owner can own multiple lots from the same condo.
     function linkCustomerToLot(address _customerAddress, uint256 _lotId) external isAdminOrOwner {
         if (s_customersInfo[_customerAddress].isRegistered == false) {
-            revert CondomGMFactory__CustomerNotFound(_customerAddress);
+            revert CondoGmManager__CustomerNotFound(_customerAddress);
         }
         if (bytes(s_condoLotsList[_lotId].lotOfficalNumber).length == 0) {
             // lot not be found
-            revert CondomGMFactory__LotNotFound(_lotId);
+            revert CondoGmManager__LotNotFound(_lotId);
         }
-        if (s_condoLotsList[_lotId].ownerAddress != address(0)) {
-            revert CondomGMFactory__LotAlreadyHasOwner(_lotId, _customerAddress);
+        if (s_condoLotsList[_lotId].customerAddress != address(0)) {
+            revert CondoGmManager__LotAlreadyHasOwner(_lotId, _customerAddress);
         }
 
         // set customer address to lot
-        s_condoLotsList[_lotId].ownerAddress = _customerAddress;
+        s_condoLotsList[_lotId].customerAddress = _customerAddress;
         // set lot to customer
         s_customersInfo[_customerAddress].lotIds.push(_lotId);
-        emit LotOwnerSet(_lotId, _customerAddress);
+        emit CustomerOfLotSet(_lotId, _customerAddress);
     }
 
     /// @notice : admins are employees authorized to handle admin tasks
@@ -183,12 +183,12 @@ contract CondoGMFactory is Ownable {
         onlyOwner
     {
         if (s_adminList.length > i_maxAdminNb - 1) {
-            revert CondomGMFactory__AdminListFull(_adminAddress);
+            revert CondoGmManager__AdminListFull(_adminAddress);
         }
         if (s_adminList.length > 0) {
             for (uint256 i = 0; i < s_adminList.length; ++i) {
                 if (s_adminList[i].adminAddress == _adminAddress) {
-                    revert CondomGMFactory__AdminAlreadyAdded(_adminAddress);
+                    revert CondoGmManager__AdminAlreadyAdded(_adminAddress);
                 }
             }
         }
@@ -204,7 +204,7 @@ contract CondoGMFactory is Ownable {
     /// @dev add a new customer (owner) of
     function createGMSharesToken() external {
         if (s_deployedErc20 != address(0)) {
-            revert CondomGMFactory__CantRevertAnotherERC20();
+            revert CondoGmManager__CantRevertAnotherERC20();
         }
         // instantiate ERC20 with copro name, adress(this), no decimals, 1000 as max shares
 
@@ -219,15 +219,70 @@ contract CondoGMFactory is Ownable {
     // if gmId is open
     // if erc status is ok
     // and ERC20 rules
-    function convertSharesToToken(address customerAddress, uint256 lotId) external {}
+    function convertSharesToToken(uint256 lotId) external {
+        // select a given lot and transfer equivalent of shares to customerAddress
+
+        //
+    }
 
     // open and locked ERC20 transfert
     function setTokenStatus() external {}
 
     /*//////////////////////////////////////////////////////////////
-                            VIEW FUNCTIONS
+                        VIEW FUNCTIONS / CUSTOMERS
     //////////////////////////////////////////////////////////////*/
-    function getCustomers() external view returns (CustomerView[] memory) {}
+    function getCustomers() external view returns (CustomerView[] memory) {
+        CustomerView[] memory customersToReturn = new CustomerView[](s_customers.length);
+        if (s_customers.length > 0) {
+            for (uint256 i = 0; i < s_customers.length; ++i) {
+                Customer memory c = s_customersInfo[s_customers[i]];
+                CustomerView memory customer = new CustomerView({
+                    isRegistered: c.isRegistered,
+                    lastName: c.lastName,
+                    firstName: c.firstName,
+                    wallet: s_customers[i],
+                    lotIds: c.lotIds
+                });
+                customersToReturn[i] = customer;
+            }
+        }
+
+        return customersToReturn;
+    }
+
+    function getCustomersList() external view returns (address[] memory) {
+        return s_customers;
+    }
+
+    function getNbOfCustomers() external view returns (uint256) {
+        return s_customers.length;
+    }
+
+    function getCustomerDetail(address _customerAddress) external view returns (Customer memory) {
+        return s_customersInfo[_customerAddress];
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                        VIEW FUNCTIONS / LOTS
+    //////////////////////////////////////////////////////////////*/
+    function getLots() external view returns (CondominiumLotView[] memory) {
+        CondominiumLotView[] memory lots = new CondominiumLotView[](s_nextLotIndex);
+        if (s_nextLotIndex > 1) {
+            for (uint256 i = 1; i < s_nextLotIndex; ++i) {
+                Customer memory tempCustomer = s_customersInfo[s_condoLotsList[i].customerAddress];
+                CondominiumLotView memory tempLot = CondominiumLotView({
+                    shares: s_condoLotsList[i].shares,
+                    lotOfficiallNumber: s_condoLotsList[i].lotOfficiallNumber,
+                    firstName: tempCustomer.lastName,
+                    firstName: tempCustomer.firstName,
+                    customerAddress: s_condoLotsList[i].customerAddress
+                });
+                lots[i - 1] = tempLot;
+            }
+        }
+
+        return lots;
+    }
 
     function getCustomerLots(address _customerAddress) external view returns (CondominiumLot[] memory) {
         uint256[] memory lotIds = s_customersInfo[_customerAddress].lotIds;
@@ -244,38 +299,9 @@ contract CondoGMFactory is Ownable {
         }
     }
 
-    function getNbOfCustomers() external view returns (uint256) {
-        return s_customers.length;
-    }
-
-    function getLots() external view returns (CondominiumLotView[] memory) {
-        CondominiumLotView[] memory lots = new CondominiumLotView[](s_nextLotIndex);
-        for (uint256 i = 1; i < s_nextLotIndex; ++i) {
-            CondominiumLotView memory lot = CondominiumLotView({
-                shares: s_condoLotsList[i].customerAddress,
-                lotInternalNumber: s_condoLotsList[i].customerAddress,
-                lastName: s_condoLotsList[i].customerAddress,
-                firstName: s_condoLotsList[i].customerAddress,
-                customerAddress: s_condoLotsList[i].customerAddress
-            });
-        }
-    }
-
     function getLotDetail(uint256 _lotId) external view returns (CondominiumLot memory) {
         return s_condoLotsList[_lotId];
     }
-
-    function getCustomerDetail(address _customerAddress) external view returns (Customer memory) {
-        return s_customersInfo[_customerAddress];
-    }
-
-    /// @dev override Ownable owner() which is not protected
-    // function owner() public view override returns (address) {
-    //     if (_msgSender() != super.owner() && s_whiteList[_msgSender()].isRegistered == false) {
-    //         revert VotingOpti__StateNotReachable(_msgSender());
-    //     }
-    //     return super.owner();
-    // }
 
     // receive() external payable {
     //     emit LogDepositReceived(msg.sender);
