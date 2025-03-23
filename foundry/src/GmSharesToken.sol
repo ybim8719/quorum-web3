@@ -16,8 +16,8 @@ contract GMSharesToken is ERC20, Ownable {
     //////////////////////////////////////////////////////////////*/
     TokenWorkflowStatus s_currentStatus;
     uint256 s_sharesTokenized;
-    uint256 i_maxShares;
-    uint256 s_nbOfLots;
+    uint256 i_condoTotalShares;
+    uint256 s_nbOfTokenizedLots;
     address i_managerContract;
 
     /*//////////////////////////////////////////////////////////////
@@ -31,46 +31,50 @@ contract GMSharesToken is ERC20, Ownable {
     error GMSharesToken__ContractLocked(address account, uint256 amount);
     error GMSharesToken__Cant(address account, uint256 amount);
     error GMSharesToken__RecipientCantHaveTwoLots(address to, uint256 amount);
-    error GMSharesToken__InitialMintingDone(address to, uint256 amount);
+    error GMSharesToken__InitialMintingDone(uint256 amount);
     error GMSharesToken__InvalidMintingRecipient(address to, uint256 amount);
+    error GMSharesToken__InvalidInitialMintingAmount(uint256 amount);
+    error GMSharesToken__MintInitialAmountFirst(address to, uint256 amount);
 
     //the deployer is the owner of the contract
-    constructor(string memory _name, string memory _symbol, uint256 _maxShares, address _managerContract)
+    constructor(string memory _name, string memory _symbol, uint256 _condoTotalShares, address _managerContract)
         ERC20(_name, _symbol)
         Ownable(msg.sender)
     {
-        i_maxShares = _maxShares;
+        i_condoTotalShares = _condoTotalShares;
         i_managerContract = _managerContract;
     }
 
-    /// @dev initial minting can be applied once.
-    function initialMinting(address account, uint256 amount) external onlyOwner {
-        if (s_currentStatus == TokenWorkflowStatus.TokenLocked) {
-            revert GMSharesToken__ContractLocked(account, amount);
+    /// @notice initial minting can be applied once for the entire condo shares
+    function initialMinting(uint256 amount) external onlyOwner {
+        if (s_currentStatus == TokenWorkflowStatus.ContractLocked) {
+            revert GMSharesToken__ContractLocked(msg.sender, amount);
         }
 
         if (s_currentStatus == TokenWorkflowStatus.TransferingShares) {
-            revert GMSharesToken__InitialMintingDone(account, amount);
+            revert GMSharesToken__InitialMintingDone(amount);
         }
         // Intial minting needs amount to be equal to total nb of shares of the condo total
-        if (account != i_maxShares) {
-            revert GMSharesToken__ContractLocked(account, amount);
+        if (amount != i_condoTotalShares) {
+            revert GMSharesToken__InvalidInitialMintingAmount(amount);
         }
 
-        //initial minting is for owner balance only
-        if (account != owner()) {
-            revert GMSharesToken__InvalidMintingRecipient(account, amount);
-        }
         // min nb of tokens and transfer all to owner
-        _mint(account, amount);
+        _mint(msg.sender, amount);
         // open transfering share period
         s_currentStatus = TokenWorkflowStatus.TransferingShares;
     }
 
-    /// @dev overide parent transfert with control of max 1000 and is owner.
+    /// @dev override parent transfer with strict control related to business rules
     function transfer(address to, uint256 value) public override onlyOwner returns (bool) {
-        if (s_currentStatus == TokenWorkflowStatus.TokenLocked) {
+        if (value > i_condoTotalShares) {
+            // todo 1001 > 1000 caca
+        }
+        if (s_currentStatus == TokenWorkflowStatus.ContractLocked) {
             revert GMSharesToken__ContractLocked(to, value);
+        }
+        if (s_currentStatus == TokenWorkflowStatus.InitialMinting) {
+            revert GMSharesToken__MintInitialAmountFirst(to, value);
         }
         if (balanceOf(to) > 0) {
             revert GMSharesToken__RecipientCantHaveTwoLots(to, value);
@@ -80,7 +84,32 @@ contract GMSharesToken is ERC20, Ownable {
         bool response = super.transfer(to, value);
         if (response) {
             s_sharesTokenized += value;
-            ++s_nbOfLots;
+            ++s_nbOfTokenizedLots;
+            if (s_sharesTokenized == s_sharesTokenized && balanceOf(owner()) == 0) {
+                // reached 1000 shares tokenized, all initial Supply was transfered to customers addresses
+                s_currentStatus = TokenWorkflowStatus.ContractLocked;
+            }
         }
+
+        return response;
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                        VIEW
+    //////////////////////////////////////////////////////////////*/
+    function getCurrentStatus() external view returns (TokenWorkflowStatus) {
+        return s_currentStatus;
+    }
+
+    function getCondoTotalShares() external view returns (uint256) {
+        return i_condoTotalShares;
+    }
+
+    function getNbOfTokenizedLots() external view returns (uint256) {
+        return s_nbOfTokenizedLots;
+    }
+
+    function getSharesTokenized() external view returns (uint256) {
+        return s_sharesTokenized;
     }
 }

@@ -5,7 +5,7 @@ struct Customer {
     bool isRegistered;
     string lastName;
     string firstName;
-    uint256[] lotIds;
+    uint256 lotId;
 }
 
 struct CustomerView {
@@ -13,19 +13,14 @@ struct CustomerView {
     string lastName;
     string firstName;
     address wallet;
-    uint256[] lotIds;
-}
-
-struct Admin {
-    string lastName;
-    string firstName;
-    address adminAddress;
+    uint256 lotId;
 }
 
 struct Lot {
     address customerAddress;
     uint256 shares;
     string lotOfficialNumber;
+    bool isTokenized;
 }
 
 struct LotView {
@@ -34,6 +29,12 @@ struct LotView {
     string lotOfficialNumber;
     string lastName;
     string firstName;
+}
+
+struct Admin {
+    string lastName;
+    string firstName;
+    address adminAddress;
 }
 
 struct GeneralMeeting {

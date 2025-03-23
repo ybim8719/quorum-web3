@@ -1,18 +1,3 @@
-// Layout of Contract:
-// version
-// imports
-// errors
-// interfaces, libraries, contracts
-// Type declarations
-// State variables
-// Events
-// Modifiers
-// Functions
-
-// Layout of Functions:
-// constructor
-// receive function (if exists)
-// fallback function (if exists)
 // external
 // public
 // internal
@@ -25,23 +10,15 @@
 pragma solidity ^0.8.26;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {Customer, Lot, GeneralMeeting, Admin, CustomerView, LotView} from "./structs/Manager.sol";
+import {Customer, CustomerView, Lot, LotView, Admin} from "./structs/Manager.sol";
+import {GMSharesToken} from "./GmSharesToken.sol";
 
 /// @title CondoGmManager
 /// @author Pascal Thao
 /// @dev pass in constructor the main information of the targeted condominium
 /// @notice Contract designed to handle state of a given condominium
-contract CondoGmManager is Ownable {
-    /*//////////////////////////////////////////////////////////////
-                            EVENTS
-    //////////////////////////////////////////////////////////////*/
-    event LotAdded(string indexed condoLotId);
-    event CustomerOfLotSet(uint256 indexed lotId, address customer);
-    event CustomerCreated(address customerAddress, string firstName, string lastName);
-    event AdminRegistered(address adminAddress, string firstName, string lastName);
-    event LotsAllRegistered();
-    event ERC20Deployed(address tokenAddress);
 
+contract CondoGmManager is Ownable {
     /*//////////////////////////////////////////////////////////////
                             ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -58,9 +35,9 @@ contract CondoGmManager is Ownable {
     error CondoGmManager__AdminAlreadyAdded(address adminAddress);
     error CondoGmManager__AdminListFull(address adminAddress);
     error CondoGmManager__CantRevertAnotherERC20();
+    error CondoGmManager__CustomerHasAlreadyLot(address customer);
 
     uint256 private constant SHARES_LIMIT = 1000;
-
     string i_postalAddress;
     string i_description;
     string i_condoName;
@@ -74,12 +51,21 @@ contract CondoGmManager is Ownable {
     mapping(address customerAddress => Customer customer) private s_customersInfo;
     mapping(uint256 lotId => Lot lot) private s_lotsList;
     mapping(string lotOfficalNumber => bool isRegistered) private s_lotsOfficialNumbers;
-
     uint256 s_nbOfLots;
     uint256 s_currentTotalShares;
     uint256 s_nextLotIndex;
     bool s_addingLotIsLocked;
     address s_deployedErc20;
+
+    /*//////////////////////////////////////////////////////////////
+                            EVENTS
+    //////////////////////////////////////////////////////////////*/
+    event LotAdded(string indexed condoLotId);
+    event CustomerOfLotSet(uint256 indexed lotId, address customer);
+    event CustomerCreated(address customerAddress, string firstName, string lastName);
+    event AdminRegistered(address adminAddress, string firstName, string lastName);
+    event LotsAllRegistered();
+    event ERC20Deployed(address tokenAddress);
 
     /*//////////////////////////////////////////////////////////////
                             MODIFIERS
@@ -125,6 +111,15 @@ contract CondoGmManager is Ownable {
         i_condoName = _name;
         i_maxAdminNb = _maxAdminNb;
     }
+
+    // receive() external payable {
+    //     emit LogDepositReceived(msg.sender);
+    // }
+
+    // fallback() external payable {
+    //     require(msg.data.length == 0);
+    //     emit LogDepositReceived(msg.sender);
+    // }
 
     /// @dev add a new customer (owner) of
     function registerCustomer(string calldata _firstName, string calldata _lastName, address _customerAddress)
@@ -182,8 +177,11 @@ contract CondoGmManager is Ownable {
         if (s_customersInfo[_customerAddress].isRegistered == false) {
             revert CondoGmManager__CustomerNotFound(_customerAddress);
         }
+        if (s_customersInfo[_customerAddress].lotId > 0) {
+            revert CondoGmManager__CustomerHasAlreadyLot(_customerAddress);
+        }
         if (bytes(s_lotsList[_lotId].lotOfficialNumber).length == 0) {
-            // lot not be found
+            // lot not found
             revert CondoGmManager__LotNotFound(_lotId);
         }
         if (s_lotsList[_lotId].customerAddress != address(0)) {
@@ -193,7 +191,7 @@ contract CondoGmManager is Ownable {
         // set customer address to lot
         s_lotsList[_lotId].customerAddress = _customerAddress;
         // set lot to customer
-        s_customersInfo[_customerAddress].lotIds.push(_lotId);
+        s_customersInfo[_customerAddress].lotId = _lotId;
         emit CustomerOfLotSet(_lotId, _customerAddress);
     }
 
@@ -221,27 +219,29 @@ contract CondoGmManager is Ownable {
         emit AdminRegistered(_adminAddress, _firstName, _lastName);
     }
 
-    /// @dev add a new customer (owner) of
-    function createGMSharesToken() external {
+    /// @notice deploy ERC20 and mint 1000 token for owner balance.
+    function createGMSharesToken() external onlyOwner {
         if (s_deployedErc20 != address(0)) {
             revert CondoGmManager__CantRevertAnotherERC20();
         }
         // instantiate ERC20 with copro name, adress(this), no decimals, 1000 as max shares
-
-        // save address of token
-
-        // set to 1000 token and no decimals
+        GMSharesToken deployed = new GMSharesToken("token ", "sumbol", SHARES_LIMIT, address(this));
+        s_deployedErc20 = address(deployed);
+        // mint 1000 token and no decimals
+        deployed.initialMinting(SHARES_LIMIT);
     }
 
     function createGMBallot() external {}
 
-    // if is not really owner
     // if gmId is linked to the owner lot and condo
     // if gmId is open
     // if erc status is ok
     // and ERC20 rules
-    function convertSharesToToken(uint256 lotId) external {
+    function convertSharesToToken(uint256 _lotId) external {
         // select a given lot and transfer equivalent of shares to customerAddress
+        if (s_lotsList[_lotId].customerAddress == address(0)) {
+            revert CondoGmManager__LotIsNotLinkToCustomer(_lotId);
+        }
 
         // set the verify attribute to true if ok
     }
@@ -329,12 +329,7 @@ contract CondoGmManager is Ownable {
         return s_lotsList[_lotId];
     }
 
-    // receive() external payable {
-    //     emit LogDepositReceived(msg.sender);
-    // }
-
-    // fallback() external payable {
-    //     require(msg.data.length == 0);
-    //     emit LogDepositReceived(msg.sender);
-    // }
+    function getErc20Address() external view returns (address) {
+        return s_deployedErc20;
+    }
 }
