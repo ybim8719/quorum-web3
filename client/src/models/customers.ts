@@ -2,9 +2,9 @@ export type CustomerProfile = {
     address: string;
     firstName: number;
     lastName: number;
-    lotIds?: {
+    lot: {
         id: number;
         lotOfficialCode: string;
         shares: number;
-    }[];
+    };
 };

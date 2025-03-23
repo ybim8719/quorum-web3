@@ -15,9 +15,11 @@ const CustomersList = ({ customers }: ICustomerProfileProps) => {
                     <td className="">{c.lastName}</td>
                     <td className="">{c.address}</td>
                     <td className="">
-                        {c?.lotIds?.map((l, id) => {
-                            return <span key={id}>ID = {l.id}/ CODE = {l.lotOfficialCode} / SHARE = {l.shares}</span>
-                        })}
+                        {
+                            c?.lot ?
+                                <span >ID = {c.lot.id}/ CODE = {c.lot.lotOfficialCode} / SHARE = {c.lot.shares}</span> :
+                                <span>RIEN </span>
+                        }
                     </td>
                 </tr>
             );
@@ -42,7 +44,7 @@ const CustomersList = ({ customers }: ICustomerProfileProps) => {
                         <th className="">FirstName</th>
                         <th className="">LastName</th>
                         <th className="">Address</th>
-                        <th className="">Lots Id</th>
+                        <th className="">Lot</th>
                     </tr>
                 </thead>
                 <tbody>{tableBody}</tbody>

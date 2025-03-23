@@ -8,6 +8,9 @@ function Layout() {
                 <nav>
                     <ul>
                         <li><ConnectButton /></li>
+                        <li>HOME</li>
+                        <li>ERC20</li>
+                        <li>General Meeting</li>
                     </ul>
                 </nav>
             </header>

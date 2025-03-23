@@ -5,17 +5,17 @@ import { CustomerProfile } from "../../../models/customers";
 
 interface ILinkCustomerToLotInputProps {
     lot: Lot | undefined;
-    customers: CustomerProfile[]
+    freeCustomers: CustomerProfile[]
     onCreateLink: (customerAddress: string, lotId: number) => void;
 }
 
 const LinkCustomerToLotInput = ({
     lot,
-    customers,
+    freeCustomers,
     onCreateLink,
 }: ILinkCustomerToLotInputProps) => {
     const [selectedCustomer, setSelectedCustomer] = useState<string>("");
-    if (customers.length === 0) {
+    if (freeCustomers.length === 0) {
         return <p>No Customers found</p>;
     }
 
@@ -39,7 +39,7 @@ const LinkCustomerToLotInput = ({
                         onChange={(e) => setSelectedCustomer(e.target.value)}
                     >
                         <option value="" disabled selected>Select a proposal</option>
-                        {customers.map((c) => {
+                        {freeCustomers.map((c) => {
                             return (
                                 <option value={c.address} key={`customer-${c.address}`}>
                                     {c.firstName} {c.lastName}

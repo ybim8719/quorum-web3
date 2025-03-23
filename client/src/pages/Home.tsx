@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { useAddCustomer, useAddLot, useLinkCustomerToLot } from "../hooks/useWriteActions.ts";
 import { useWalletQueries } from "../hooks/useWalletQueries";
@@ -13,11 +13,14 @@ import { Modal } from "../components/UI/Modal";
 
 import { Lot } from "../models/Lots";
 import { CustomerProfile } from "../models/customers";
+import { UserContext } from "../context/userContext.tsx";
 
 
 function Home() {
     const { address: connectedAccount } = useAccount();
     const { useFetchedCustomers, useFetchedLots } = useWalletQueries();
+    const userCtx = useContext(UserContext);
+
     // read hooks 
     const { data: fetchedCustomersData, error: fetchedCustomersError, refetch: refetchCustomers } = useFetchedCustomers;
     const { data: fetchedLotsData, error: fetchedLotsError, refetch: refetchLots } = useFetchedLots;
@@ -30,9 +33,11 @@ function Home() {
     const [lots, setLots] = useState<Lot[]>([]);
     // modal & errors
     const [modalInfoText, setModalInfoText] = useState<string | null>(null);
+    const [openCreateErc20Modal, setOpenCreateErc20Modal] = useState<bool>(false);
     const [lotIdBeingLinked, setLotIdBeingLinked] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
 
     // add customer tx triggers refetch of customers list
     useEffect(() => {
@@ -50,6 +55,7 @@ function Home() {
         refreshLotsInfo();
     }, [addLotIsConfirmed]);
 
+    // set a ref to see changes
     useEffect(() => {
         const refreshAll = async () => {
             await refetchLots();
@@ -64,6 +70,7 @@ function Home() {
         if (fetchedCustomersData !== undefined && fetchedCustomersData !== null) {
             console.log(typeof fetchedCustomersData, "fetchedCustomersData");
             // setCustomers(fetchedCustomersData.toString());
+            // adapt to js format
         }
     }, [fetchedCustomersData, fetchedLotsData]);
 
@@ -93,7 +100,7 @@ function Home() {
     };
 
     //  set an id of lot to be linked to customer
-    const openLinkModal = (lotId: number) => {
+    const openLinkLotModal = (lotId: number) => {
         setLotIdBeingLinked(lotId);
     }
 
@@ -111,6 +118,34 @@ function Home() {
         setIsLoading(false);
     }
 
+    // triger link customer to lot tx
+    const createERC20Handler = async () => {
+        try {
+            setIsLoading(true);
+            // tx create token
+            setIsLoading(false);
+            setModalInfoText("Transaction confirmed. Check ERC20 page");
+        } catch (err) {
+            setError("OUPS");
+        }
+        setIsLoading(false);
+    }
+
+    let showCreateERC20Btn = false;
+    if (!userCtx.erc20Address) {
+        if (lots.length > 0) {
+            let lotsCompleted = true;
+            lots.forEach((l) => {
+                if (l.customer === undefined || l.customer.address !== "") {
+                    lotsCompleted = false;
+                }
+            })
+            if (lotsCompleted) {
+                showCreateERC20Btn = true;
+            }
+        }
+    }
+
 
     return (
         <>
@@ -118,9 +153,16 @@ function Home() {
                 <i className="nes-icon coin is-large"></i>
                 <u>Lots and Customers</u>
             </h1>
+            {showCreateERC20Btn && <button onClick={() => setOpenCreateErc20Modal(true)}>CREATE ERC20</button>}
+            {openCreateErc20Modal &&
+                <Modal onClose={() => setOpenCreateErc20Modal(false)}>
+                    <div>Créer un ERC unique.</div>
+                    <button onClick={createERC20Handler}>GO</button>
+                </Modal>
+            }
             <CustomersList customers={customers} />
             <AddCustomerInput onValidate={addCustomerHandler} />
-            <LotsList lots={lots} onLink={openLinkModal} />
+            <LotsList lots={lots} onLink={openLinkLotModal} />
             <AddLotInput onValidate={addLotHandler} />
 
             {error && (
@@ -134,7 +176,7 @@ function Home() {
             {isLoading && <LoadingIndicator />}
             {lotIdBeingLinked && (
                 <Modal onClose={() => setLotIdBeingLinked(null)}>
-                    <LinkCustomerToLotInput onCreateLink={linkCustomerToLotHandler} customers={customers} lot={lots.find((l) => l.id === lotIdBeingLinked)} />
+                    <LinkCustomerToLotInput onCreateLink={linkCustomerToLotHandler} freeCustomers={customers.filter((c) => c.lot === null)} lot={lots.find((l) => l.id === lotIdBeingLinked)} />
                 </Modal>
             )}
         </>
