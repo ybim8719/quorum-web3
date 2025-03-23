@@ -3,6 +3,6 @@ pragma solidity ^0.8.28;
 
 enum TokenWorkflowStatus {
     InitialMinting,
-    RegisteringShares,
+    TransferingShares,
     TokenLocked
 }

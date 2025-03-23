@@ -1,3 +1,25 @@
+// Layout of Contract:
+// version
+// imports
+// errors
+// interfaces, libraries, contracts
+// Type declarations
+// State variables
+// Events
+// Modifiers
+// Functions
+
+// Layout of Functions:
+// constructor
+// receive function (if exists)
+// fallback function (if exists)
+// external
+// public
+// internal
+// private
+// internal & private view & pure functions
+// external & public view & pure functions
+
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.26;
@@ -239,7 +261,7 @@ contract CondoGmManager is Ownable {
         if (s_customers.length > 0) {
             for (uint256 i = 0; i < s_customers.length; ++i) {
                 Customer memory c = s_customersInfo[s_customers[i]];
-                CustomerView memory customer = new CustomerView({
+                CustomerView memory customer = CustomerView({
                     isRegistered: c.isRegistered,
                     lastName: c.lastName,
                     firstName: c.firstName,
@@ -269,22 +291,23 @@ contract CondoGmManager is Ownable {
                         VIEW FUNCTIONS / LOTS
     //////////////////////////////////////////////////////////////*/
     function getLots() external view returns (LotView[] memory) {
-        LotView[] memory lots = new LotView[](s_nextLotIndex);
+        LotView[] memory lotsToReturn = new LotView[](s_nextLotIndex);
         if (s_nextLotIndex > 1) {
+            // lot ids start at 1
             for (uint256 i = 1; i < s_nextLotIndex; ++i) {
                 Customer memory tempCustomer = s_customersInfo[s_lotsList[i].customerAddress];
                 LotView memory tempLot = LotView({
                     shares: s_lotsList[i].shares,
-                    lotOfficiallNumber: s_lotsList[i].lotOfficiallNumber,
-                    firstName: tempCustomer.lastName,
+                    lotOfficialNumber: s_lotsList[i].lotOfficialNumber,
+                    lastName: tempCustomer.lastName,
                     firstName: tempCustomer.firstName,
                     customerAddress: s_lotsList[i].customerAddress
                 });
-                lots[i - 1] = tempLot;
+                lotsToReturn[i - 1] = tempLot;
             }
         }
 
-        return lots;
+        return lotsToReturn;
     }
 
     function getCustomerLots(address _customerAddress) external view returns (Lot[] memory) {

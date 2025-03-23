@@ -31,7 +31,7 @@ struct Lot {
 struct LotView {
     address customerAddress;
     uint256 shares;
-    string lotOfficalNumber;
+    string lotOfficialNumber;
     string lastName;
     string firstName;
 }
