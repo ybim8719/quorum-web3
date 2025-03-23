@@ -66,11 +66,11 @@ function Home() {
 
     // 
     useEffect(() => {
-
         if (fetchedCustomersData !== undefined && fetchedCustomersData !== null) {
             console.log(typeof fetchedCustomersData, "fetchedCustomersData");
             // setCustomers(fetchedCustomersData.toString());
             // adapt to js format
+            // adapt tokenized property of lot
         }
     }, [fetchedCustomersData, fetchedLotsData]);
 

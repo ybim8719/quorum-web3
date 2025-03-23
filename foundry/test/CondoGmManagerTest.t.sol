@@ -5,7 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {CondoGmManager} from "../src/CondoGmManager.sol";
 import {DeployCondoGmManager} from "../script/DeployCondoGmManager.s.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {Customer, CondominiumLot, GeneralMeeting, Admin} from "../src/structs/Manager.sol";
+import {Customer, Lot, GeneralMeeting, Admin} from "../src/structs/Manager.sol";
 
 contract CondoGmManagerTest is Test {
     // PROUT
@@ -251,11 +251,11 @@ contract CondoGmManagerTest is Test {
     function test_succeed_linkCustomerToLot_asAdmin() public adminAdded lotAndCustomerAdded {
         vm.prank(ADMIN_ADDRESS);
         s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, 1);
-        CondominiumLot memory detail = s_manager.getLotDetail(1);
+        Lot memory detail = s_manager.getLotDetail(1);
         assertEq(detail.customerAddress, CUSTOMER1_ADDRESS);
         assertEq(detail.shares, LOT1_SHARES);
         assertEq(detail.lotOfficalNumber, LOT1_OFFICIAL_CODE);
-        CondominiumLot[] memory lots = s_manager.getCustomerLots(CUSTOMER1_ADDRESS);
+        Lot[] memory lots = s_manager.getCustomerLots(CUSTOMER1_ADDRESS);
         assertEq(lots[0].lotOfficalNumber, LOT1_OFFICIAL_CODE);
     }
 }

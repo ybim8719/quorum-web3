@@ -22,13 +22,13 @@ struct Admin {
     address adminAddress;
 }
 
-struct CondominiumLot {
+struct Lot {
     address customerAddress;
     uint256 shares;
     string lotOfficialNumber;
 }
 
-struct CondominiumLotView {
+struct LotView {
     address customerAddress;
     uint256 shares;
     string lotOfficalNumber;
@@ -45,11 +45,6 @@ struct GeneralMeeting {
 /*//////////////////////////////////////////////////////////////
                             ENUMS
 //////////////////////////////////////////////////////////////*/
-enum TokenWorkflowStatus {
-    RegisteringShares,
-    ApprovalsOpen,
-    TokenLocked
-}
 
 enum GMWorkflowStatus {
     Beginning,
