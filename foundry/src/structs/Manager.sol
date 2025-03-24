@@ -29,12 +29,7 @@ struct LotView {
     string lotOfficialNumber;
     string lastName;
     string firstName;
-}
-
-struct Admin {
-    string lastName;
-    string firstName;
-    address adminAddress;
+    bool isTokenized;
 }
 
 struct GeneralMeeting {

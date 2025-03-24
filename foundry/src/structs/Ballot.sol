@@ -2,11 +2,11 @@
 pragma solidity ^0.8.28;
 
 enum BallotWorkflowStatus {
-    BallotInitialized,
-    MeetingStarted,
+    BallotReady,
+    AttendeesSigning,
     ProposalVotingOpen,
     ProposalVotingClosed,
-    ProposalVotingCountingDone,
+    ProposalVotingCountDone,
     MeetingEnded,
     ContractLocked
 }
@@ -18,18 +18,20 @@ enum VotingResult {
     Draw
 }
 
-struct Vote {
+struct Voter {
+    bool tokenVerified;
     address customer;
     string firstName;
     string lastName;
+    uint256 shares;
 }
 
 struct Proposal {
     string content;
-    address authorFirstName;
-    address authorLastName;
     uint256 quorum;
     VotingResult votingResult;
-    Vote[] approvals;
-    Vote[] refusals;
+    address[] approvals;
+    uint256 approvalShares;
+    address[] refusals;
+    uint256 refusalShares;
 }
