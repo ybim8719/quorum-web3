@@ -16,8 +16,7 @@ import {GMSharesToken} from "./GmSharesToken.sol";
 /// @title CondoGmManager
 /// @author Pascal Thao
 /// @dev pass in constructor the main information of the targeted condominium
-/// @notice Contract designed to handle state of a given condominium
-
+/// @notice Contract designed to handle and managed states of a condo and deploy two child contracts TOKEN and BALLOT
 contract CondoGmManager is Ownable {
     /*//////////////////////////////////////////////////////////////
                             ERRORS
@@ -36,7 +35,11 @@ contract CondoGmManager is Ownable {
     error CondoGmManager__AdminListFull(address adminAddress);
     error CondoGmManager__CantRevertAnotherERC20();
     error CondoGmManager__CustomerHasAlreadyLot(address customer);
+    error CondoGmManager__LotHasNoCustomer(uint256 lotId);
 
+    /*//////////////////////////////////////////////////////////////
+                         Immutables and constants
+    //////////////////////////////////////////////////////////////*/
     uint256 private constant SHARES_LIMIT = 1000;
     string i_postalAddress;
     string i_description;
@@ -56,6 +59,7 @@ contract CondoGmManager is Ownable {
     uint256 s_nextLotIndex;
     bool s_addingLotIsLocked;
     address s_deployedErc20;
+    address s_deployedBallot;
 
     /*//////////////////////////////////////////////////////////////
                             EVENTS
@@ -145,7 +149,7 @@ contract CondoGmManager is Ownable {
         emit CustomerCreated(_customerAddress, _firstName, _lastName);
     }
 
-    /// @notice : lot are the "parts" of the condominium
+    /// @notice : lots are the "parts" of the condominium
     function registerLot(string memory _lotOfficialNumber, uint256 _shares) external isAdminOrOwner {
         if (s_addingLotIsLocked) {
             revert CondoGmManager__RegisteredLotIsLocked(_lotOfficialNumber);
@@ -160,12 +164,13 @@ contract CondoGmManager is Ownable {
         Lot storage newLot = s_lotsList[s_nextLotIndex];
         newLot.shares = _shares;
         newLot.lotOfficialNumber = _lotOfficialNumber;
+        // update global states
         s_currentTotalShares += _shares;
         ++s_nbOfLots;
         ++s_nextLotIndex;
         s_lotsOfficialNumbers[_lotOfficialNumber] = true;
         emit LotAdded(_lotOfficialNumber);
-        // 1000 shares reached, stop all new lots
+        // MAX shares reached = stop all new lots
         if (s_currentTotalShares == SHARES_LIMIT) {
             s_addingLotIsLocked = true;
             emit LotsAllRegistered();
@@ -240,7 +245,7 @@ contract CondoGmManager is Ownable {
     function convertSharesToToken(uint256 _lotId) external {
         // select a given lot and transfer equivalent of shares to customerAddress
         if (s_lotsList[_lotId].customerAddress == address(0)) {
-            revert CondoGmManager__LotIsNotLinkToCustomer(_lotId);
+            revert CondoGmManager__LotHasNoCustomer(_lotId);
         }
 
         // set the verify attribute to true if ok
@@ -329,7 +334,12 @@ contract CondoGmManager is Ownable {
         return s_lotsList[_lotId];
     }
 
+    /*//////////////////////////////////////////////////////////////
+                        CHILD CONTRACTS
+    //////////////////////////////////////////////////////////////*/
     function getErc20Address() external view returns (address) {
         return s_deployedErc20;
     }
+
+    // getBallotAddress()
 }

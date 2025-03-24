@@ -5,11 +5,9 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {TokenWorkflowStatus} from "./structs/Token.sol";
 
-/**
- * @notice ERC20 based token designed to store 1000 shares from a condo
- * @dev inherits OZ erc20 and ownable
- *
- */
+/// @notice ERC20 based token designed to store 1000 shares from a condo for a given generalMeeting
+/// Approvals are deactivated for now
+/// @dev inherits OpenZep erc20 and ownable
 contract GMSharesToken is ERC20, Ownable {
     /*//////////////////////////////////////////////////////////////
                         STATES
@@ -36,7 +34,7 @@ contract GMSharesToken is ERC20, Ownable {
     error GMSharesToken__InvalidInitialMintingAmount(uint256 amount);
     error GMSharesToken__MintInitialAmountFirst(address to, uint256 amount);
 
-    //the deployer is the owner of the contract
+    /// @notice the deployer is the owner of the contract
     constructor(string memory _name, string memory _symbol, uint256 _condoTotalShares, address _managerContract)
         ERC20(_name, _symbol)
         Ownable(msg.sender)
@@ -95,7 +93,7 @@ contract GMSharesToken is ERC20, Ownable {
     }
 
     /*//////////////////////////////////////////////////////////////
-                        VIEW
+                        VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
     function getCurrentStatus() external view returns (TokenWorkflowStatus) {
         return s_currentStatus;
