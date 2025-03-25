@@ -3,14 +3,14 @@ import { ANVIL_FACTORY_ADRESS } from "../../constants/deployed";
 import { useReadContract } from "wagmi";
 import { useAccount } from "wagmi";
 
-export const useWalletQueries = () => {
+export const useReadManagerQueries = () => {
   const { address } = useAccount();
 
   const useFetchedLots = useReadContract(
     {
       address: ANVIL_FACTORY_ADRESS,
       abi: abi,
-      functionName: "getCustomerLots",
+      functionName: "getLotsInfos",
       account: address,
       query: {
         enabled: true,
@@ -22,7 +22,7 @@ export const useWalletQueries = () => {
     {
       address: ANVIL_FACTORY_ADRESS,
       abi: abi,
-      functionName: "getCustomers",
+      functionName: "getCustomersInfos",
       account: address,
       query: {
         enabled: true,
@@ -46,7 +46,7 @@ export const useWalletQueries = () => {
     {
       address: ANVIL_FACTORY_ADRESS,
       abi: abi,
-      functionName: "customersList",
+      functionName: "getCustomersList",
       account: address,
       query: {
         enabled: true,
@@ -54,10 +54,26 @@ export const useWalletQueries = () => {
     }
   );
 
+  const useFetchedERC20Adress = useReadContract(
+    {
+      address: ANVIL_FACTORY_ADRESS,
+      abi: abi,
+      functionName: "getErc20Address",
+      account: address,
+      query: {
+        enabled: true,
+      }
+    }
+  );
+
+  //    getCustomerDetail(address _customerAddress)
+  //    getLotById()
+
   return {
     useFetchedLots,
     useFetchedCustomers,
     useFetchedOwner,
     useFetchedCustomersAddresses,
+    useFetchedERC20Adress
   };
 };

@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { useAddCustomer, useAddLot, useLinkCustomerToLot } from "../hooks/useWriteActions.ts";
-import { useWalletQueries } from "../hooks/useWalletQueries";
+import { useReadManagerQueries } from "../hooks/useReadManagerQueries.ts";
 import AddCustomerInput from "../components/shared/Customers/AddCustomerInput";
 import CustomersList from "../components/shared/Customers/CustomersList";
 import LotsList from "../components/shared/Lots/LotsList";
@@ -14,13 +14,13 @@ import { Modal } from "../components/UI/Modal";
 import { Lot } from "../models/Lots";
 import { CustomerProfile } from "../models/customers";
 import { UserContext } from "../context/userContext.tsx";
+import { ADMIN_ROLE, CUSTOMER_ROLE } from "../models/roles.ts";
 
 
 function Home() {
-    const { address: connectedAccount } = useAccount();
-    const { useFetchedCustomers, useFetchedLots } = useWalletQueries();
+    const { address: connectedAccount, isConnected } = useAccount();
+    const { useFetchedCustomers, useFetchedLots } = useReadManagerQueries();
     const userCtx = useContext(UserContext);
-
     // read hooks 
     const { data: fetchedCustomersData, error: fetchedCustomersError, refetch: refetchCustomers } = useFetchedCustomers;
     const { data: fetchedLotsData, error: fetchedLotsError, refetch: refetchLots } = useFetchedLots;
@@ -33,11 +33,18 @@ function Home() {
     const [lots, setLots] = useState<Lot[]>([]);
     // modal & errors
     const [modalInfoText, setModalInfoText] = useState<string | null>(null);
-    const [openCreateErc20Modal, setOpenCreateErc20Modal] = useState<bool>(false);
+    const [openCreateErc20Modal, setOpenCreateErc20Modal] = useState<boolean>(false);
     const [lotIdBeingLinked, setLotIdBeingLinked] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    if (!isConnected) {
+        return <h1>Please connect your wallet first</h1>
+    }
+
+    if (connectedAccount as string !== ADMIN_ROLE && connectedAccount as string !== CUSTOMER_ROLE) {
+        return <h1>Unauthorized</h1>
+    }
 
     // add customer tx triggers refetch of customers list
     useEffect(() => {

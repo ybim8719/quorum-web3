@@ -16,11 +16,6 @@ export const abi = [
         "name": "_postalAddress",
         "type": "string",
         "internalType": "string"
-      },
-      {
-        "name": "_maxAdminNb",
-        "type": "uint256",
-        "internalType": "uint256"
       }
     ],
     "stateMutability": "nonpayable"
@@ -30,12 +25,7 @@ export const abi = [
     "name": "convertSharesToToken",
     "inputs": [
       {
-        "name": "customer",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "gmId",
+        "name": "_lotId",
         "type": "uint256",
         "internalType": "uint256"
       }
@@ -45,7 +35,7 @@ export const abi = [
   },
   {
     "type": "function",
-    "name": "createGM",
+    "name": "createGMBallot",
     "inputs": [],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -59,7 +49,7 @@ export const abi = [
   },
   {
     "type": "function",
-    "name": "getCustomerLots",
+    "name": "getCustomerDetail",
     "inputs": [
       {
         "name": "_customerAddress",
@@ -70,11 +60,118 @@ export const abi = [
     "outputs": [
       {
         "name": "",
-        "type": "tuple[]",
-        "internalType": "struct CondominiumLot[]",
+        "type": "tuple",
+        "internalType": "struct Customer",
         "components": [
           {
-            "name": "ownerAddress",
+            "name": "isRegistered",
+            "type": "bool",
+            "internalType": "bool"
+          },
+          {
+            "name": "lastName",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "firstName",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "lotId",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getCustomersInfos",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple[]",
+        "internalType": "struct CustomerView[]",
+        "components": [
+          {
+            "name": "isRegistered",
+            "type": "bool",
+            "internalType": "bool"
+          },
+          {
+            "name": "lastName",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "firstName",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "wallet",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "lotId",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getCustomersList",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address[]",
+        "internalType": "address[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getErc20Address",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getLotById",
+    "inputs": [
+      {
+        "name": "_lotId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct Lot",
+        "components": [
+          {
+            "name": "customerAddress",
             "type": "address",
             "internalType": "address"
           },
@@ -84,9 +181,14 @@ export const abi = [
             "internalType": "uint256"
           },
           {
-            "name": "lotOfficalNumber",
+            "name": "lotOfficialNumber",
             "type": "string",
             "internalType": "string"
+          },
+          {
+            "name": "isTokenized",
+            "type": "bool",
+            "internalType": "bool"
           }
         ]
       }
@@ -95,7 +197,52 @@ export const abi = [
   },
   {
     "type": "function",
-    "name": "getCustomersLength",
+    "name": "getLotsInfos",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple[]",
+        "internalType": "struct LotView[]",
+        "components": [
+          {
+            "name": "customerAddress",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "shares",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "lotOfficialNumber",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "lastName",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "firstName",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "isTokenized",
+            "type": "bool",
+            "internalType": "bool"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getNbOfCustomers",
     "inputs": [],
     "outputs": [
       {
@@ -108,36 +255,13 @@ export const abi = [
   },
   {
     "type": "function",
-    "name": "getLotDetail",
-    "inputs": [
-      {
-        "name": "_lotId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
+    "name": "getNbOfLots",
+    "inputs": [],
     "outputs": [
       {
         "name": "",
-        "type": "tuple",
-        "internalType": "struct CondominiumLot",
-        "components": [
-          {
-            "name": "ownerAddress",
-            "type": "address",
-            "internalType": "address"
-          },
-          {
-            "name": "shares",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "lotOfficalNumber",
-            "type": "string",
-            "internalType": "string"
-          }
-        ]
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "stateMutability": "view"
@@ -157,13 +281,6 @@ export const abi = [
         "internalType": "uint256"
       }
     ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "modifyStatus",
-    "inputs": [],
     "outputs": [],
     "stateMutability": "nonpayable"
   },
@@ -223,29 +340,6 @@ export const abi = [
   },
   {
     "type": "function",
-    "name": "registeringAdmin",
-    "inputs": [
-      {
-        "name": "_firstName",
-        "type": "string",
-        "internalType": "string"
-      },
-      {
-        "name": "_lastName",
-        "type": "string",
-        "internalType": "string"
-      },
-      {
-        "name": "_adminAddress",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
     "name": "renounceOwnership",
     "inputs": [],
     "outputs": [],
@@ -265,29 +359,17 @@ export const abi = [
     "stateMutability": "nonpayable"
   },
   {
-    "type": "event",
-    "name": "AdminRegistered",
+    "type": "function",
+    "name": "verifyLotIsTokenized",
     "inputs": [
       {
-        "name": "adminAddress",
-        "type": "address",
-        "indexed": false,
-        "internalType": "address"
-      },
-      {
-        "name": "firstName",
-        "type": "string",
-        "indexed": false,
-        "internalType": "string"
-      },
-      {
-        "name": "lastName",
-        "type": "string",
-        "indexed": false,
-        "internalType": "string"
+        "name": "lotId",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
-    "anonymous": false
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
     "type": "event",
@@ -316,20 +398,7 @@ export const abi = [
   },
   {
     "type": "event",
-    "name": "LotAdded",
-    "inputs": [
-      {
-        "name": "condoLotId",
-        "type": "string",
-        "indexed": true,
-        "internalType": "string"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
-    "name": "LotOwnerSet",
+    "name": "CustomerOfLotSet",
     "inputs": [
       {
         "name": "lotId",
@@ -338,7 +407,7 @@ export const abi = [
         "internalType": "uint256"
       },
       {
-        "name": "owner",
+        "name": "customer",
         "type": "address",
         "indexed": false,
         "internalType": "address"
@@ -348,8 +417,28 @@ export const abi = [
   },
   {
     "type": "event",
-    "name": "LotsAllRegistered",
-    "inputs": [],
+    "name": "ERC20Deployed",
+    "inputs": [
+      {
+        "name": "tokenAddress",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "LotAdded",
+    "inputs": [
+      {
+        "name": "condoLotId",
+        "type": "string",
+        "indexed": true,
+        "internalType": "string"
+      }
+    ],
     "anonymous": false
   },
   {
@@ -372,35 +461,24 @@ export const abi = [
     "anonymous": false
   },
   {
+    "type": "event",
+    "name": "TotalSharesReachedMaxLimit",
+    "inputs": [],
+    "anonymous": false
+  },
+  {
     "type": "error",
-    "name": "CondomGMFactory__AddressCantBeZero",
+    "name": "CondoGmManager__AddressCantBeZero",
     "inputs": []
   },
   {
     "type": "error",
-    "name": "CondomGMFactory__AdminAlreadyAdded",
-    "inputs": [
-      {
-        "name": "adminAddress",
-        "type": "address",
-        "internalType": "address"
-      }
-    ]
+    "name": "CondoGmManager__CantDeployAnotherERC20",
+    "inputs": []
   },
   {
     "type": "error",
-    "name": "CondomGMFactory__AdminListFull",
-    "inputs": [
-      {
-        "name": "adminAddress",
-        "type": "address",
-        "internalType": "address"
-      }
-    ]
-  },
-  {
-    "type": "error",
-    "name": "CondomGMFactory__CustomerAlreadyRegistered",
+    "name": "CondoGmManager__CustomerAlreadyRegistered",
     "inputs": [
       {
         "name": "customer",
@@ -411,7 +489,18 @@ export const abi = [
   },
   {
     "type": "error",
-    "name": "CondomGMFactory__CustomerNotFound",
+    "name": "CondoGmManager__CustomerHasAlreadyLot",
+    "inputs": [
+      {
+        "name": "customer",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "CondoGmManager__CustomerNotFound",
     "inputs": [
       {
         "name": "customerAddress",
@@ -422,12 +511,12 @@ export const abi = [
   },
   {
     "type": "error",
-    "name": "CondomGMFactory__EmptyString",
+    "name": "CondoGmManager__EmptyString",
     "inputs": []
   },
   {
     "type": "error",
-    "name": "CondomGMFactory__LotAlreadyHasOwner",
+    "name": "CondoGmManager__LotAlreadyHasOwner",
     "inputs": [
       {
         "name": "lotId",
@@ -443,7 +532,7 @@ export const abi = [
   },
   {
     "type": "error",
-    "name": "CondomGMFactory__LotAlreadyRegistered",
+    "name": "CondoGmManager__LotAlreadyRegistered",
     "inputs": [
       {
         "name": "lotOfficialNumber",
@@ -454,7 +543,7 @@ export const abi = [
   },
   {
     "type": "error",
-    "name": "CondomGMFactory__LotNotFound",
+    "name": "CondoGmManager__LotHasNoCustomer",
     "inputs": [
       {
         "name": "lotId",
@@ -465,7 +554,18 @@ export const abi = [
   },
   {
     "type": "error",
-    "name": "CondomGMFactory__RegisteredLotIsLocked",
+    "name": "CondoGmManager__LotNotFound",
+    "inputs": [
+      {
+        "name": "lotId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "CondoGmManager__RegisteredLotIsLocked",
     "inputs": [
       {
         "name": "lotOfficialNumber",
@@ -476,7 +576,7 @@ export const abi = [
   },
   {
     "type": "error",
-    "name": "CondomGMFactory__TotalSharesExceedsMaxLimit",
+    "name": "CondoGmManager__TotalSharesExceedsMaxLimit",
     "inputs": [
       {
         "name": "lotOfficialNumber",
@@ -487,7 +587,7 @@ export const abi = [
   },
   {
     "type": "error",
-    "name": "CondomGMFactory__Unauthorized",
+    "name": "CondoGmManager__Unauthorized",
     "inputs": [
       {
         "name": "unauthorizedVoter",

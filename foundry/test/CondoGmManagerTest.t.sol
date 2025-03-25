@@ -42,7 +42,7 @@ contract CondoGmManagerTest is Test {
 
     function setUp() public {
         DeployCondoGmManager script = new DeployCondoGmManager();
-        s_manager = script.run(NAME, DESCRIPTION, POSTAL_ADDRESS);
+        s_manager = script.run();
     }
 
     modifier lotAndCustomerAdded() {
