@@ -12,7 +12,7 @@ struct CustomerView {
     bool isRegistered;
     string lastName;
     string firstName;
-    address wallet;
+    address customerAddress;
     uint256 lotId;
 }
 
@@ -24,6 +24,7 @@ struct Lot {
 }
 
 struct LotView {
+    uint256 id;
     address customerAddress;
     uint256 shares;
     string lotOfficialNumber;

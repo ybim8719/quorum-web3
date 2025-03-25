@@ -1,11 +1,13 @@
 export type Lot = {
     id: number;
-    lotOfficialCode: string;
+    lotOfficialNumber: string;
     shares: number;
-    tokenized: boolean;
+    isTokenized: boolean;
     customer?: {
         address: string;
         firstName: string;
         lastName: string;
     }
 };
+
+export const MAX_SHARES_LIMIT = 1000;

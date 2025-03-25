@@ -14,13 +14,7 @@ const CustomersList = ({ customers }: ICustomerProfileProps) => {
                     <td className="">{c.firstName}</td>
                     <td className="">{c.lastName}</td>
                     <td className="">{c.address}</td>
-                    <td className="">
-                        {
-                            c?.lot ?
-                                <span >ID = {c.lot.id}/ CODE = {c.lot.lotOfficialCode} / SHARE = {c.lot.shares}</span> :
-                                <span>RIEN </span>
-                        }
-                    </td>
+                    <td className="">{c?.lotOfficialCode ? c.lotOfficialCode : "N/A"}</td>
                 </tr>
             );
         });
@@ -37,14 +31,14 @@ const CustomersList = ({ customers }: ICustomerProfileProps) => {
             <h3>
                 <u>Registered Customers ({customers.length})</u>
             </h3>
-            <i className="nes-ash"></i>
+            <i className="nes-pokeball"></i>
             <table>
                 <thead>
                     <tr>
                         <th className="">FirstName</th>
                         <th className="">LastName</th>
                         <th className="">Address</th>
-                        <th className="">Lot</th>
+                        <th className="">LotOfficialCode</th>
                     </tr>
                 </thead>
                 <tbody>{tableBody}</tbody>

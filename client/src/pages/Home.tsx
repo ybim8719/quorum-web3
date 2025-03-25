@@ -2,6 +2,11 @@ import { useContext, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { useAddCustomer, useAddLot, useLinkCustomerToLot } from "../hooks/useWriteActions.ts";
 import { useReadManagerQueries } from "../hooks/useReadManagerQueries.ts";
+import { UserContext } from "../context/userContext.tsx";
+import { Lot, MAX_SHARES_LIMIT } from "../models/lots";
+import { CustomerProfile } from "../models/customers";
+import { OWNER_ROLE, CUSTOMER_ROLE } from "../models/roles.ts";
+import { isNullAddress } from "../models/ERC20.ts";
 import AddCustomerInput from "../components/shared/Customers/AddCustomerInput";
 import CustomersList from "../components/shared/Customers/CustomersList";
 import LotsList from "../components/shared/Lots/LotsList";
@@ -11,10 +16,6 @@ import LoadingIndicator from "../components/UI/LoadingIndicator";
 import ErrorBlock from "../components/UI/ErrorBlock";
 import { Modal } from "../components/UI/Modal";
 
-import { Lot } from "../models/Lots";
-import { CustomerProfile } from "../models/customers";
-import { UserContext } from "../context/userContext.tsx";
-import { OWNER_ROLE, CUSTOMER_ROLE } from "../models/roles.ts";
 
 
 function Home() {
@@ -38,6 +39,71 @@ function Home() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    useEffect(() => {
+        if (fetchedCustomersData !== undefined && fetchedCustomersData !== null && fetchedLotsData !== undefined && fetchedLotsData !== null) {
+            if (Array.isArray(fetchedCustomersData) && fetchedCustomersData.length > 0) {
+                const formatedCustomers = fetchedCustomersData.map((fetchedCustomer) => {
+                    let formatedCustomer: CustomerProfile = {
+                        address: fetchedCustomer.customerAddress,
+                        firstName: fetchedCustomer.firstName,
+                        lastName: fetchedCustomer.lastName,
+                    }
+                    if (fetchedCustomer.lotOfficialCode !== "") {
+                        formatedCustomer.lotOfficialCode = fetchedCustomer.lotOfficialCode
+                    }
+                    return formatedCustomer;
+                })
+                setCustomers(formatedCustomers);
+            }
+            if (Array.isArray(fetchedLotsData) && fetchedLotsData.length > 0) {
+                const formatedLots = fetchedLotsData.map((lot) => {
+                    let formatedLot: Lot = {
+                        id: Number(lot.id),
+                        shares: Number(lot.shares),
+                        isTokenized: lot.isTokenized,
+                        lotOfficialNumber: lot.lotOfficialNumber
+                    }
+                    if (isNullAddress(lot.customerAddress) === false) {
+                        formatedLot.customer = {
+                            address: lot.customerAddress,
+                            firstName: lot.firstName,
+                            lastName: lot.lastName,
+                        }
+                    }
+                    return formatedLot;
+                })
+                setLots(formatedLots);
+            }
+        }
+    }, [fetchedCustomersData, fetchedLotsData]);
+
+
+    // add customer tx triggers refetch of customers list
+    useEffect(() => {
+        const refreshCustomersInfo = async () => {
+            await refetchCustomers();
+        };
+        refreshCustomersInfo();
+    }, [addCustomerIsConfirmed]);
+
+    // // add customer tx triggers refetch of lots list
+    useEffect(() => {
+        const refreshLotsInfo = async () => {
+            await refetchLots();
+        };
+        refreshLotsInfo();
+    }, [addLotIsConfirmed]);
+
+    // // set a ref to see changes
+    useEffect(() => {
+        const refreshAll = async () => {
+            await refetchLots();
+            await refetchCustomers();
+        };
+        refreshAll();
+    }, [linkCustomerToLotIsConfirmed]);
+
+
     if (!isConnected) {
         return <h1>Please connect your wallet first</h1>
     }
@@ -46,49 +112,15 @@ function Home() {
         return <h1>Unauthorized</h1>
     }
 
-    // add customer tx triggers refetch of customers list
-    // useEffect(() => {
-    //     const refreshCustomersInfo = async () => {
-    //         await refetchCustomers();
-    //     };
-    //     refreshCustomersInfo();
-    // }, [addCustomerIsConfirmed]);
-
-    // // add customer tx triggers refetch of lots list
-    // useEffect(() => {
-    //     const refreshLotsInfo = async () => {
-    //         await refetchLots();
-    //     };
-    //     refreshLotsInfo();
-    // }, [addLotIsConfirmed]);
-
-    // // set a ref to see changes
-    // useEffect(() => {
-    //     const refreshAll = async () => {
-    //         await refetchLots();
-    //         await refetchCustomers();
-    //     };
-    //     refreshAll();
-    // }, [linkCustomerToLotIsConfirmed]);
-
-    // 
-    // useEffect(() => {
-    //     if (fetchedCustomersData !== undefined && fetchedCustomersData !== null) {
-    //         console.log(typeof fetchedCustomersData, "fetchedCustomersData");
-    //         // setCustomers(fetchedCustomersData.toString());
-    //         // adapt to js format
-    //         // adapt tokenized property of lot
-    //     }
-    // }, [fetchedCustomersData, fetchedLotsData]);
-
     // triger add customer tx
     const addCustomerHandler = async (firstName: string, lastName: string, customerAddress: string) => {
         try {
             setIsLoading(true);
-            addCustomerWrite(firstName, lastName, customerAddress, connectedAccount);
+            await addCustomerWrite(firstName, lastName, customerAddress, connectedAccount);
             setIsLoading(false);
+            setModalInfoText("Transaction confirmed");
         } catch (err) {
-            setError("OUPS");
+            setError("Transaction failed");
         }
         setIsLoading(false);
     };
@@ -97,11 +129,11 @@ function Home() {
     const addLotHandler = async (officialCode: string, shares: number) => {
         try {
             setIsLoading(true);
-            addLotWrite(officialCode, shares, connectedAccount);
+            await addLotWrite(officialCode, shares, connectedAccount);
             setIsLoading(false);
             setModalInfoText("Transaction confirmed");
         } catch (err) {
-            setError("OUPS");
+            setError("Transaction failed");
         }
         setIsLoading(false);
     };
@@ -115,12 +147,12 @@ function Home() {
     const linkCustomerToLotHandler = async (customerAddress: string, lotId: number) => {
         try {
             setIsLoading(true);
-            linkCustomerToLotWrite(customerAddress, lotId, connectedAccount);
+            await linkCustomerToLotWrite(customerAddress, lotId, connectedAccount);
             setIsLoading(false);
             setLotIdBeingLinked(null);
             setModalInfoText("Transaction confirmed");
         } catch (err) {
-            setError("OUPS");
+            setError("Transaction failed");
         }
         setIsLoading(false);
     }
@@ -153,6 +185,10 @@ function Home() {
         }
     }
 
+    const totalLotsShares = MAX_SHARES_LIMIT - lots.reduce(
+        (accumulator, currentValue) => accumulator + currentValue.shares,
+        0,
+    );
 
     return (
         <>
@@ -172,9 +208,9 @@ function Home() {
             <hr />
             <AddCustomerInput onValidate={addCustomerHandler} />
             <hr />
-            <LotsList lots={lots} onLink={openLinkLotModal} />
+            <LotsList totalLotsShares={totalLotsShares} lots={lots} onLink={openLinkLotModal} />
             <hr />
-            <AddLotInput onValidate={addLotHandler} />
+            <AddLotInput onValidate={addLotHandler} remainingSharesToGrant={MAX_SHARES_LIMIT - totalLotsShares} />
             {error && (
                 <Modal onClose={() => setError(null)}>
                     <ErrorBlock title="OUPS" message={error} />

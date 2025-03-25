@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Lot } from "../../../models/Lots";
+import { Lot } from "../../../models/lots";
 import { CustomerProfile } from "../../../models/customers";
 
 

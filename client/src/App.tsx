@@ -3,11 +3,12 @@ import { useContext, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router";
 import { useAccount } from "wagmi";
 import { UserContext } from "./context/userContext";
+import { useReadManagerQueries } from "./hooks/useReadManagerQueries";
+import { OWNER_ROLE, CUSTOMER_ROLE } from "./models/roles";
+import { adressZero } from "./models/ERC20";
+import ERC20 from "./pages/ERC20";
 import Home from "./pages/Home";
 import Layout from "./components/UI/Layout";
-import { useReadManagerQueries } from "./hooks/useReadManagerQueries";
-import { OWNER_ROLE, CUSTOMER_ROLE, ADMIN_ROLE } from "./models/roles";
-import ERC20 from "./pages/ERC20";
 
 
 function App() {
@@ -20,7 +21,6 @@ function App() {
   const { data: fetchedERC20Data, refetch: refetchERC20 } = useFetchedERC20Adress;
 
   useEffect(() => {
-    console.log("in useeffect")
     if (
       fetchedOwnerData !== undefined &&
       fetchedOwnerData !== null &&
@@ -28,24 +28,27 @@ function App() {
       fetchedCustomersAddressesData !== null &&
       connectedAccount
     ) {
-      console.log(fetchedOwnerData, "fetchedOwnerData")
-      console.log(fetchedCustomersAddressesData, "fetchedCustomersAddressesData")
+      // owner and customers addresses are mandatory to set the role 
       userCtx.setCustomersAddresses(fetchedCustomersAddressesData as string[]);
       userCtx.setOwner(fetchedOwnerData.toString());
       if (connectedAccount === fetchedOwnerData.toString()) {
-        console.log('is admin')
         userCtx.setRole(OWNER_ROLE);
-      }
-      else if (userCtx.customersAddresses.includes(connectedAccount as string)) {
+      } else if (userCtx.customersAddresses.includes(connectedAccount as string)) {
         userCtx.setRole(CUSTOMER_ROLE);
       }
     }
+  }, [connectedAccount, fetchedOwnerData, fetchedCustomersAddressesData]);
 
-    if (fetchedERC20Data !== undefined && fetchedERC20Data !== null) {
-      console.log(fetchedERC20Data, "fetchedERC20Data")
+  useEffect(() => {
+    if (
+      fetchedERC20Data !== undefined &&
+      fetchedERC20Data !== null &&
+      fetchedERC20Data !== adressZero
+    ) {
       userCtx.setErc20Address(fetchedERC20Data.toString());
     }
-  }, [connectedAccount, fetchedOwnerData, fetchedCustomersAddressesData, fetchedERC20Data]);
+  }, [fetchedERC20Data]);
+
 
   const routes = <>
     <Route path="/" element={<Home />} />
@@ -55,7 +58,6 @@ function App() {
 
 
   return (
-
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>

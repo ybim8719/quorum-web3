@@ -63,7 +63,6 @@ contract CondoGmManager is Ownable {
     /*//////////////////////////////////////////////////////////////
                             MODIFIERS
     //////////////////////////////////////////////////////////////*/
-
     /// @notice is owner or customer
     modifier hasAccess() {
         if (s_customersInfo[_msgSender()].isRegistered == false && _msgSender() != owner()) {
@@ -217,7 +216,7 @@ contract CondoGmManager is Ownable {
                     isRegistered: c.isRegistered,
                     lastName: c.lastName,
                     firstName: c.firstName,
-                    wallet: s_customers[i],
+                    customerAddress: s_customers[i],
                     lotId: c.lotId
                 });
                 customersToReturn[i] = customer;
@@ -243,20 +242,22 @@ contract CondoGmManager is Ownable {
                         VIEW FUNCTIONS / LOTS
     //////////////////////////////////////////////////////////////*/
     function getLotsInfos() external view returns (LotView[] memory) {
-        LotView[] memory lotsToReturn = new LotView[](s_nextLotIndex);
+        // lots id start at 1. If s_nextLotIndex = 1 then array will zero size, then empty
+        LotView[] memory lotsToReturn = new LotView[](s_nextLotIndex - 1);
         if (s_nextLotIndex > 1) {
             // lot ids start at 1
-            for (uint256 i = 1; i < s_nextLotIndex; ++i) {
-                Customer memory tempCustomer = s_customersInfo[s_lotsList[i].customerAddress];
+            for (uint256 id = 1; id < s_nextLotIndex; ++id) {
+                Customer memory tempCustomer = s_customersInfo[s_lotsList[id].customerAddress];
                 LotView memory tempLot = LotView({
-                    shares: s_lotsList[i].shares,
-                    lotOfficialNumber: s_lotsList[i].lotOfficialNumber,
+                    id: id,
+                    shares: s_lotsList[id].shares,
+                    lotOfficialNumber: s_lotsList[id].lotOfficialNumber,
                     lastName: tempCustomer.lastName,
                     firstName: tempCustomer.firstName,
-                    customerAddress: s_lotsList[i].customerAddress,
-                    isTokenized: s_lotsList[i].isTokenized
+                    customerAddress: s_lotsList[id].customerAddress,
+                    isTokenized: s_lotsList[id].isTokenized
                 });
-                lotsToReturn[i - 1] = tempLot;
+                lotsToReturn[id - 1] = tempLot;
             }
         }
 

@@ -1,6 +1,6 @@
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { ANVIL_FACTORY_ADRESS } from "../../constants/deployed";
-import { abi } from "../../constants/abi";
+import { manager_abi } from "../../constants/deployed";
 
 export const useAddCustomer = () => {
     const { data: hash, error, writeContract } = useWriteContract();
@@ -10,7 +10,7 @@ export const useAddCustomer = () => {
         if (account) {
             writeContract({
                 address: ANVIL_FACTORY_ADRESS,
-                abi: abi,
+                abi: manager_abi,
                 functionName: "registerCustomer",
                 args: [firstName, lastName, customerAddress],
                 account: account as `0x${string}` // Type assertion
@@ -29,7 +29,7 @@ export const useAddLot = () => {
         if (account) {
             writeContract({
                 address: ANVIL_FACTORY_ADRESS,
-                abi: abi,
+                abi: manager_abi,
                 functionName: "registerLot",
                 args: [officialCode, shares],
                 account: account as `0x${string}` // Type assertion
@@ -48,8 +48,8 @@ export const useLinkCustomerToLot = () => {
     const linkCustomerToLotWrite = (customerAddress: string, lotId: number, account: string | undefined) => {
         if (account) {
             writeContract({
-                address: ANVIL_VOTINGOPTI_ADRESS,
-                abi: abi,
+                address: ANVIL_FACTORY_ADRESS,
+                abi: manager_abi,
                 functionName: "linkCustomerToLot",
                 args: [customerAddress, lotId],
                 account: account as `0x${string}` // Type assertion

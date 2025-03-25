@@ -1,23 +1,22 @@
-import { Lot } from "../../../models/Lots";
-
+import { Lot } from "../../../models/lots";
 
 interface ILotProps {
     lots: Lot[];
+    totalLotsShares: number;
     onLink: (id: number) => void;
 }
 
-const LotsList = ({ lots, onLink }: ILotProps) => {
+const LotsList = ({ lots, totalLotsShares, onLink }: ILotProps) => {
     let tableBody;
     if (lots.length > 0) {
         tableBody = lots.map((l, i) => {
             return (
                 <tr key={`customer-${i}`}>
-                    <td className="">{l.lotOfficialCode} (id: {l.id})</td>
+                    <td className="">{l.lotOfficialNumber} (id: {l.id})</td>
                     <td className="">{l.shares}</td>
-                    <td className="">{l.customer && l.customer.firstName}</td>
-                    <td className="">{l.customer && l.customer.lastName}</td>
-                    <td className="">{l.customer && l.customer.address}</td>
-                    <td>{l.customer == undefined && <button onClick={() => onLink(l.id)}>Link a customer</button>}</td>
+                    <td className="">{l.customer ? l.customer.firstName : "N/A"} {l.customer ? l.customer.lastName : "N/A"}</td>
+                    <td className="">{l.customer ? l.customer.address : "N/A"}</td>
+                    <td>{l.customer == undefined && <button onClick={() => onLink(l.id)}>Link to a customer</button>}</td>
                 </tr>
             );
         });
@@ -32,17 +31,19 @@ const LotsList = ({ lots, onLink }: ILotProps) => {
     return (
         <div className="">
             <h3>
-                <u>Registered Lots ({lots.length})</u>
+                <u>Registered Lots ({lots.length}) </u>
+                <u>Total Shares: {totalLotsShares} </u>
+
             </h3>
             <i className="nes-ash"></i>
+            <p>Total shares</p>
             <table>
                 <thead>
                     <tr>
-                        <th className="">lotOfficialCode</th>
-                        <th className="">shares</th>
-                        <th className="">owner firstName</th>
-                        <th className="">owner lastName</th>
-                        <th className="">owner address </th>
+                        <th className="">lot Official Code</th>
+                        <th className="">Shares</th>
+                        <th className="">Owner</th>
+                        <th className="">Owner address </th>
                     </tr>
                 </thead>
                 <tbody>{tableBody}</tbody>

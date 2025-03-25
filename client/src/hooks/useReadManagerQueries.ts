@@ -1,5 +1,4 @@
-import { abi } from "../../constants/abi";
-import { ANVIL_FACTORY_ADRESS } from "../../constants/deployed";
+import { ANVIL_FACTORY_ADRESS, manager_abi } from "../../constants/deployed";
 import { useReadContract } from "wagmi";
 import { useAccount } from "wagmi";
 
@@ -9,7 +8,7 @@ export const useReadManagerQueries = () => {
   const useFetchedLots = useReadContract(
     {
       address: ANVIL_FACTORY_ADRESS,
-      abi: abi,
+      abi: manager_abi,
       functionName: "getLotsInfos",
       account: address,
       query: {
@@ -21,7 +20,7 @@ export const useReadManagerQueries = () => {
   const useFetchedCustomers = useReadContract(
     {
       address: ANVIL_FACTORY_ADRESS,
-      abi: abi,
+      abi: manager_abi,
       functionName: "getCustomersInfos",
       account: address,
       query: {
@@ -33,7 +32,7 @@ export const useReadManagerQueries = () => {
   const useFetchedOwner = useReadContract(
     {
       address: ANVIL_FACTORY_ADRESS,
-      abi: abi,
+      abi: manager_abi,
       functionName: "owner",
       account: address,
       query: {
@@ -45,7 +44,7 @@ export const useReadManagerQueries = () => {
   const useFetchedCustomersAddresses = useReadContract(
     {
       address: ANVIL_FACTORY_ADRESS,
-      abi: abi,
+      abi: manager_abi,
       functionName: "getCustomersList",
       account: address,
       query: {
@@ -57,7 +56,7 @@ export const useReadManagerQueries = () => {
   const useFetchedERC20Adress = useReadContract(
     {
       address: ANVIL_FACTORY_ADRESS,
-      abi: abi,
+      abi: manager_abi,
       functionName: "getErc20Address",
       account: address,
       query: {
