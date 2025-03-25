@@ -14,7 +14,7 @@ import { Modal } from "../components/UI/Modal";
 import { Lot } from "../models/Lots";
 import { CustomerProfile } from "../models/customers";
 import { UserContext } from "../context/userContext.tsx";
-import { ADMIN_ROLE, CUSTOMER_ROLE } from "../models/roles.ts";
+import { OWNER_ROLE, CUSTOMER_ROLE } from "../models/roles.ts";
 
 
 function Home() {
@@ -42,44 +42,44 @@ function Home() {
         return <h1>Please connect your wallet first</h1>
     }
 
-    if (connectedAccount as string !== ADMIN_ROLE && connectedAccount as string !== CUSTOMER_ROLE) {
+    if (userCtx.role !== OWNER_ROLE && userCtx.role !== CUSTOMER_ROLE) {
         return <h1>Unauthorized</h1>
     }
 
     // add customer tx triggers refetch of customers list
-    useEffect(() => {
-        const refreshCustomersInfo = async () => {
-            await refetchCustomers();
-        };
-        refreshCustomersInfo();
-    }, [addCustomerIsConfirmed]);
+    // useEffect(() => {
+    //     const refreshCustomersInfo = async () => {
+    //         await refetchCustomers();
+    //     };
+    //     refreshCustomersInfo();
+    // }, [addCustomerIsConfirmed]);
 
-    // add customer tx triggers refetch of lots list
-    useEffect(() => {
-        const refreshLotsInfo = async () => {
-            await refetchLots();
-        };
-        refreshLotsInfo();
-    }, [addLotIsConfirmed]);
+    // // add customer tx triggers refetch of lots list
+    // useEffect(() => {
+    //     const refreshLotsInfo = async () => {
+    //         await refetchLots();
+    //     };
+    //     refreshLotsInfo();
+    // }, [addLotIsConfirmed]);
 
-    // set a ref to see changes
-    useEffect(() => {
-        const refreshAll = async () => {
-            await refetchLots();
-            await refetchCustomers();
-        };
-        refreshAll();
-    }, [linkCustomerToLotIsConfirmed]);
+    // // set a ref to see changes
+    // useEffect(() => {
+    //     const refreshAll = async () => {
+    //         await refetchLots();
+    //         await refetchCustomers();
+    //     };
+    //     refreshAll();
+    // }, [linkCustomerToLotIsConfirmed]);
 
     // 
-    useEffect(() => {
-        if (fetchedCustomersData !== undefined && fetchedCustomersData !== null) {
-            console.log(typeof fetchedCustomersData, "fetchedCustomersData");
-            // setCustomers(fetchedCustomersData.toString());
-            // adapt to js format
-            // adapt tokenized property of lot
-        }
-    }, [fetchedCustomersData, fetchedLotsData]);
+    // useEffect(() => {
+    //     if (fetchedCustomersData !== undefined && fetchedCustomersData !== null) {
+    //         console.log(typeof fetchedCustomersData, "fetchedCustomersData");
+    //         // setCustomers(fetchedCustomersData.toString());
+    //         // adapt to js format
+    //         // adapt tokenized property of lot
+    //     }
+    // }, [fetchedCustomersData, fetchedLotsData]);
 
     // triger add customer tx
     const addCustomerHandler = async (firstName: string, lastName: string, customerAddress: string) => {
@@ -167,11 +167,14 @@ function Home() {
                     <button onClick={createERC20Handler}>GO</button>
                 </Modal>
             }
+            <hr />
             <CustomersList customers={customers} />
+            <hr />
             <AddCustomerInput onValidate={addCustomerHandler} />
+            <hr />
             <LotsList lots={lots} onLink={openLinkLotModal} />
+            <hr />
             <AddLotInput onValidate={addLotHandler} />
-
             {error && (
                 <Modal onClose={() => setError(null)}>
                     <ErrorBlock title="OUPS" message={error} />

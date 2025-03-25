@@ -15,37 +15,37 @@ function App() {
   const userCtx = useContext(UserContext);
   // read MANAGER Contract queries
   const { useFetchedOwner, useFetchedCustomersAddresses, useFetchedERC20Adress } = useReadManagerQueries();
-  const { data: fetchedOwnerData, error: fetchedOwnerError, refetch: refetchOwner } = useFetchedOwner;
-  const { data: fetchedCustomersAddressesData, error: fetchedCustomersAddressesError, refetch: refetchCustomersAddresses } = useFetchedCustomersAddresses;
-  const { data: fetchedERC20Data, error: fetchedERC20Error, refetch: refetchERC20 } = useFetchedERC20Adress;
+  const { data: fetchedOwnerData, refetch: refetchOwner } = useFetchedOwner;
+  const { data: fetchedCustomersAddressesData, refetch: refetchCustomersAddresses } = useFetchedCustomersAddresses;
+  const { data: fetchedERC20Data, refetch: refetchERC20 } = useFetchedERC20Adress;
 
-  // address O 
-  // 0x0000000000000000000000000000000000000000 
   useEffect(() => {
     console.log("in useeffect")
-    if (fetchedOwnerData !== undefined) {
-      console.log(fetchedOwnerData, "fetchedOwnerData2")
-      // userCtx.setOwner(fetchedOwnerData.toString());
-    }
-    if (fetchedCustomersAddressesData !== undefined) {
+    if (
+      fetchedOwnerData !== undefined &&
+      fetchedOwnerData !== null &&
+      fetchedCustomersAddressesData !== undefined &&
+      fetchedCustomersAddressesData !== null &&
+      connectedAccount
+    ) {
+      console.log(fetchedOwnerData, "fetchedOwnerData")
       console.log(fetchedCustomersAddressesData, "fetchedCustomersAddressesData")
-      // userCtx.setCustomersAddresses(fetchedCustomersAddressesData.toString());
+      userCtx.setCustomersAddresses(fetchedCustomersAddressesData as string[]);
+      userCtx.setOwner(fetchedOwnerData.toString());
+      if (connectedAccount === fetchedOwnerData.toString()) {
+        console.log('is admin')
+        userCtx.setRole(OWNER_ROLE);
+      }
+      else if (userCtx.customersAddresses.includes(connectedAccount as string)) {
+        userCtx.setRole(CUSTOMER_ROLE);
+      }
     }
-    if (fetchedERC20Data !== undefined) {
+
+    if (fetchedERC20Data !== undefined && fetchedERC20Data !== null) {
       console.log(fetchedERC20Data, "fetchedERC20Data")
-      // userCtx.setCustomersAddresses(fetchedCustomersAddressesData.toString());
+      userCtx.setErc20Address(fetchedERC20Data.toString());
     }
-
-    //TODO check if erc20 is deployed
-    if (connectedAccount === userCtx.owner) {
-      userCtx.setRole(OWNER_ROLE);
-    }
-    else if (userCtx.customersAddresses.includes(connectedAccount as string)) {
-      userCtx.setRole(CUSTOMER_ROLE);
-    }
-
   }, [connectedAccount, fetchedOwnerData, fetchedCustomersAddressesData, fetchedERC20Data]);
-
 
   const routes = <>
     <Route path="/" element={<Home />} />
