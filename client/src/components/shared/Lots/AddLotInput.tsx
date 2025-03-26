@@ -18,12 +18,13 @@ const AddLotInput = ({ remainingSharesToGrant, onValidate }: IAddLotInputProps) 
         setEnteredShares(0);
     };
 
-
     if (remainingSharesToGrant === 0) {
-        <>
-            <h3>ADD LOT</h3>
-            <p>Can't add anymore lots / Total Max shares of 1000 reached! </p>
-        </>
+        return (
+            <>
+                <h3>ADD LOT</h3>
+                <p>Can't add anymore lots / Total Max shares of 1000 reached! </p>
+            </>
+        )
     }
 
     return (

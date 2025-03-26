@@ -60,3 +60,21 @@ export const useLinkCustomerToLot = () => {
     return { hash, error, isConfirming, isConfirmed, linkCustomerToLotWrite };
 };
 
+
+export const useCreateERC20 = () => {
+    const { data: hash, error, writeContract } = useWriteContract();
+    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
+
+    const useCreateERC20Write = (account: string | undefined) => {
+        if (account) {
+            writeContract({
+                address: ANVIL_FACTORY_ADRESS,
+                abi: manager_abi,
+                functionName: "createGMSharesToken",
+                account: account as `0x${string}` // Type assertion
+            });
+        }
+    };
+
+    return { hash, error, isConfirming, isConfirmed, useCreateERC20Write };
+};

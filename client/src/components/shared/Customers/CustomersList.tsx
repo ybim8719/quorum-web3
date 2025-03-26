@@ -13,8 +13,8 @@ const CustomersList = ({ customers }: ICustomerProfileProps) => {
                 <tr key={`customer-${i}`}>
                     <td className="">{c.firstName}</td>
                     <td className="">{c.lastName}</td>
-                    <td className="">{c.address}</td>
-                    <td className="">{c?.lotOfficialCode ? c.lotOfficialCode : "N/A"}</td>
+                    <td className="">{c.address.slice(0, 15)}...</td>
+                    <td className="">{c?.lotOfficialNumber ? c.lotOfficialNumber : "N/A"}</td>
                 </tr>
             );
         });
@@ -27,11 +27,11 @@ const CustomersList = ({ customers }: ICustomerProfileProps) => {
     }
 
     return (
-        <div className="">
+        <div className="section">
+            <i className="nes-ash"></i>
             <h3>
                 <u>Registered Customers ({customers.length})</u>
             </h3>
-            <i className="nes-ash"></i>
             <table>
                 <thead>
                     <tr>

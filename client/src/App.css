@@ -31,11 +31,20 @@ header {
 
 table {
   margin: 20px;
-  width: 90%;
+  width: 100%;
 }
 
 td,
 th {
   border: 1px solid black;
   padding: 3px;
+}
+
+button,
+input {
+  margin: 10px;
+}
+
+.section {
+  margin-top: 50px;
 }

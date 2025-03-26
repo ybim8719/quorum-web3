@@ -88,6 +88,11 @@ export const manager_abi = [
             "name": "lotId",
             "type": "uint256",
             "internalType": "uint256"
+          },
+          {
+            "name": "lotOfficialNumber",
+            "type": "string",
+            "internalType": "string"
           }
         ]
       }
@@ -128,6 +133,11 @@ export const manager_abi = [
             "name": "lotId",
             "type": "uint256",
             "internalType": "uint256"
+          },
+          {
+            "name": "lotOfficialNumber",
+            "type": "string",
+            "internalType": "string"
           }
         ]
       }

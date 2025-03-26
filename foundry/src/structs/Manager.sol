@@ -6,6 +6,7 @@ struct Customer {
     string lastName;
     string firstName;
     uint256 lotId;
+    string lotOfficialNumber;
 }
 
 struct CustomerView {
@@ -14,6 +15,7 @@ struct CustomerView {
     string firstName;
     address customerAddress;
     uint256 lotId;
+    string lotOfficialNumber;
 }
 
 struct Lot {

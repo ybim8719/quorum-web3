@@ -1,4 +1,4 @@
-import { Lot } from "../../../models/Lots";
+import { Lot } from "../../../models/lots";
 
 
 interface ITokenizedLotsProps {
@@ -13,17 +13,17 @@ const TokenizedLots = ({ lots, onVerify, onTokenize }: ITokenizedLotsProps) => {
     if (lots.length > 0) {
         tableBody = lots.map((l, i) => {
             let actions;
-            if (l.tokenized) {
+            if (l.isTokenized) {
                 actions = <button onClick={() => onVerify(l)}>Verify authenticity</button>
             } else {
                 actions = <button onClick={() => onTokenize(l)}>Tokenize now</button>
             }
             return (
                 <tr key={`customer-${i}`}>
-                    <td className="">{l.lotOfficialCode} (id: {l.id})</td>
+                    <td className="">{l.lotOfficialNumber} (id: {l.id})</td>
                     <td className="">{l.shares}</td>
                     <td className="">{l.customer && l.customer.firstName} / {l.customer && l.customer.lastName} / {l.customer && l.customer.address}</td>
-                    <td className="">{l.tokenized ? "yes" : "no"}</td>
+                    <td className="">{l.isTokenized ? "yes" : "no"}</td>
                     <td>{actions}</td>
                 </tr>
             );
@@ -31,7 +31,7 @@ const TokenizedLots = ({ lots, onVerify, onTokenize }: ITokenizedLotsProps) => {
     } else {
         tableBody = (
             <tr>
-                <td colSpan={4}>No Lots registered yet</td>
+                <td colSpan={5}>No Lots registered yet</td>
             </tr>
         );
     }

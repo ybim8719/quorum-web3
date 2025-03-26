@@ -24,21 +24,23 @@ const LinkCustomerToLotInput = ({
     }
     function handleSubmit(e: React.MouseEvent<HTMLFormElement>) {
         e.preventDefault();
-        if (selectedCustomer && lot) {
+        if (selectedCustomer !== "" && lot) {
             onCreateLink(selectedCustomer, lot.id);
         }
     }
 
     return (
         <div>
-            <h1>LOT N°{lot.lotOfficialCode} ({lot.shares} tantièmes)</h1>
+            <h2>LOT N°{lot.lotOfficialNumber}</h2>
+            <p> ({lot.shares} tantièmes)</p>
             <form method="post" onSubmit={handleSubmit}>
                 <label>Select a owner:
                     <select
+                        defaultValue={""}
                         value={selectedCustomer}
                         onChange={(e) => setSelectedCustomer(e.target.value)}
                     >
-                        <option value="" disabled selected>Select a proposal</option>
+                        <option value="" disabled>Select a Customer</option>
                         {freeCustomers.map((c) => {
                             return (
                                 <option value={c.address} key={`customer-${c.address}`}>
@@ -48,6 +50,7 @@ const LinkCustomerToLotInput = ({
                         })}
                     </select>
                 </label>
+                <br></br>
                 <button className="nes-btn is-primary" type="submit">
                     Send Tx
                 </button>

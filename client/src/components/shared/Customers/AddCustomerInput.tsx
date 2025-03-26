@@ -18,8 +18,8 @@ const AddCustomerInput = ({ onValidate }: IAddCustomerInputProps) => {
     };
 
     return (
-        <>
-            <h3>Register a new Customer</h3>
+        <div className="section">
+            <h2>Register a new Customer</h2>
             <form onSubmit={submitHandler}>
                 <label htmlFor="inline_field">
                     <input
@@ -56,7 +56,7 @@ const AddCustomerInput = ({ onValidate }: IAddCustomerInputProps) => {
                 </label>
                 <input type="submit" value="Send Tx" className="nes-btn is-success" />
             </form>
-        </>
+        </div>
     );
 };
 

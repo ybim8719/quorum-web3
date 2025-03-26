@@ -177,7 +177,7 @@ contract CondoGmManager is Ownable {
             revert CondoGmManager__CantDeployAnotherERC20();
         }
         // instantiate ERC20 with copro name, adress(this), no decimals, 1000 as max shares
-        GMSharesToken deployed = new GMSharesToken("token ", "sumbol", SHARES_LIMIT, address(this));
+        GMSharesToken deployed = new GMSharesToken("CoproToken ", "COPRO", SHARES_LIMIT, address(this));
         s_deployedErc20 = address(deployed);
         // mint 1000 token and no decimals
         deployed.initialMinting(SHARES_LIMIT);
@@ -209,6 +209,7 @@ contract CondoGmManager is Ownable {
     //////////////////////////////////////////////////////////////*/
     function getCustomersInfos() external view returns (CustomerView[] memory) {
         CustomerView[] memory customersToReturn = new CustomerView[](s_customers.length);
+
         if (s_customers.length > 0) {
             for (uint256 i = 0; i < s_customers.length; ++i) {
                 Customer memory c = s_customersInfo[s_customers[i]];
@@ -217,8 +218,10 @@ contract CondoGmManager is Ownable {
                     lastName: c.lastName,
                     firstName: c.firstName,
                     customerAddress: s_customers[i],
-                    lotId: c.lotId
+                    lotId: c.lotId,
+                    lotOfficialNumber: s_lotsList[c.lotId].lotOfficialNumber
                 });
+
                 customersToReturn[i] = customer;
             }
         }

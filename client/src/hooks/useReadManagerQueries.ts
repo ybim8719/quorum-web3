@@ -11,9 +11,6 @@ export const useReadManagerQueries = () => {
       abi: manager_abi,
       functionName: "getLotsInfos",
       account: address,
-      query: {
-        enabled: true,
-      }
     }
   );
 
@@ -23,9 +20,7 @@ export const useReadManagerQueries = () => {
       abi: manager_abi,
       functionName: "getCustomersInfos",
       account: address,
-      query: {
-        enabled: true,
-      }
+
     }
   );
 
@@ -35,9 +30,6 @@ export const useReadManagerQueries = () => {
       abi: manager_abi,
       functionName: "owner",
       account: address,
-      query: {
-        enabled: true,
-      }
     }
   );
 
@@ -47,9 +39,6 @@ export const useReadManagerQueries = () => {
       abi: manager_abi,
       functionName: "getCustomersList",
       account: address,
-      query: {
-        enabled: true,
-      }
     }
   );
 
@@ -59,11 +48,9 @@ export const useReadManagerQueries = () => {
       abi: manager_abi,
       functionName: "getErc20Address",
       account: address,
-      query: {
-        enabled: true,
-      }
     }
   );
+
 
   //    getCustomerDetail(address _customerAddress)
   //    getLotById()
