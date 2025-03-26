@@ -19,21 +19,20 @@ const AddCustomerInput = ({ onValidate }: IAddCustomerInputProps) => {
 
     return (
         <>
-            <h3>Register Customers</h3>
+            <h3>Register a new Customer</h3>
             <form onSubmit={submitHandler}>
                 <label htmlFor="inline_field">
-                    Add firstName:
                     <input
                         value={enteredFirstName}
                         onChange={(e) => setEnteredFirstName(e.target.value)}
                         type="text"
                         id="inline_field"
                         className="nes-input is-success"
-                        placeholder="Type customer address..."
+                        placeholder="Type first name..."
+                        required
                     />
                 </label>
                 <label htmlFor="inline_field">
-                    LastName:
                     <input
                         value={enteredLastName}
                         onChange={(e) => setEnteredLastName(e.target.value)}
@@ -41,10 +40,10 @@ const AddCustomerInput = ({ onValidate }: IAddCustomerInputProps) => {
                         id="inline_field"
                         className="nes-input is-success"
                         placeholder="Type last name..."
+                        required
                     />
                 </label>
                 <label htmlFor="inline_field">
-                    Add your future voters:
                     <input
                         value={enteredAddress}
                         onChange={(e) => setEnteredAddress(e.target.value)}
@@ -52,6 +51,7 @@ const AddCustomerInput = ({ onValidate }: IAddCustomerInputProps) => {
                         id="inline_field"
                         className="nes-input is-success"
                         placeholder="Type address..."
+                        required
                     />
                 </label>
                 <input type="submit" value="Send Tx" className="nes-btn is-success" />

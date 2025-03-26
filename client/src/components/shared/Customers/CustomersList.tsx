@@ -31,14 +31,14 @@ const CustomersList = ({ customers }: ICustomerProfileProps) => {
             <h3>
                 <u>Registered Customers ({customers.length})</u>
             </h3>
-            <i className="nes-pokeball"></i>
+            <i className="nes-ash"></i>
             <table>
                 <thead>
                     <tr>
                         <th className="">FirstName</th>
                         <th className="">LastName</th>
                         <th className="">Address</th>
-                        <th className="">LotOfficialCode</th>
+                        <th className="">Lot Code</th>
                     </tr>
                 </thead>
                 <tbody>{tableBody}</tbody>

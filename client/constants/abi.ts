@@ -114,7 +114,7 @@ export const abi = [
             "internalType": "string"
           },
           {
-            "name": "wallet",
+            "name": "customerAddress",
             "type": "address",
             "internalType": "address"
           },
@@ -205,6 +205,11 @@ export const abi = [
         "type": "tuple[]",
         "internalType": "struct LotView[]",
         "components": [
+          {
+            "name": "id",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
           {
             "name": "customerAddress",
             "type": "address",

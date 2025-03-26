@@ -4,7 +4,6 @@ export const ANVIL_FACTORY_ADRESS =
   "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 
-
 export const manager_abi = [
   {
     "type": "constructor",
@@ -121,7 +120,7 @@ export const manager_abi = [
             "internalType": "string"
           },
           {
-            "name": "wallet",
+            "name": "customerAddress",
             "type": "address",
             "internalType": "address"
           },
@@ -212,6 +211,11 @@ export const manager_abi = [
         "type": "tuple[]",
         "internalType": "struct LotView[]",
         "components": [
+          {
+            "name": "id",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
           {
             "name": "customerAddress",
             "type": "address",

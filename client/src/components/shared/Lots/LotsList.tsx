@@ -35,7 +35,7 @@ const LotsList = ({ lots, totalLotsShares, onLink }: ILotProps) => {
                 <u>Total Shares: {totalLotsShares} </u>
 
             </h3>
-            <i className="nes-ash"></i>
+            <i className="nes-pokeball"></i>
             <p>Total shares</p>
             <table>
                 <thead>

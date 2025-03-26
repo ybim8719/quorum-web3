@@ -14,7 +14,7 @@ import AddLotInput from "../components/shared/Lots/AddLotInput";
 import LinkCustomerToLotInput from "../components/shared/CustomerToLot/LinkCustomerToLotInput.tsx";
 import LoadingIndicator from "../components/UI/LoadingIndicator";
 import ErrorBlock from "../components/UI/ErrorBlock";
-import { Modal } from "../components/UI/Modal";
+import { Modal, NonClosableModal } from "../components/UI/Modal";
 
 
 
@@ -77,52 +77,32 @@ function Home() {
         }
     }, [fetchedCustomersData, fetchedLotsData]);
 
-
     // add customer tx triggers refetch of customers list
     useEffect(() => {
-        const refreshCustomersInfo = async () => {
-            await refetchCustomers();
-        };
-        refreshCustomersInfo();
-    }, [addCustomerIsConfirmed]);
-
-    // // add customer tx triggers refetch of lots list
-    useEffect(() => {
-        const refreshLotsInfo = async () => {
-            await refetchLots();
-        };
-        refreshLotsInfo();
-    }, [addLotIsConfirmed]);
-
-    // // set a ref to see changes
-    useEffect(() => {
+        // fetch of data worked
+        if (addCustomerIsConfirmed || addLotIsConfirmed || linkCustomerToLotIsConfirmed) {
+            setIsLoading(false);
+            setModalInfoText("Transaction confirmed");
+        }
         const refreshAll = async () => {
             await refetchLots();
             await refetchCustomers();
         };
         refreshAll();
-    }, [linkCustomerToLotIsConfirmed]);
+    }, [addCustomerIsConfirmed, addLotIsConfirmed, linkCustomerToLotIsConfirmed]);
 
-
-    if (!isConnected) {
-        return <h1>Please connect your wallet first</h1>
-    }
-
-    if (userCtx.role !== OWNER_ROLE && userCtx.role !== CUSTOMER_ROLE) {
-        return <h1>Unauthorized</h1>
-    }
+    // error in transaction / open error modal
+    useEffect(() => {
+        if (addCustomerError || addLotError || linkCustomerToLotError) {
+            setIsLoading(false);
+            setError("Transaction failed");
+        }
+    }, [addCustomerError, addLotError, linkCustomerToLotError]);
 
     // triger add customer tx
     const addCustomerHandler = async (firstName: string, lastName: string, customerAddress: string) => {
-        try {
-            setIsLoading(true);
-            await addCustomerWrite(firstName, lastName, customerAddress, connectedAccount);
-            setIsLoading(false);
-            setModalInfoText("Transaction confirmed");
-        } catch (err) {
-            setError("Transaction failed");
-        }
-        setIsLoading(false);
+        setIsLoading(true);
+        await addCustomerWrite(firstName, lastName, customerAddress, connectedAccount);
     };
 
     // triger add lot tx
@@ -131,7 +111,6 @@ function Home() {
             setIsLoading(true);
             await addLotWrite(officialCode, shares, connectedAccount);
             setIsLoading(false);
-            setModalInfoText("Transaction confirmed");
         } catch (err) {
             setError("Transaction failed");
         }
@@ -168,6 +147,14 @@ function Home() {
             setError("OUPS");
         }
         setIsLoading(false);
+    }
+
+    if (!isConnected) {
+        return <h1>Please connect your wallet first</h1>
+    }
+
+    if (userCtx.role !== OWNER_ROLE && userCtx.role !== CUSTOMER_ROLE) {
+        return <h1>Unauthorized</h1>
     }
 
     let showCreateERC20Btn = false;
@@ -219,10 +206,17 @@ function Home() {
             {modalInfoText && (
                 <Modal onClose={() => setModalInfoText(null)}>{modalInfoText}</Modal>
             )}
-            {isLoading && <LoadingIndicator />}
+            {isLoading && (
+                <NonClosableModal><>
+                    <h2>Transaction being processed</h2>
+                    <LoadingIndicator />
+
+                </></NonClosableModal>
+            )}
+
             {lotIdBeingLinked && (
                 <Modal onClose={() => setLotIdBeingLinked(null)}>
-                    <LinkCustomerToLotInput onCreateLink={linkCustomerToLotHandler} freeCustomers={customers.filter((c) => c.lot === null)} lot={lots.find((l) => l.id === lotIdBeingLinked)} />
+                    {/* <LinkCustomerToLotInput onCreateLink={linkCustomerToLotHandler} freeCustomers={customers.filter((c) => c.lot === null)} lot={lots.find((l) => l.id === lotIdBeingLinked)} /> */}
                 </Modal>
             )}
         </>
