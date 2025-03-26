@@ -12,7 +12,7 @@
 
 // const Example = () => {
 //     const { address } = useAccount();
-//     const userCtx = useContext(UserContext);
+//     const globalCtx = useContext(UserContext);
 //     const [status, setStatus] = useState<string>("");
 //     const [voters, setVoters] = useState<string[]>([]);
 

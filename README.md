@@ -15,15 +15,24 @@ L'objectif est de simuler ce que pourrait être une version minimale du projet i
 ## Features et rôles des contrats
 
 
-## Modop
+## Cycle functionnel de la DAPP: 
 
-- En cas d'égalité lors du dépouillement, le choix final revient à owner (notice d'utilisation expliquée plus loin)
-- Ajout des view functions pour aider l'IHM à hydrater son frontend 
-- Ajout de customs error et d'events pertinents
-
+- XX
+- ddddddd
 
 
-### Optimization et bonnes pratiques: 
+## Technos 
+
+- Capable de se connecter via un wallet de browser et de communiquer avec VotingOpti.sol. 
+- Offre toute l'interface pour qu'un owner ou un voter puisse mener le processus de vote à son terme
+- Ecoute des event et affichage de chaque message reçu
+- L'IHM s'adapte à chaque role 
+- Application herbergée sur vercel (push sur main)
+
+![screenshot](screenshots/vercel.png)
+
+
+### Application de l'Optimization et bonnes pratiques solidity : 
 - NatSpec
 - State packing
 - Limitation de la taille des uint
@@ -32,19 +41,17 @@ L'objectif est de simuler ce que pourrait être une version minimale du projet i
 - Elimination des contrôles superflus
 
 
-### Sécurité appliquée et failles du projets:
+### Sécurité soliidty appliquée: 
 
 - Prévention du reentrancy 
 - Ajout d'un fallback adéquat
 
-## Failles Solidity 
+## Failles Solidity du projet: 
 CondoGMFactory : constructor 0 for maxAdminNb ?
 
 
-## Improvements futures 
 
-
-## Déploiements antérieurs: 
+## Déploiements effectués : 
 
 - Contrat déployé sur sepolia (mais pas réussi à le vérifier malgré mon etherscan api key): XXXXXXX TODO put address
 - Front end déployé sur vercel: XXXXXXX TODO put address
@@ -58,8 +65,25 @@ CondoGMFactory : constructor 0 for maxAdminNb ?
 - Couverture de test : XXXX %
 
 
+## Features restants à implémenter
 
-Pour lancer les tests : 
+- le CondoGmManager devrait plutôt gérer des lots et devenir un factory de contract ERC20Shares et Ballots 
+- plusoeurs
+- UI à revoir totalement 
+- intégration CSS ad hoc 
+
+## Améliorations tech restantes à implémenter
+
+- Routing un peu bancal / => système de guard par identifiant
+- utitilisation du context un peu grossière 
+- Des composants + petits 
+- Une GH actions mieux mieux qui lance un linter + prettier côté front 
+- Un système de precommit 
+- + de fuzz tests et d'invariants  
+
+
+
+## Lancer les tests : 
 
 1. Installer forge [https://github.com/foundry-rs/foundry](https://github.com/foundry-rs/foundry).
 
@@ -73,7 +97,7 @@ Pour lancer les tests :
 Lancer les T.U. 
 
 ```shell
-forge test --match-contract VotingOptiTest
+forge test
 ```
 
 Rapport sur la couverture de tests: 
@@ -81,16 +105,6 @@ Rapport sur la couverture de tests:
 ```shell
 forge coverage
 ```
-
-## Technos 
-
-- Capable de se connecter via un wallet de browser et de communiquer avec VotingOpti.sol. 
-- Offre toute l'interface pour qu'un owner ou un voter puisse mener le processus de vote à son terme
-- Ecoute des event et affichage de chaque message reçu
-- L'IHM s'adapte à chaque role 
-- Application herbergée sur vercel (push sur main)
-
-![screenshot](screenshots/vercel.png)
 
 
 

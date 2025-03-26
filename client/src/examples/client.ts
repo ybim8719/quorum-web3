@@ -5,8 +5,8 @@ http : Une fonction qui spécifie le mode de transport pour la communication ave
 
 hardhat : Un objet qui représente la chaîne Hardhat, utilisée pour le développement et le test de contrats intelligents localement avant leur déploiement sur une chaîne publique.
 */
-import { createPublicClient, http } from 'viem'
-import { hardhat } from 'viem/chains'
+import { createPublicClient, http } from "viem";
+import { hardhat } from "viem/chains";
 
 /*
 La fonction createPublicClient est appelée avec un objet de configuration qui spécifie deux propriétés :
@@ -15,7 +15,7 @@ chain : La chaîne de blocs avec laquelle le client doit interagir, ici spécifi
 
 transport : Le mode de transport utilisé pour envoyer et recevoir des données de la blockchain, spécifié ici comme http(), ce qui indique que les requêtes HTTP seront utilisées.
 */
-export const publicClient = createPublicClient({ 
+export const publicClient = createPublicClient({
   chain: hardhat,
-  transport: http(process.env.RPC_URL)
-})
+  transport: http(process.env.RPC_URL),
+});

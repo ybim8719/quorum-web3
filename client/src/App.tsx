@@ -2,23 +2,31 @@ import "./App.css";
 import { useContext, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router";
 import { useAccount } from "wagmi";
-import { UserContext } from "./context/userContext";
+import { GlobalContext } from "./context/globalContext";
 import { useReadManagerQueries } from "./hooks/useReadManagerQueries";
 import { OWNER_ROLE, CUSTOMER_ROLE } from "./models/roles";
 import { adressZero } from "./models/ERC20";
 import ERC20 from "./pages/ERC20";
 import Home from "./pages/Home";
 import Layout from "./components/UI/Layout";
-
+import { } from "../constants/deployed";
 
 function App() {
   const { address: connectedAccount } = useAccount();
-  const userCtx = useContext(UserContext);
+  const globalCtx = useContext(GlobalContext);
   // read MANAGER Contract queries
-  const { useFetchedOwner, useFetchedCustomersAddresses, useFetchedERC20Adress } = useReadManagerQueries();
+  const {
+    useFetchedOwner,
+    useFetchedCustomersAddresses,
+    useFetchedERC20Adress,
+  } = useReadManagerQueries(globalCtx.deployedManagerAddress);
   const { data: fetchedOwnerData, refetch: refetchOwner } = useFetchedOwner;
-  const { data: fetchedCustomersAddressesData, refetch: refetchCustomersAddresses } = useFetchedCustomersAddresses;
-  const { data: fetchedERC20Data, refetch: refetchERC20 } = useFetchedERC20Adress;
+  const {
+    data: fetchedCustomersAddressesData,
+    refetch: refetchCustomersAddresses,
+  } = useFetchedCustomersAddresses;
+  const { data: fetchedERC20Data, refetch: refetchERC20 } =
+    useFetchedERC20Adress;
 
   useEffect(() => {
     if (
@@ -28,13 +36,15 @@ function App() {
       fetchedCustomersAddressesData !== null &&
       connectedAccount
     ) {
-      // owner and customers addresses are mandatory to set the role 
-      userCtx.setCustomersAddresses(fetchedCustomersAddressesData as string[]);
-      userCtx.setOwner(fetchedOwnerData.toString());
+      // owner and customers addresses are mandatory to set the role
+      globalCtx.setCustomersAddresses(fetchedCustomersAddressesData as string[]);
+      globalCtx.setOwner(fetchedOwnerData.toString());
       if (connectedAccount === fetchedOwnerData.toString()) {
-        userCtx.setRole(OWNER_ROLE);
-      } else if (userCtx.customersAddresses.includes(connectedAccount as string)) {
-        userCtx.setRole(CUSTOMER_ROLE);
+        globalCtx.setRole(OWNER_ROLE);
+      } else if (
+        globalCtx.customersAddresses.includes(connectedAccount as string)
+      ) {
+        globalCtx.setRole(CUSTOMER_ROLE);
       }
     }
   }, [connectedAccount, fetchedOwnerData, fetchedCustomersAddressesData]);
@@ -45,17 +55,17 @@ function App() {
       fetchedERC20Data !== null &&
       fetchedERC20Data !== adressZero
     ) {
-      userCtx.setErc20Address(fetchedERC20Data.toString());
+      globalCtx.setErc20Address(fetchedERC20Data.toString());
     }
   }, [fetchedERC20Data]);
 
-
-  const routes = <>
-    <Route path="/" element={<Home />} />
-    <Route path="/erc20" element={<ERC20 />} />
-    {/* and so on....   */}
-  </>
-
+  const routes = (
+    <>
+      <Route path="/" element={<Home />} />
+      <Route path="/erc20" element={<ERC20 />} />
+      {/* and so on....   */}
+    </>
+  );
 
   return (
     <BrowserRouter>
@@ -65,7 +75,7 @@ function App() {
         </Route>
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
 export default App;

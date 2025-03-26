@@ -1,36 +1,40 @@
 import React, { createContext, useState } from "react";
-import { ADMIN_ROLE, UNAUTHORIZED_ROLE } from "../models/roles";
+import { UNAUTHORIZED_ROLE } from "../models/roles";
+import { network } from "../../constants/deployed";
 
-type UserContextType = {
+type GlobalContextType = {
   role: string;
   owner: string;
   customersAddresses: string[];
   erc20Address: string;
+  deployedManagerAddress: string;
   setRole: React.Dispatch<React.SetStateAction<string>>;
   setOwner: React.Dispatch<React.SetStateAction<string>>;
   setCustomersAddresses: React.Dispatch<React.SetStateAction<string[]>>;
   setErc20Address: React.Dispatch<React.SetStateAction<string>>;
 };
 
-export const UserContext = createContext<UserContextType>(
-  null as unknown as UserContextType,
+export const GlobalContext = createContext<GlobalContextType>(
+  null as unknown as GlobalContextType,
 );
 
 type ContextProviderProps = {
   children: React.ReactNode;
 };
 
-export const UserContextProvider = ({ children }: ContextProviderProps) => {
+export const GlobalContextProvider = ({ children }: ContextProviderProps) => {
   const [role, setRole] = useState<string>(UNAUTHORIZED_ROLE);
   const [erc20Address, setErc20Address] = useState<string>("");
-  const [owner, setOwner] = useState<string>("")
+  const [owner, setOwner] = useState<string>("");
   const [customersAddresses, setCustomersAddresses] = useState<string[]>([]);
+  const deployedManagerAddress = network.anvil;
 
   const value = {
     role,
     owner,
     customersAddresses,
     erc20Address,
+    deployedManagerAddress,
     setRole,
     setOwner,
     setCustomersAddresses,
@@ -38,6 +42,6 @@ export const UserContextProvider = ({ children }: ContextProviderProps) => {
   };
 
   return (
-    <UserContext.Provider value={value}> {children} </UserContext.Provider>
+    <GlobalContext.Provider value={value}> {children} </GlobalContext.Provider>
   );
 };

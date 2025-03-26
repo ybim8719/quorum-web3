@@ -18,6 +18,7 @@ header {
   padding: 10px;
   background-color: aquamarine;
   width: 100%;
+  top: 0;
 }
 
 .flex-wrapper {
@@ -47,4 +48,17 @@ input {
 
 .section {
   margin-top: 50px;
+}
+
+.notification {
+  border-radius: 5px;
+  border: 5px pink solid;
+  background-color: deeppink;
+  color: blue;
+  text-align: center;
+  padding: 10px;
+}
+
+li {
+  text-decoration: none;
 }

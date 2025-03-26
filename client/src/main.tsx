@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
 import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { config } from "../wagmi.ts";
-import { UserContextProvider } from "./context/userContext.tsx";
+import { GlobalContextProvider } from "./context/globalContext.tsx";
 
 import "./index.css";
 import App from "./App.tsx";
@@ -17,9 +17,9 @@ createRoot(document.getElementById("root")!).render(
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider>
-          <UserContextProvider>
+          <GlobalContextProvider>
             <App />
-          </UserContextProvider>
+          </GlobalContextProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

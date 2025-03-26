@@ -22,7 +22,7 @@ export const LoadingModal = () => {
     <>
       {ReactDOM.createPortal(
         <>
-          <Backdrop onClose={() => { }} />
+          <Backdrop onClose={() => {}} />
           <ModalOverlay>
             <h2>Transaction being processed...</h2>
             <LoadingIndicator />
@@ -51,21 +51,17 @@ export const Modal = ({ onClose, children }: any) => {
       )}
     </>
   );
-}
-
+};
 
 export const NonClosableModal = ({ children }: any) => {
   return (
     <>
       {ReactDOM.createPortal(
         <>
-          <ModalOverlay>
-            {children}
-          </ModalOverlay>
+          <ModalOverlay>{children}</ModalOverlay>
         </>,
         document.getElementById("overlays") as Element,
       )}
     </>
   );
-
 };

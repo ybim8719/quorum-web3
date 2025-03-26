@@ -48,7 +48,7 @@ contract CondoGmManager is Ownable {
     uint256 s_currentTotalShares;
     uint256 s_nextLotIndex;
     bool s_addingLotIsLocked;
-    address s_deployedErc20;
+    address s_deployedERC20;
     address s_deployedBallot;
 
     /*//////////////////////////////////////////////////////////////
@@ -173,12 +173,12 @@ contract CondoGmManager is Ownable {
     //////////////////////////////////////////////////////////////*/
     /// @notice deploy ERC20 and mint 1000 token for owner balance.
     function createGMSharesToken() external onlyOwner {
-        if (s_deployedErc20 != address(0)) {
+        if (s_deployedERC20 != address(0)) {
             revert CondoGmManager__CantDeployAnotherERC20();
         }
         // instantiate ERC20 with copro name, adress(this), no decimals, 1000 as max shares
         GMSharesToken deployed = new GMSharesToken("CoproToken ", "COPRO", SHARES_LIMIT, address(this));
-        s_deployedErc20 = address(deployed);
+        s_deployedERC20 = address(deployed);
         // mint 1000 token and no decimals
         deployed.initialMinting(SHARES_LIMIT);
     }
@@ -279,9 +279,11 @@ contract CondoGmManager is Ownable {
                         CHILD CONTRACTS
     //////////////////////////////////////////////////////////////*/
     // todo cover with test
-    function getErc20Address() external view returns (address) {
-        return s_deployedErc20;
+    function getERC20Address() external view returns (address) {
+        return s_deployedERC20;
     }
 
-    // getBallotAddress()
+    function getBallotAddress() external view returns (address) {
+        return s_deployedBallot;
+    }
 }
