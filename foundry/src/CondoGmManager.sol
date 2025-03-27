@@ -6,6 +6,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Customer, CustomerView, Lot, LotView, CondoGeneralInfo} from "./structs/Manager.sol";
 import {GMSharesToken} from "./GmSharesToken.sol";
 import {GMBallot} from "./GmBallot.sol";
+import {console} from "forge-std/Test.sol";
 
 /// @title CondoGmManager
 /// @author Pascal Thao
@@ -209,7 +210,7 @@ contract CondoGmManager is Ownable {
         // instantiate ERC20 with copro name, adress(this), no decimals, 1000 as max shares
         GMSharesToken deployed = new GMSharesToken("CoproToken ", "COPRO", SHARES_LIMIT, address(this));
         s_deployedERC20 = address(deployed);
-        // mint 1000 token and no decimals
+        // mint 1000 token
         deployed.initialMinting(SHARES_LIMIT);
     }
 

@@ -261,7 +261,7 @@ contract CondoGmManagerTest is Test {
         vm.stopPrank();
     }
 
-    function test_succeed_linkCustomerToLot() public lotAndCustomerAdded {
+    function test_succeeds_linkCustomerToLot() public lotAndCustomerAdded {
         vm.prank(msg.sender);
         vm.expectEmit(true, true, false, true, address(s_manager));
         emit CondoGmManager.CustomerOfLotSet(LOT1_ID, CUSTOMER1_ADDRESS);
@@ -274,7 +274,7 @@ contract CondoGmManagerTest is Test {
         assertEq(customer.lotId, LOT1_ID);
     }
 
-    function test_succeed_ERC20Checking_returnsFalseIf1000NotReached() public lotAndCustomerAdded {
+    function test_succeeds_ERC20Checking_returnsFalseIf1000NotReached() public lotAndCustomerAdded {
         vm.startPrank(msg.sender);
         s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, LOT1_ID);
         assertEq(s_manager.getAddingLotIsLocked(), false);
@@ -282,7 +282,7 @@ contract CondoGmManagerTest is Test {
         vm.stopPrank();
     }
 
-    function test_succeed_ERC20Checking_returnsFalseIfNotAllLotsLinked() public lotAndCustomerAdded {
+    function test_succeeds_ERC20Checking_returnsFalseIfNotAllLotsLinked() public lotAndCustomerAdded {
         vm.startPrank(msg.sender);
         s_manager.registerLot(LOT2_OFFICIAL_CODE, LOT2_SHARES);
         assertEq(s_manager.getAddingLotIsLocked(), true);
@@ -291,7 +291,7 @@ contract CondoGmManagerTest is Test {
         vm.stopPrank();
     }
 
-    function test_succeed_ERC20Checking_returnsTrue() public lotAndCustomerAdded {
+    function test_succeeds_ERC20Checking_returnsTrue() public lotAndCustomerAdded {
         vm.startPrank(msg.sender);
         s_manager.registerLot(LOT2_OFFICIAL_CODE, LOT2_SHARES);
         assertEq(s_manager.getAddingLotIsLocked(), true);
@@ -306,25 +306,31 @@ contract CondoGmManagerTest is Test {
                         createGMSharesToken
     //////////////////////////////////////////////////////////////*/
     function test_succeed_createGMSharesToken() public lotsAndCustomersAddedAndLinked {
+        vm.prank(msg.sender);
+        s_manager.createGMSharesToken();
+        assertNotEq(s_manager.getERC20Address(), address(0));
+        assertEq(GMSharesToken(s_manager.getERC20Address()).balanceOf(address(s_manager)), 1000);
+    }
+
+    function test_revert_createGMSharesToken_alreadyDeployed() public lotsAndCustomersAddedAndLinked {
         vm.startPrank(msg.sender);
-        // assertEq(s_manager.getAddingLotIsLocked(), true);
-
-        //
-
-        // instantiate ERC20 with copro name, adress(this), no decimals, 1000 as max shares
-        GMSharesToken deployed = new GMSharesToken("CoproToken ", "COPRO", SHARES_LIMIT, address(this));
-        s_deployedERC20 = address(deployed);
-        // mint 1000 token and no decimals
-        // deployed.initialMinting(SHARES_LIMIT);
-        // assertEq(s_manager.getERC20Address(), true);
+        s_manager.createGMSharesToken();
+        vm.expectRevert(abi.encodeWithSelector(CondoGmManager.CondoGmManager__CantDeployAnotherERC20.selector));
+        s_manager.createGMSharesToken();
         vm.stopPrank();
     }
 
-    // TODO : think about transfer ownership !!!!!
-    // test_revert_createGMSharesToken_invalidConditions
-    // CondoGmManager__DeployERC20ConditionsNotReached
-    // test_revert_createGMSharesToken_alreadyDeployed
-    //CondoGmManager__CantDeployAnotherERC20
+    function test_revert_createGMSharesToken_unauthorized() public lotsAndCustomersAddedAndLinked {
+        vm.prank(NOT_REGISTERED);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, NOT_REGISTERED));
+        s_manager.createGMSharesToken();
+    }
+
+    function test_revert_createGMSharesToken_invalidConditions() public {
+        vm.prank(msg.sender);
+        vm.expectRevert(abi.encodeWithSelector(CondoGmManager.CondoGmManager__DeployERC20ConditionsNotReached.selector));
+        s_manager.createGMSharesToken();
+    }
 
     /*//////////////////////////////////////////////////////////////
                        convertSharesToToken
