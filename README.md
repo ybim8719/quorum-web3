@@ -68,7 +68,11 @@ CondoGMFactory : constructor 0 for maxAdminNb ?
 ## Features restants à implémenter
 
 - le CondoGmManager devrait plutôt gérer des lots et devenir un factory de contract ERC20Shares et Ballots 
-- plusoeurs
+- ajouts et suppression de customers / lots / 
+- token : modification possible quand on tokenize les tantièmes
+- vote par anticipation 
+- gestion du quorum
+- gestion documentaire
 - UI à revoir totalement 
 - intégration CSS ad hoc 
 

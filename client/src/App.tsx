@@ -9,7 +9,7 @@ import { adressZero } from "./models/ERC20";
 import ERC20 from "./pages/ERC20";
 import Home from "./pages/Home";
 import Layout from "./components/UI/Layout";
-import { } from "../constants/deployed";
+
 
 function App() {
   const { address: connectedAccount } = useAccount();
@@ -20,6 +20,7 @@ function App() {
     useFetchedCustomersAddresses,
     useFetchedERC20Adress,
   } = useReadManagerQueries(globalCtx.deployedManagerAddress);
+
   const { data: fetchedOwnerData, refetch: refetchOwner } = useFetchedOwner;
   const {
     data: fetchedCustomersAddressesData,
@@ -28,6 +29,7 @@ function App() {
   const { data: fetchedERC20Data, refetch: refetchERC20 } =
     useFetchedERC20Adress;
 
+  // fetch customers /owner addresses to apply authentication 
   useEffect(() => {
     if (
       fetchedOwnerData !== undefined &&
@@ -49,6 +51,7 @@ function App() {
     }
   }, [connectedAccount, fetchedOwnerData, fetchedCustomersAddressesData]);
 
+  // fetch ERC20 contract is exist to handle access to token Page
   useEffect(() => {
     if (
       fetchedERC20Data !== undefined &&

@@ -11,6 +11,12 @@ export const useReadTokenQueries = (deployedManagerAddress: string) => {
         account: address,
     });
 
+    // getCurrentStatus
+    // getCondoTotalShares
+    // getNbOfTokenizedLots
+    // getSharesTokenized
+
+
     return {
         useFetchedBalanceOf,
     };

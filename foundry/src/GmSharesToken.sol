@@ -3,12 +3,14 @@ pragma solidity 0.8.28;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {TokenWorkflowStatus} from "./structs/Token.sol";
+import {TokenWorkflowStatus, TokenGeneralInfo} from "./structs/Token.sol";
 
 /// @notice ERC20 based token designed to store 1000 shares from a condo for a given generalMeeting
 /// Approvals are deactivated for now
 /// @dev inherits OpenZep erc20 and ownable
 contract GMSharesToken is ERC20, Ownable {
+    // TODO overide and neutralized approvals
+    // WHAT ABOUT DECIMALS ?
     /*//////////////////////////////////////////////////////////////
                         STATES
     //////////////////////////////////////////////////////////////*/
@@ -22,6 +24,8 @@ contract GMSharesToken is ERC20, Ownable {
                         EVENTS
     //////////////////////////////////////////////////////////////*/
     event ShareTokenized(uint256 lotId, uint256 shares);
+    event TokenizingSharesOpen();
+    event MaxSharesTokenizingReached();
 
     /*//////////////////////////////////////////////////////////////
                         ERRORS
@@ -33,6 +37,8 @@ contract GMSharesToken is ERC20, Ownable {
     error GMSharesToken__InvalidMintingRecipient(address to, uint256 amount);
     error GMSharesToken__InvalidInitialMintingAmount(uint256 amount);
     error GMSharesToken__MintInitialAmountFirst(address to, uint256 amount);
+    error GMSharesToken__InvalidPeriod();
+    error GMSharesToken__TokenizedSharesMustBeNull();
 
     /// @notice the deployer is the owner of the contract
     constructor(string memory _name, string memory _symbol, uint256 _condoTotalShares, address _managerContract)
@@ -62,6 +68,20 @@ contract GMSharesToken is ERC20, Ownable {
         // open transfering share period
         s_currentStatus = TokenWorkflowStatus.TransferingShares;
     }
+    
+    /// @notice owner must ensure that initial minintg of 1000 was applied before opening shares stuff
+    function openTokenizingOfShares() external onlyOwner {
+        if (s_currentStatus != TokenWorkflowStatus.InitialMinting) {
+            revert GMSharesToken__InvalidPeriod(msg.sender, amount);
+        }
+
+        if (s_nbOfTokenizedLots > 0 || s_sharesTokenized > 0) {
+            revert GMSharesToken__TokenizedSharesMustBeNull();
+        }
+        
+        s_currentStatus = TokenWorkflowStatus.TransferingShares;
+        emit TokenizingSharesOpen();
+    }
 
     /// @dev override parent transfer with strict control related to business rules
     function transfer(address to, uint256 value) public override onlyOwner returns (bool) {
@@ -86,6 +106,7 @@ contract GMSharesToken is ERC20, Ownable {
             if (s_sharesTokenized == s_sharesTokenized && balanceOf(owner()) == 0) {
                 // reached 1000 shares tokenized, all initial Supply was transfered to customers addresses
                 s_currentStatus = TokenWorkflowStatus.ContractLocked;
+                emit MaxSharesTokenizingReached();
             }
         }
 
@@ -95,19 +116,7 @@ contract GMSharesToken is ERC20, Ownable {
     /*//////////////////////////////////////////////////////////////
                         VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
-    function getCurrentStatus() external view returns (TokenWorkflowStatus) {
-        return s_currentStatus;
-    }
-
-    function getCondoTotalShares() external view returns (uint256) {
-        return i_condoTotalShares;
-    }
-
-    function getNbOfTokenizedLots() external view returns (uint256) {
-        return s_nbOfTokenizedLots;
-    }
-
-    function getSharesTokenized() external view returns (uint256) {
-        return s_sharesTokenized;
+    function getGeneralInfo() external view returns (TokenGeneralInfo) {
+        return (i_condoTotalShares, s_nbOfTokenizedLots, s_sharesTokenized, s_currentStatus)
     }
 }

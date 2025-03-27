@@ -4,9 +4,11 @@ pragma solidity ^0.8.28;
 enum BallotWorkflowStatus {
     BallotReady,
     AttendeesSigning,
+    AttendeesSigningCountRevealed,
+    ProposalBeingSubmitted,
     ProposalVotingOpen,
     ProposalVotingClosed,
-    ProposalVotingCountDone,
+    ProposalVotingCountRevealed,
     MeetingEnded,
     ContractLocked
 }

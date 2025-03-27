@@ -1,82 +1,101 @@
-export const REGISTERING_VOTERS_KEY = "registeringVoters";
-export const PROPOSAL_REGISTRATION_STARTED_KEY = "proposalsRegistrationStarted";
-export const PROPOSAL_REGISTRATION_ENDED_KEY = "proposalsRegistrationEnded";
-export const VOTING_SESSIONS_STARTED_KEY = "votingSessionStarted";
-export const VOTING_SESSIONS_ENDED_KEY = "votingSessionEnded";
-export const VOTES_TALLIED_KEY = "votesTallied";
-export const OWNERS_CHOICE_KEY = "ownersChoice";
+export const BALLOT_READY_KEY = "BallotReady";
+export const ATTENDEES_SIGNING_KEY = "AttendeesSigning";
+export const PROPOSAL_BEING_SUBMITTED_KEY = "ProposalBeingSubmitted";
+export const ATTENDEES_SIGNING_COUNT_REVEALED_KEY = "AttendeesSigningCountRevealed";
+export const PROPOSAL_VOTING_OPEN_KEY = "ProposalVotingOpen";
+export const PROPOSAL_VOTING_CLOSED_KEY = "ProposalVotingClosed";
+export const PROPOSAL_VOTING_COUNT_REVEALED_KEY = "ProposalVotingCountRevealed";
+export const MEETING_ENDED_KEY = "MeetingEnded";
+export const CONTRACT_LOCKED_KEY = "ContractLocked";
 
-export const STATUS_RULES: Record<
+export const STATUS_INSTRUCTIONS: Record<
   string,
   {
     statusId: number;
     title: string;
     description: string;
     ownerInstruction: string;
-    voterInstruction: string;
+    customerInstruction: string;
   }
 > = {
-  [REGISTERING_VOTERS_KEY]: {
+  [BALLOT_READY_KEY]: {
     statusId: 0,
-    title: "Registering Voters",
-    description: "Owner is registering voters addresses in a voting whitelist.",
-    ownerInstruction: "Feel free to add new voters to the whitelist.",
-    voterInstruction:
-      "Owner is registering voters, proposal submission will be open soon.",
+    title: "Ballot Ready",
+    description: "General meeting is now set !",
+    ownerInstruction: "Feel free to switch to attendees signing period when you are ready",
+    customerInstruction:
+      "Attendees Signing period will open soon.",
   },
-  [PROPOSAL_REGISTRATION_STARTED_KEY]: {
+  [ATTENDEES_SIGNING_KEY]: {
     statusId: 1,
-    title: "Proposals Registration Started",
+    title: "Attendees Signing",
     description:
-      "Proposal registration status started. Registered voters are allowed to send their proposals.",
+      "Owners which are attending the meeting, must confirm their presence",
     ownerInstruction:
-      "Voters are submiting proposals, set to next step when at least one proposal is registered.",
-    voterInstruction: "Send your proposals to ballot",
+      "Half of total customers must confirm before closing this period.",
+    customerInstruction: "Please confirm your presence in order to vote by clicking here",
   },
-  [PROPOSAL_REGISTRATION_ENDED_KEY]: {
+  [ATTENDEES_SIGNING_COUNT_REVEALED_KEY]: {
     statusId: 2,
-    title: "Proposals Registration Ended",
+    title: "Attendees Signing Count Revealed",
     description:
-      "Proposal submission status ended. No more proposals would be added",
-    ownerInstruction: "Step to Voting session opening when you are ready",
-    voterInstruction: "Voting session will start soon",
+      "Attendees list is now finalized in this chart below ",
+    ownerInstruction:
+      "Switch to the period of Proposal Voting Presentation when your attendees are all ok. ",
+    customerInstruction: "Ensure you've signed in the Attendees list ",
   },
-  [VOTING_SESSIONS_STARTED_KEY]: {
+  [PROPOSAL_BEING_SUBMITTED_KEY]: {
     statusId: 3,
-    title: "Voting Session Started",
-    description: "Now, voters can vote for their prefered proposals",
-    ownerInstruction: "Wait for voters to be done with votes",
-    voterInstruction: "Please handle you vote (one vote per voter!)",
+    title: "Proposal Being Submitted",
+    description:
+      "Current proposal is now being submitted and discussed.",
+    ownerInstruction:
+      "Switch to ballot opening when talks are done.",
+    customerInstruction: "Ballot will open when talks are done.",
   },
-  [VOTING_SESSIONS_ENDED_KEY]: {
+  [PROPOSAL_VOTING_OPEN_KEY]: {
     statusId: 4,
-    title: "Voting Session Ended",
-    description: "Voting session was closed, votes are now deactivated.",
-    ownerInstruction: "Step over to Votes Tallied when you are ready.",
-    voterInstruction: "Results will be published soon...",
+    title: "Proposal Voting Open",
+    description: "Ballot for current proposition is now open",
+    ownerInstruction: "Close this ballot when at least half of attendees have voted",
+    customerInstruction: "Select your vote:",
   },
-  [VOTES_TALLIED_KEY]: {
+  [PROPOSAL_VOTING_CLOSED_KEY]: {
     statusId: 5,
-    title: "Votes Tallied",
-    description: "Starting votes tallying.",
-    ownerInstruction: "Just click on pickwinner and celebrate !",
-    voterInstruction: "Check the results.",
+    title: "Proposal Voting Closed",
+    description: "Current Ballot is closed, no more votes are admitted",
+    ownerInstruction: "Handle counting reveal when ready",
+    customerInstruction: "Please wait for the results",
   },
-  [OWNERS_CHOICE_KEY]: {
+  [PROPOSAL_VOTING_COUNT_REVEALED_KEY]: {
     statusId: 6,
-    title: "OwnersChoice",
-    description: "Tie vote ! another round of voting will be made by the owner",
-    ownerInstruction: "Select the winner and achieve the ballot",
-    voterInstruction: "Chec the results",
+    title: "Prposal Voting Count Revealed",
+    description: "Current Ballot results are now available.",
+    ownerInstruction: "Step over to Next proposal submission when ready",
+    customerInstruction: "",
+  },
+  [MEETING_ENDED_KEY]: {
+    statusId: 7,
+    title: "Meeting Ended",
+    description: "Meeting is now achieved !",
+    ownerInstruction: "Lock the Contract when you are ready (this action is XXXXXX) ",
+    customerInstruction: "Please consult finalized list of ballots results below:",
+  },
+  [CONTRACT_LOCKED_KEY]: {
+    statusId: 8,
+    title: "Contract Locked",
+    description: "Meeting is now finalized.",
+    ownerInstruction: "No action is now possible, modification of proposals and votes is definitively impossible",
+    customerInstruction: "Please consult finalized list of ballots results below:",
   },
 };
 
-export function getNextStatusIdToRequest(statusKey: keyof typeof STATUS_RULES) {
+export function getNextStatusIdToRequest(statusKey: keyof typeof STATUS_INSTRUCTIONS) {
   if (
-    Object.keys(STATUS_RULES).includes(statusKey) &&
-    statusKey !== OWNERS_CHOICE_KEY
+    Object.keys(STATUS_INSTRUCTIONS).includes(statusKey) &&
+    statusKey !== CONTRACT_LOCKED_KEY
   ) {
-    return STATUS_RULES[statusKey].statusId + 1;
+    return STATUS_INSTRUCTIONS[statusKey].statusId + 1;
   }
   return null;
 }

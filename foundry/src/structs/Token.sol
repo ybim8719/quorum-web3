@@ -6,3 +6,10 @@ enum TokenWorkflowStatus {
     TransferingShares,
     ContractLocked
 }
+
+struct TokenGeneralInfo {
+    string condoTotalShares,
+    uint256 nbOfTokenizedLots,
+    uint256 sharesTokenized, 
+    TokenWorkflowStatus currentStatus
+}
