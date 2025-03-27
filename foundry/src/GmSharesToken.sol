@@ -67,7 +67,7 @@ contract GMSharesToken is ERC20, Ownable {
         // TODO check others controls
         // min nb of tokens and transfer all to owner
         _mint(msg.sender, amount);
-        // open transfering share period
+        // open transfering shares period
         s_currentStatus = TokenWorkflowStatus.TransferingShares;
     }
 

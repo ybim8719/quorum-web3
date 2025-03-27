@@ -31,6 +31,8 @@ contract CondoGmManager is Ownable {
     error CondoGmManager__CustomerHasAlreadyLot(address customer);
     error CondoGmManager__LotHasNoCustomer(uint256 lotId);
     error CondoGmManager__DeployERC20ConditionsNotReached();
+    error CondoGmManager__ERC20NotDeployedYet();
+    error CondoGmManager__LotSharesAlreadyTokenized(uint256 lotId);
 
     /*//////////////////////////////////////////////////////////////
                          Immutables and constants
@@ -213,22 +215,27 @@ contract CondoGmManager is Ownable {
         // mint 1000 token
         deployed.initialMinting(SHARES_LIMIT);
     }
+    /// @notice select a given lot and call ERC20 to transfer attached shares to linked customer balance
 
-    function convertSharesToToken(uint256 _lotId) external {
-        // select a given lot and transfer equivalent of shares to customerAddress balance
-        if (s_lotsList[_lotId].customerAddress == address(0)) {
-            revert CondoGmManager__LotHasNoCustomer(_lotId);
+    function convertLotSharesToToken(uint256 _lotId) external onlyOwner {
+        if (s_deployedERC20 == address(0)) {
+            revert CondoGmManager__ERC20NotDeployedYet();
         }
 
+        Lot storage lot = s_lotsList[_lotId];
+        if (lot.customerAddress == address(0)) {
+            revert CondoGmManager__LotHasNoCustomer(_lotId);
+        }
+        if (lot.isTokenized) {
+            revert CondoGmManager__LotSharesAlreadyTokenized(_lotId);
+        }
+
+        bool response = GMSharesToken(s_deployedERC20).transfer(lot.customerAddress, lot.shares);
+        if (response) {
+            lot.isTokenized = true;
+        }
+        // call total shares transfered from ERC20, and if == 1000, stop the transfers
         // todo other controls
-
-        // set the verify attribute to true if ok
-    }
-
-    // todo cover with test
-    function verifyLotIsTokenized(uint256 lotId) external {
-        // make a call to balanceOf erc20?
-        if (s_lotsList[lotId].customerAddress != address(0)) {}
     }
 
     /*//////////////////////////////////////////////////////////////
