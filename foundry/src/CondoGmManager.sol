@@ -11,6 +11,7 @@ import {GMBallot} from "./GmBallot.sol";
 /// @author Pascal Thao
 /// @dev pass in constructor the main information of the targeted condominium
 /// @notice Contract designed to handle and managed states of a condo and deploy two child contracts TOKEN and BALLOT
+
 contract CondoGmManager is Ownable {
     /*//////////////////////////////////////////////////////////////
                             ERRORS
@@ -29,7 +30,7 @@ contract CondoGmManager is Ownable {
     error CondoGmManager__CustomerHasAlreadyLot(address customer);
     error CondoGmManager__LotHasNoCustomer(uint256 lotId);
     error CondoGmManager__DeployERC20ConditionsNotReached();
-    
+
     /*//////////////////////////////////////////////////////////////
                          Immutables and constants
     //////////////////////////////////////////////////////////////*/
@@ -173,33 +174,29 @@ contract CondoGmManager is Ownable {
         // if all lots have found a customer and total shares of lots have reached 1000 / then token is now accessible for tokenizing of shares
         if (_checkIfCanDeployERC20()) {
             s_deployERC20IsPossible = true;
-        };
-
+        }
     }
 
     function _checkIfCanDeployERC20() internal returns (bool) {
         if (s_addingLotIsLocked == false) {
             return false;
         }
-        if (s_nextLotIndex > 1) {
-            bool isOk;
-            // lot ids start at 1
-            for (uint256 id = 1; id < s_nextLotIndex;) {
-                if (s_lotsList[id].customerAddress == address(0)) {
-                    isOk = false;
-                }
-                unchecked {
-                    ++i;
-                }
+        bool canDeploy = true;
+        // lot ids start at 1
+
+        for (uint256 id = 1; id < s_nextLotIndex;) {
+            if (s_lotsList[id].customerAddress == address(0)) {
+                canDeploy = false;
             }
-            return isOk;
-        } else {
-            return false;
+            unchecked {
+                ++id;
+            }
         }
+        return canDeploy;
     }
 
     /*//////////////////////////////////////////////////////////////
-                            WRITE FUNCTIONS -> TOKEN
+                    WRITE FUNCTIONS -> TOKEN
     //////////////////////////////////////////////////////////////*/
     /// @notice deploy ERC20 and mint 1000 token for owner balance.
     function createGMSharesToken() external onlyOwner {
@@ -229,6 +226,7 @@ contract CondoGmManager is Ownable {
 
     // todo cover with test
     function verifyLotIsTokenized(uint256 lotId) external {
+        // make a call to balanceOf erc20?
         if (s_lotsList[lotId].customerAddress != address(0)) {}
     }
 
@@ -238,7 +236,7 @@ contract CondoGmManager is Ownable {
     function createGMBallot() external {}
 
     /*//////////////////////////////////////////////////////////////
-                        VIEW FUNCTIONS / CUSTOMERS
+                        VIEW FUNCTIONS / CONDO INFO
     //////////////////////////////////////////////////////////////*/
     function getGeneralInfos() external view returns (CondoGeneralInfo memory) {
         return CondoGeneralInfo(i_condoName, i_description, i_postalAddress);
@@ -313,6 +311,14 @@ contract CondoGmManager is Ownable {
 
     function getNbOfLots() external view returns (uint256) {
         return s_nbOfLots;
+    }
+
+    function getAddingLotIsLocked() external view returns (bool) {
+        return s_addingLotIsLocked;
+    }
+
+    function getsDeployERC20IsPossible() external view returns (bool) {
+        return s_deployERC20IsPossible;
     }
 
     /*//////////////////////////////////////////////////////////////

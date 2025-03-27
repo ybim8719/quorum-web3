@@ -6,7 +6,7 @@ import {CondoGmManager} from "../src/CondoGmManager.sol";
 import {DeployCondoGmManager} from "../script/DeployCondoGmManager.s.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Customer, Lot, GeneralMeeting} from "../src/structs/Manager.sol";
-import {GmSharesToken} from "../src/GmSharesToken.sol";
+import {GMSharesToken} from "../src/GmSharesToken.sol";
 
 contract CondoGmManagerTest is Test {
     //https://book.getfoundry.sh/guides/best-practices#internal-functions
@@ -54,6 +54,18 @@ contract CondoGmManagerTest is Test {
         assertEq(nbCustomers, 1);
         assertEq(s_manager.getLotsInfos()[0].lastName, "");
         assertEq(s_manager.getLotsInfos()[0].shares, LOT1_SHARES);
+        vm.stopPrank();
+        _;
+    }
+
+    modifier lotsAndCustomersAddedAndLinked() {
+        vm.startPrank(msg.sender);
+        s_manager.registerLot(LOT1_OFFICIAL_CODE, LOT1_SHARES);
+        s_manager.registerLot(LOT2_OFFICIAL_CODE, LOT2_SHARES);
+        s_manager.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
+        s_manager.registerCustomer(CUSTOMER2_FIRST_NAME, CUSTOMER2_LAST_NAME, CUSTOMER2_ADDRESS);
+        s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, LOT1_ID);
+        s_manager.linkCustomerToLot(CUSTOMER2_ADDRESS, LOT2_ID);
         vm.stopPrank();
         _;
     }
@@ -137,6 +149,7 @@ contract CondoGmManagerTest is Test {
         vm.stopPrank();
         assertEq(s_manager.getLotById(LOT1_ID).shares, LOT1_SHARES);
         assertEq(s_manager.getLotById(LOT2_ID).lotOfficialNumber, LOT2_OFFICIAL_CODE);
+        assertEq(s_manager.getAddingLotIsLocked(), true);
     }
 
     function test_fuzz_registerLot(string calldata _lotOfficialNumber, uint256 _shares) public {
@@ -261,23 +274,59 @@ contract CondoGmManagerTest is Test {
         assertEq(customer.lotId, LOT1_ID);
     }
 
-    function test_succeed_linkCustomerToLot_maxSharesReached() public lotAndCustomerAdded {
-        vm.prank(msg.sender);
-        vm.expectEmit(true, true, false, true, address(s_manager));
-        emit CondoGmManager.CustomerOfLotSet(LOT1_ID, CUSTOMER1_ADDRESS);
+    function test_succeed_ERC20Checking_returnsFalseIf1000NotReached() public lotAndCustomerAdded {
+        vm.startPrank(msg.sender);
         s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, LOT1_ID);
-        Lot memory detail = s_manager.getLotById(LOT1_ID);
-        assertEq(detail.customerAddress, CUSTOMER1_ADDRESS);
-        assertEq(detail.shares, LOT1_SHARES);
-        assertEq(detail.lotOfficialNumber, LOT1_OFFICIAL_CODE);
-        Customer memory customer = s_manager.getCustomerDetail(CUSTOMER1_ADDRESS);
-        assertEq(customer.lotId, LOT1_ID);
+        assertEq(s_manager.getAddingLotIsLocked(), false);
+        assertEq(s_manager.getsDeployERC20IsPossible(), false);
+        vm.stopPrank();
     }
-    /*//////////////////////////////////////////////////////////////
-                        CREATE ERC20 TOKEN
-    //////////////////////////////////////////////////////////////*/
+
+    function test_succeed_ERC20Checking_returnsFalseIfNotAllLotsLinked() public lotAndCustomerAdded {
+        vm.startPrank(msg.sender);
+        s_manager.registerLot(LOT2_OFFICIAL_CODE, LOT2_SHARES);
+        assertEq(s_manager.getAddingLotIsLocked(), true);
+        s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, LOT1_ID);
+        assertEq(s_manager.getsDeployERC20IsPossible(), false);
+        vm.stopPrank();
+    }
+
+    function test_succeed_ERC20Checking_returnsTrue() public lotAndCustomerAdded {
+        vm.startPrank(msg.sender);
+        s_manager.registerLot(LOT2_OFFICIAL_CODE, LOT2_SHARES);
+        assertEq(s_manager.getAddingLotIsLocked(), true);
+        s_manager.registerCustomer(CUSTOMER2_FIRST_NAME, CUSTOMER2_LAST_NAME, CUSTOMER2_ADDRESS);
+        s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, LOT1_ID);
+        s_manager.linkCustomerToLot(CUSTOMER2_ADDRESS, LOT2_ID);
+        assertEq(s_manager.getsDeployERC20IsPossible(), true);
+        vm.stopPrank();
+    }
 
     /*//////////////////////////////////////////////////////////////
-                        INTERACT WITH ERC20 TOKEN
+                        createGMSharesToken
+    //////////////////////////////////////////////////////////////*/
+    function test_succeed_createGMSharesToken() public lotsAndCustomersAddedAndLinked {
+        vm.startPrank(msg.sender);
+        // assertEq(s_manager.getAddingLotIsLocked(), true);
+
+        //
+
+        // instantiate ERC20 with copro name, adress(this), no decimals, 1000 as max shares
+        GMSharesToken deployed = new GMSharesToken("CoproToken ", "COPRO", SHARES_LIMIT, address(this));
+        s_deployedERC20 = address(deployed);
+        // mint 1000 token and no decimals
+        // deployed.initialMinting(SHARES_LIMIT);
+        // assertEq(s_manager.getERC20Address(), true);
+        vm.stopPrank();
+    }
+
+    // TODO : think about transfer ownership !!!!!
+    // test_revert_createGMSharesToken_invalidConditions
+    // CondoGmManager__DeployERC20ConditionsNotReached
+    // test_revert_createGMSharesToken_alreadyDeployed
+    //CondoGmManager__CantDeployAnotherERC20
+
+    /*//////////////////////////////////////////////////////////////
+                       convertSharesToToken
     //////////////////////////////////////////////////////////////*/
 }
