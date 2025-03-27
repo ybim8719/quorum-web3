@@ -41,6 +41,12 @@ struct GeneralMeeting {
     uint256 meetingStart;
 }
 
+struct CondoGeneralInfo {
+    string condoName;
+    string description;
+    string postalAddress;
+}
+
 /*//////////////////////////////////////////////////////////////
                             ENUMS
 //////////////////////////////////////////////////////////////*/

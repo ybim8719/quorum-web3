@@ -1,23 +1,25 @@
-import { manager_abi } from "../../constants/deployed";
+import { token_abi } from "../../constants/deployed";
 import { useReadContract, useAccount } from "wagmi";
 
-export const useReadTokenQueries = (deployedManagerAddress: string) => {
+export const useReadTokenQueries = (deployedTokenAddress: string) => {
     const { address } = useAccount();
 
     const useFetchedBalanceOf = useReadContract({
-        address: deployedManagerAddress as `0x${string}`,
-        abi: manager_abi,
+        address: deployedTokenAddress as `0x${string}`,
+        abi: token_abi,
         functionName: "getLotsInfos",
         account: address,
     });
 
-    // getCurrentStatus
-    // getCondoTotalShares
-    // getNbOfTokenizedLots
-    // getSharesTokenized
-
+    const useFetchedGeneralInfo = useReadContract({
+        address: deployedTokenAddress as `0x${string}`,
+        abi: token_abi,
+        functionName: "getGeneralInfo",
+        account: address,
+    });
 
     return {
         useFetchedBalanceOf,
+        useFetchedGeneralInfo
     };
 };

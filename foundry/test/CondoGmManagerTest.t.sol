@@ -6,6 +6,7 @@ import {CondoGmManager} from "../src/CondoGmManager.sol";
 import {DeployCondoGmManager} from "../script/DeployCondoGmManager.s.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Customer, Lot, GeneralMeeting} from "../src/structs/Manager.sol";
+import {GmSharesToken} from "../src/GmSharesToken.sol";
 
 contract CondoGmManagerTest is Test {
     //https://book.getfoundry.sh/guides/best-practices#internal-functions
@@ -42,7 +43,7 @@ contract CondoGmManagerTest is Test {
 
     function setUp() public {
         DeployCondoGmManager script = new DeployCondoGmManager();
-        s_manager = script.run();
+        s_manager = script.run(NAME, DESCRIPTION, POSTAL_ADDRESS);
     }
 
     modifier lotAndCustomerAdded() {
@@ -53,14 +54,22 @@ contract CondoGmManagerTest is Test {
         assertEq(nbCustomers, 1);
         assertEq(s_manager.getLotsInfos()[0].lastName, "");
         assertEq(s_manager.getLotsInfos()[0].shares, LOT1_SHARES);
-
         vm.stopPrank();
         _;
     }
 
     /*//////////////////////////////////////////////////////////////
+                        CONSTRUCTOR
+    //////////////////////////////////////////////////////////////*/
+    function test_succeeds_contractInitialzed() public {
+        assertEq(s_manager.getGeneralInfos().condoName, NAME);
+        assertEq(s_manager.getGeneralInfos().postalAddress, POSTAL_ADDRESS);
+        assertEq(s_manager.getGeneralInfos().description, DESCRIPTION);
+    }
+    /*//////////////////////////////////////////////////////////////
                         REGISTERING CUSTOMER
     //////////////////////////////////////////////////////////////*/
+
     function test_revert_registerCustomer_alreadyAdded() public {
         vm.startPrank(msg.sender);
         s_manager.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
@@ -252,6 +261,18 @@ contract CondoGmManagerTest is Test {
         assertEq(customer.lotId, LOT1_ID);
     }
 
+    function test_succeed_linkCustomerToLot_maxSharesReached() public lotAndCustomerAdded {
+        vm.prank(msg.sender);
+        vm.expectEmit(true, true, false, true, address(s_manager));
+        emit CondoGmManager.CustomerOfLotSet(LOT1_ID, CUSTOMER1_ADDRESS);
+        s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, LOT1_ID);
+        Lot memory detail = s_manager.getLotById(LOT1_ID);
+        assertEq(detail.customerAddress, CUSTOMER1_ADDRESS);
+        assertEq(detail.shares, LOT1_SHARES);
+        assertEq(detail.lotOfficialNumber, LOT1_OFFICIAL_CODE);
+        Customer memory customer = s_manager.getCustomerDetail(CUSTOMER1_ADDRESS);
+        assertEq(customer.lotId, LOT1_ID);
+    }
     /*//////////////////////////////////////////////////////////////
                         CREATE ERC20 TOKEN
     //////////////////////////////////////////////////////////////*/

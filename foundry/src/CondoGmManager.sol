@@ -3,7 +3,7 @@
 pragma solidity ^0.8.26;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {Customer, CustomerView, Lot, LotView} from "./structs/Manager.sol";
+import {Customer, CustomerView, Lot, LotView, CondoGeneralInfo} from "./structs/Manager.sol";
 import {GMSharesToken} from "./GmSharesToken.sol";
 import {GMBallot} from "./GmBallot.sol";
 
@@ -28,7 +28,8 @@ contract CondoGmManager is Ownable {
     error CondoGmManager__CantDeployAnotherERC20();
     error CondoGmManager__CustomerHasAlreadyLot(address customer);
     error CondoGmManager__LotHasNoCustomer(uint256 lotId);
-
+    error CondoGmManager__DeployERC20ConditionsNotReached();
+    
     /*//////////////////////////////////////////////////////////////
                          Immutables and constants
     //////////////////////////////////////////////////////////////*/
@@ -48,6 +49,7 @@ contract CondoGmManager is Ownable {
     uint256 s_currentTotalShares;
     uint256 s_nextLotIndex;
     bool s_addingLotIsLocked;
+    bool s_deployERC20IsPossible;
     address s_deployedERC20;
     address s_deployedBallot;
 
@@ -58,6 +60,7 @@ contract CondoGmManager is Ownable {
     event CustomerOfLotSet(uint256 indexed lotId, address customer);
     event CustomerCreated(address customerAddress, string firstName, string lastName);
     event TotalSharesReachedMaxLimit();
+    event ERC20DeployedIsPossible();
     event ERC20Deployed(address tokenAddress);
 
     /*//////////////////////////////////////////////////////////////
@@ -139,6 +142,7 @@ contract CondoGmManager is Ownable {
         ++s_nextLotIndex;
         s_lotsOfficialNumbers[_lotOfficialNumber] = true;
         emit LotAdded(_lotOfficialNumber);
+        // check if limit of 1000 shares reached, then prevent adding of new lots
         if (s_currentTotalShares == SHARES_LIMIT) {
             s_addingLotIsLocked = true;
             emit TotalSharesReachedMaxLimit();
@@ -166,6 +170,32 @@ contract CondoGmManager is Ownable {
         // set lot to customer
         s_customersInfo[_customerAddress].lotId = _lotId;
         emit CustomerOfLotSet(_lotId, _customerAddress);
+        // if all lots have found a customer and total shares of lots have reached 1000 / then token is now accessible for tokenizing of shares
+        if (_checkIfCanDeployERC20()) {
+            s_deployERC20IsPossible = true;
+        };
+
+    }
+
+    function _checkIfCanDeployERC20() internal returns (bool) {
+        if (s_addingLotIsLocked == false) {
+            return false;
+        }
+        if (s_nextLotIndex > 1) {
+            bool isOk;
+            // lot ids start at 1
+            for (uint256 id = 1; id < s_nextLotIndex;) {
+                if (s_lotsList[id].customerAddress == address(0)) {
+                    isOk = false;
+                }
+                unchecked {
+                    ++i;
+                }
+            }
+            return isOk;
+        } else {
+            return false;
+        }
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -173,6 +203,9 @@ contract CondoGmManager is Ownable {
     //////////////////////////////////////////////////////////////*/
     /// @notice deploy ERC20 and mint 1000 token for owner balance.
     function createGMSharesToken() external onlyOwner {
+        if (s_deployERC20IsPossible == false) {
+            revert CondoGmManager__DeployERC20ConditionsNotReached();
+        }
         if (s_deployedERC20 != address(0)) {
             revert CondoGmManager__CantDeployAnotherERC20();
         }
@@ -203,6 +236,13 @@ contract CondoGmManager is Ownable {
                      WRITE FUNCTIONS -> BALLOT
     //////////////////////////////////////////////////////////////*/
     function createGMBallot() external {}
+
+    /*//////////////////////////////////////////////////////////////
+                        VIEW FUNCTIONS / CUSTOMERS
+    //////////////////////////////////////////////////////////////*/
+    function getGeneralInfos() external view returns (CondoGeneralInfo memory) {
+        return CondoGeneralInfo(i_condoName, i_description, i_postalAddress);
+    }
 
     /*//////////////////////////////////////////////////////////////
                         VIEW FUNCTIONS / CUSTOMERS

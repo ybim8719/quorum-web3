@@ -8,8 +8,8 @@ enum TokenWorkflowStatus {
 }
 
 struct TokenGeneralInfo {
-    string condoTotalShares,
-    uint256 nbOfTokenizedLots,
-    uint256 sharesTokenized, 
-    TokenWorkflowStatus currentStatus
+    uint256 condoTotalShares;
+    uint256 nbOfTokenizedLots;
+    uint256 sharesTokenized;
+    TokenWorkflowStatus currentStatus;
 }
