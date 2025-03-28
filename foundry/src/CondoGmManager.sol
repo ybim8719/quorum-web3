@@ -29,10 +29,10 @@ contract CondoGmManager is Ownable {
     error CondoGmManager__RegisteredLotIsLocked(string lotOfficialNumber);
     error CondoGmManager__CantDeployAnotherERC20();
     error CondoGmManager__CustomerHasAlreadyLot(address customer);
-    error CondoGmManager__LotHasNoCustomer(uint256 lotId);
     error CondoGmManager__DeployERC20ConditionsNotReached();
     error CondoGmManager__ERC20NotDeployedYet();
     error CondoGmManager__LotSharesAlreadyTokenized(uint256 lotId);
+    error CondoGmManager__SharesCantBeZero(string lotOfficialNumber);
 
     /*//////////////////////////////////////////////////////////////
                          Immutables and constants
@@ -127,6 +127,9 @@ contract CondoGmManager is Ownable {
         if (s_addingLotIsLocked) {
             revert CondoGmManager__RegisteredLotIsLocked(_lotOfficialNumber);
         }
+        if (_shares == 0) {
+            revert CondoGmManager__SharesCantBeZero(_lotOfficialNumber);
+        }
         if (s_lotsOfficialNumbers[_lotOfficialNumber]) {
             revert CondoGmManager__LotAlreadyRegistered(_lotOfficialNumber);
         }
@@ -180,7 +183,7 @@ contract CondoGmManager is Ownable {
         }
     }
 
-    function _checkIfCanDeployERC20() internal returns (bool) {
+    function _checkIfCanDeployERC20() internal view returns (bool) {
         if (s_addingLotIsLocked == false) {
             return false;
         }
@@ -210,22 +213,18 @@ contract CondoGmManager is Ownable {
             revert CondoGmManager__CantDeployAnotherERC20();
         }
         // instantiate ERC20 with copro name, adress(this), no decimals, 1000 as max shares
-        GMSharesToken deployed = new GMSharesToken("CoproToken ", "COPRO", SHARES_LIMIT, address(this));
+        GMSharesToken deployed = new GMSharesToken("CoproToken ", "COPRO", SHARES_LIMIT);
         s_deployedERC20 = address(deployed);
-        // mint 1000 token
+        // mint 1000 token and grant them to owner
         deployed.initialMinting(SHARES_LIMIT);
     }
-    /// @notice select a given lot and call ERC20 to transfer attached shares to linked customer balance
 
+    /// @notice select a given lot and call ERC20 to transfer attached shares to linked customer balance
     function convertLotSharesToToken(uint256 _lotId) external onlyOwner {
         if (s_deployedERC20 == address(0)) {
             revert CondoGmManager__ERC20NotDeployedYet();
         }
-
         Lot storage lot = s_lotsList[_lotId];
-        if (lot.customerAddress == address(0)) {
-            revert CondoGmManager__LotHasNoCustomer(_lotId);
-        }
         if (lot.isTokenized) {
             revert CondoGmManager__LotSharesAlreadyTokenized(_lotId);
         }
@@ -234,8 +233,6 @@ contract CondoGmManager is Ownable {
         if (response) {
             lot.isTokenized = true;
         }
-        // call total shares transfered from ERC20, and if == 1000, stop the transfers
-        // todo other controls
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -332,7 +329,6 @@ contract CondoGmManager is Ownable {
     /*//////////////////////////////////////////////////////////////
                         CHILD CONTRACTS
     //////////////////////////////////////////////////////////////*/
-    // todo cover with test
     function getERC20Address() external view returns (address) {
         return s_deployedERC20;
     }

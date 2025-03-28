@@ -43,12 +43,11 @@ contract GMSharesToken is ERC20, Ownable {
     error GMSharesToken__TokenizedSharesMustBeNull();
 
     /// @notice parent contract (manager) becomes the owner of the contract
-    constructor(string memory _name, string memory _symbol, uint256 _condoTotalShares, address _managerContract)
+    constructor(string memory _name, string memory _symbol, uint256 _condoTotalShares)
         ERC20(_name, _symbol)
         Ownable(msg.sender)
     {
         i_condoTotalShares = _condoTotalShares;
-        i_managerContract = _managerContract;
     }
 
     /// @notice initial minting can be applied once for the entire condo shares

@@ -7,10 +7,10 @@ import {DeployCondoGmManager} from "../script/DeployCondoGmManager.s.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Customer, Lot, GeneralMeeting} from "../src/structs/Manager.sol";
 import {GMSharesToken} from "../src/GmSharesToken.sol";
+import {TokenGeneralInfo, TokenWorkflowStatus} from "../src/structs/Token.sol";
 
 contract CondoGmManagerTest is Test {
     //https://book.getfoundry.sh/guides/best-practices#internal-functions
-
     /*//////////////////////////////////////////////////////////////
                                 STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -73,7 +73,7 @@ contract CondoGmManagerTest is Test {
     /*//////////////////////////////////////////////////////////////
                         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
-    function test_succeeds_contractInitialzed() public {
+    function test_succeeds_contractInitialzed() public view {
         assertEq(s_manager.getGeneralInfos().condoName, NAME);
         assertEq(s_manager.getGeneralInfos().postalAddress, POSTAL_ADDRESS);
         assertEq(s_manager.getGeneralInfos().description, DESCRIPTION);
@@ -150,6 +150,14 @@ contract CondoGmManagerTest is Test {
         assertEq(s_manager.getLotById(LOT1_ID).shares, LOT1_SHARES);
         assertEq(s_manager.getLotById(LOT2_ID).lotOfficialNumber, LOT2_OFFICIAL_CODE);
         assertEq(s_manager.getAddingLotIsLocked(), true);
+    }
+
+    function test_revert_registerLot_shareCantBeZero() public {
+        vm.prank(msg.sender);
+        vm.expectRevert(
+            abi.encodeWithSelector(CondoGmManager.CondoGmManager__SharesCantBeZero.selector, LOT1_OFFICIAL_CODE)
+        );
+        s_manager.registerLot(LOT1_OFFICIAL_CODE, 0);
     }
 
     function test_fuzz_registerLot(string calldata _lotOfficialNumber, uint256 _shares) public {
@@ -335,4 +343,48 @@ contract CondoGmManagerTest is Test {
     /*//////////////////////////////////////////////////////////////
                        convertSharesToToken
     //////////////////////////////////////////////////////////////*/
+    function test_revert_convertSharesToToken_ifERC20NotDeployedYet() public lotsAndCustomersAddedAndLinked {
+        vm.prank(msg.sender);
+        vm.expectRevert(abi.encodeWithSelector(CondoGmManager.CondoGmManager__ERC20NotDeployedYet.selector));
+        s_manager.convertLotSharesToToken(LOT1_ID);
+    }
+
+    function test_revert_convertSharesToToken_ifLotSharesAlreadyTokenized() public lotsAndCustomersAddedAndLinked {
+        vm.startPrank(msg.sender);
+        s_manager.createGMSharesToken();
+        s_manager.convertLotSharesToToken(LOT1_ID);
+        vm.expectRevert(
+            abi.encodeWithSelector(CondoGmManager.CondoGmManager__LotSharesAlreadyTokenized.selector, LOT1_ID)
+        );
+        s_manager.convertLotSharesToToken(LOT1_ID);
+        vm.stopPrank();
+    }
+
+    function test_succeeds_convertSharesToToken() public lotsAndCustomersAddedAndLinked {
+        vm.startPrank(msg.sender);
+        s_manager.createGMSharesToken();
+        s_manager.convertLotSharesToToken(LOT1_ID);
+        Lot memory lot = s_manager.getLotById(LOT1_ID);
+        assertEq(lot.isTokenized, true);
+        assertEq(GMSharesToken(s_manager.getERC20Address()).balanceOf(lot.customerAddress), lot.shares);
+        TokenGeneralInfo memory info = GMSharesToken(s_manager.getERC20Address()).getGeneralInfo();
+        assertEq(info.sharesTokenized, lot.shares);
+        assertEq(info.nbOfTokenizedLots, 1);
+        assert(info.currentStatus == TokenWorkflowStatus.TransferingShares);
+        vm.stopPrank();
+    }
+
+    function test_succeeds_convertAllSharesToToken() public lotsAndCustomersAddedAndLinked {
+        vm.startPrank(msg.sender);
+        s_manager.createGMSharesToken();
+        s_manager.convertLotSharesToToken(LOT1_ID);
+        vm.expectEmit(false, false, false, true, address(s_manager.getERC20Address()));
+        emit GMSharesToken.MaxSharesTokenizingReached();
+        s_manager.convertLotSharesToToken(LOT2_ID);
+        TokenGeneralInfo memory info = GMSharesToken(s_manager.getERC20Address()).getGeneralInfo();
+        assert(info.currentStatus == TokenWorkflowStatus.ContractLocked);
+        assertEq(info.sharesTokenized, LOT2_SHARES + LOT1_SHARES);
+        assertEq(info.nbOfTokenizedLots, 2);
+        vm.stopPrank();
+    }
 }
