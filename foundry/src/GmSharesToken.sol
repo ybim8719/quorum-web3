@@ -41,8 +41,9 @@ contract GMSharesToken is ERC20, Ownable {
     error GMSharesToken__MintInitialAmountFirst(address to, uint256 amount);
     error GMSharesToken__InvalidPeriod();
     error GMSharesToken__TokenizedSharesMustBeNull();
-
+    error GMSharesToken__AmountExceededTotalSupply(address to, uint256 amount);
     /// @notice parent contract (manager) becomes the owner of the contract
+
     constructor(string memory _name, string memory _symbol, uint256 _condoTotalShares)
         ERC20(_name, _symbol)
         Ownable(msg.sender)
@@ -83,7 +84,7 @@ contract GMSharesToken is ERC20, Ownable {
     /// @dev override parent transfer with strict control related to business rules
     function transfer(address to, uint256 value) public override onlyOwner returns (bool) {
         if (value > i_condoTotalShares) {
-            // todo 1001 > 1000 caca
+            revert GMSharesToken__AmountExceededTotalSupply(to, value);
         }
         if (s_currentStatus == TokenWorkflowStatus.ContractLocked) {
             revert GMSharesToken__ContractLocked(to, value);

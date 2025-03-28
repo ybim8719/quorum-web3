@@ -22,6 +22,7 @@ contract CondoGmManagerTest is Test {
     uint256 public constant TOTAL_SHARES = 1000;
     uint256 public constant INCOMPLETE_TOTAL_SHARES = 999;
     address public constant NOT_REGISTERED = 0x976EA74026E726554dB657fA54763abd0C3a0aa9;
+    address public constant CUSTOMER1_ADDRESS = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
     function setUp() public {
         s_token = new GMSharesToken(NAME, SYMBOL, TOTAL_SHARES);
@@ -95,26 +96,54 @@ contract CondoGmManagerTest is Test {
     }
 
     /*//////////////////////////////////////////////////////////////
-                         openTokenizingOfShares
+                         transfer
     //////////////////////////////////////////////////////////////*/
+    function test_revert_transfer_unauthorized() public {
+        s_token.initialMinting(TOTAL_SHARES);
+        s_token.openTokenizingOfShares();
+        vm.prank(NOT_REGISTERED);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, NOT_REGISTERED));
+        s_token.transfer(NOT_REGISTERED, TOTAL_SHARES);
+    }
 
-    // 1 revert unauthorized
+    function test_revert_transfer_amountExceededTotalSupply() public {
+        s_token.initialMinting(TOTAL_SHARES);
+        s_token.openTokenizingOfShares();
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                GMSharesToken.GMSharesToken__AmountExceededTotalSupply.selector, NOT_REGISTERED, TOTAL_SHARES + 1
+            )
+        );
+        s_token.transfer(NOT_REGISTERED, TOTAL_SHARES + 1);
+    }
 
-    //   2 revert ) if (value > i_condoTotalShares) {
-    //         // todo 1001 > 1000 caca
-    //     }
+    function test_revert_transfer_recipientCantHaveTwoLots() public {
+        s_token.initialMinting(TOTAL_SHARES);
+        s_token.openTokenizingOfShares();
+        s_token.transfer(CUSTOMER1_ADDRESS, INCOMPLETE_TOTAL_SHARES);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                GMSharesToken.GMSharesToken__RecipientCantHaveTwoLots.selector, NOT_REGISTERED, INCOMPLETE_TOTAL_SHARES
+            )
+        );
+        s_token.transfer(NOT_REGISTERED, INCOMPLETE_TOTAL_SHARES);
+    }
 
-    //     3) if (s_currentStatus == TokenWorkflowStatus.ContractLocked) {
+    // TODO
+    //     ?? 3) if (s_currentStatus == TokenWorkflowStatus.ContractLocked) {
     //         revert GMSharesToken__ContractLocked(to, value);
     //     }
-    //     4) if (s_currentStatus == TokenWorkflowStatus.InitialMinting) {
-    //         revert GMSharesToken__MintInitialAmountFirst(to, value);
-    //     }
-    //     5) if (balanceOf(to) > 0) {
-    //         revert GMSharesToken__RecipientCantHaveTwoLots(to, value);
-    //     }
 
-    function test_revert_convertSharesToToken() public {
+    function test_revert_transfer_mintInitialAmountFirst() public {
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                GMSharesToken.GMSharesToken__MintInitialAmountFirst.selector, NOT_REGISTERED, TOTAL_SHARES
+            )
+        );
+        s_token.transfer(NOT_REGISTERED, TOTAL_SHARES);
+    }
+
+    function test_suceeds_transfer() public {
         vm.startPrank(msg.sender);
         // assertEq(GMSharesToken(s_manager.getERC20Address()).balanceOf(lot.customerAddress), lot.shares);
         // TokenGeneralInfo memory info = GMSharesToken(s_manager.getERC20Address()).getGeneralInfo();
