@@ -8,8 +8,7 @@ import {console} from "forge-std/Test.sol";
 
 /// @notice ERC20 based token designed to store 1000 shares from a condo for a given generalMeeting
 /// Approvals are deactivated for now
-/// @dev inherits OpenZep erc20 and ownable
-
+/// @dev is owner by manager CONTRACT which will have the only rights to write into this
 contract GMSharesToken is ERC20, Ownable {
     // TODO overide and neutralized approvals
     // WHAT ABOUT DECIMALS ?
@@ -67,7 +66,7 @@ contract GMSharesToken is ERC20, Ownable {
         _mint(msg.sender, amount);
     }
 
-    /// @notice owner must ensure that initial minintg of 1000 was applied before opening shares stuff
+    /// @notice owner must ensure that initial minintg of 1000 was applied before opening shares
     function openTokenizingOfShares() external onlyOwner {
         if (s_nbOfTokenizedLots > 0 || s_sharesTokenized > 0) {
             revert GMSharesToken__TokenizedSharesMustBeNull();

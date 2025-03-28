@@ -219,6 +219,7 @@ contract CondoGmManager is Ownable {
         deployed.initialMinting(SHARES_LIMIT);
     }
 
+    /// @dev is the same than in toekn contract since owner to use this contract to communicate wirte functions to TOKEN
     function openTokenizingOfShares() external onlyOwner {
         if (s_deployedERC20 == address(0)) {
             revert CondoGmManager__ERC20NotDeployedYet();
