@@ -69,12 +69,11 @@ contract GMSharesToken is ERC20, Ownable {
 
     /// @notice owner must ensure that initial minintg of 1000 was applied before opening shares stuff
     function openTokenizingOfShares() external onlyOwner {
-        if (s_currentStatus != TokenWorkflowStatus.InitialMinting) {
-            revert GMSharesToken__InvalidPeriod();
-        }
-
         if (s_nbOfTokenizedLots > 0 || s_sharesTokenized > 0) {
             revert GMSharesToken__TokenizedSharesMustBeNull();
+        }
+        if (s_currentStatus != TokenWorkflowStatus.InitialMinting) {
+            revert GMSharesToken__InvalidPeriod();
         }
 
         s_currentStatus = TokenWorkflowStatus.TransferingShares;

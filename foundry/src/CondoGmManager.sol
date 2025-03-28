@@ -219,6 +219,13 @@ contract CondoGmManager is Ownable {
         deployed.initialMinting(SHARES_LIMIT);
     }
 
+    function openTokenizingOfShares() external onlyOwner {
+        if (s_deployedERC20 == address(0)) {
+            revert CondoGmManager__ERC20NotDeployedYet();
+        }
+        GMSharesToken(s_deployedERC20).openTokenizingOfShares();
+    }
+
     /// @notice select a given lot and call ERC20 to transfer attached shares to linked customer balance
     function convertLotSharesToToken(uint256 _lotId) external onlyOwner {
         if (s_deployedERC20 == address(0)) {

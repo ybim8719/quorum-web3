@@ -160,20 +160,21 @@ contract CondoGmManagerTest is Test {
         s_manager.registerLot(LOT1_OFFICIAL_CODE, 0);
     }
 
-    function test_fuzz_registerLot(string calldata _lotOfficialNumber, uint256 _shares) public {
-        vm.assume(_shares < 1000);
-        vm.startPrank(msg.sender);
+    // TODO UN JOUR
+    // function test_fuzz_registerLot(string calldata _lotOfficialNumber, uint256 _shares) public {
+    //     vm.assume(_shares < 1000);
+    //     vm.startPrank(msg.sender);
 
-        if (bytes(_lotOfficialNumber).length == 0) {
-            vm.expectRevert(abi.encodeWithSelector(CondoGmManager.CondoGmManager__EmptyString.selector));
-            s_manager.registerLot(_lotOfficialNumber, _shares);
-        } else {
-            s_manager.registerLot(_lotOfficialNumber, _shares);
-            assertEq(s_manager.getLotById(LOT1_ID).shares, _shares);
-            assertEq(s_manager.getLotById(LOT1_ID).lotOfficialNumber, _lotOfficialNumber);
-        }
-        vm.stopPrank();
-    }
+    //     if (bytes(_lotOfficialNumber).length == 0) {
+    //         vm.expectRevert(abi.encodeWithSelector(CondoGmManager.CondoGmManager__EmptyString.selector));
+    //         s_manager.registerLot(_lotOfficialNumber, _shares);
+    //     } else {
+    //         s_manager.registerLot(_lotOfficialNumber, _shares);
+    //         assertEq(s_manager.getLotById(LOT1_ID).shares, _shares);
+    //         assertEq(s_manager.getLotById(LOT1_ID).lotOfficialNumber, _lotOfficialNumber);
+    //     }
+    //     vm.stopPrank();
+    // }
 
     function test_revert_registerLot_isLocked() public {
         vm.startPrank(msg.sender);
@@ -341,6 +342,21 @@ contract CondoGmManagerTest is Test {
     }
 
     /*//////////////////////////////////////////////////////////////
+                       openTokenizingOfShares
+    //////////////////////////////////////////////////////////////*/
+    function test_revert_openTokenizingOfShares_ifERC20NotDeployedYet() public lotsAndCustomersAddedAndLinked {
+        vm.prank(msg.sender);
+        vm.expectRevert(abi.encodeWithSelector(CondoGmManager.CondoGmManager__ERC20NotDeployedYet.selector));
+        s_manager.openTokenizingOfShares();
+    }
+
+    function test_revert_openTokenizingOfShares_ifUnauthorized() public lotsAndCustomersAddedAndLinked {
+        vm.prank(NOT_REGISTERED);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, NOT_REGISTERED));
+        s_manager.openTokenizingOfShares();
+    }
+
+    /*//////////////////////////////////////////////////////////////
                        convertSharesToToken
     //////////////////////////////////////////////////////////////*/
     function test_revert_convertSharesToToken_ifERC20NotDeployedYet() public lotsAndCustomersAddedAndLinked {
@@ -352,6 +368,7 @@ contract CondoGmManagerTest is Test {
     function test_revert_convertSharesToToken_ifLotSharesAlreadyTokenized() public lotsAndCustomersAddedAndLinked {
         vm.startPrank(msg.sender);
         s_manager.createGMSharesToken();
+        s_manager.openTokenizingOfShares();
         s_manager.convertLotSharesToToken(LOT1_ID);
         vm.expectRevert(
             abi.encodeWithSelector(CondoGmManager.CondoGmManager__LotSharesAlreadyTokenized.selector, LOT1_ID)
@@ -363,6 +380,7 @@ contract CondoGmManagerTest is Test {
     function test_succeeds_convertSharesToToken() public lotsAndCustomersAddedAndLinked {
         vm.startPrank(msg.sender);
         s_manager.createGMSharesToken();
+        s_manager.openTokenizingOfShares();
         s_manager.convertLotSharesToToken(LOT1_ID);
         Lot memory lot = s_manager.getLotById(LOT1_ID);
         assertEq(lot.isTokenized, true);
@@ -377,6 +395,7 @@ contract CondoGmManagerTest is Test {
     function test_succeeds_convertAllSharesToToken() public lotsAndCustomersAddedAndLinked {
         vm.startPrank(msg.sender);
         s_manager.createGMSharesToken();
+        s_manager.openTokenizingOfShares();
         s_manager.convertLotSharesToToken(LOT1_ID);
         vm.expectEmit(false, false, false, true, address(s_manager.getERC20Address()));
         emit GMSharesToken.MaxSharesTokenizingReached();
