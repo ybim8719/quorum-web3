@@ -55,19 +55,15 @@ contract GMSharesToken is ERC20, Ownable {
         if (s_currentStatus == TokenWorkflowStatus.ContractLocked) {
             revert GMSharesToken__ContractLocked(msg.sender, amount);
         }
-
-        if (s_currentStatus == TokenWorkflowStatus.TransferingShares) {
+        if (totalSupply() == i_condoTotalShares) {
             revert GMSharesToken__InitialMintingDone(amount);
         }
         // Intial minting needs amount to be equal to total nb of shares of the condo total
         if (amount != i_condoTotalShares) {
             revert GMSharesToken__InvalidInitialMintingAmount(amount);
         }
-        // TODO check others controls
         // min nb of tokens and transfer all to owner
         _mint(msg.sender, amount);
-        // open transfering shares period
-        s_currentStatus = TokenWorkflowStatus.TransferingShares;
     }
 
     /// @notice owner must ensure that initial minintg of 1000 was applied before opening shares stuff
