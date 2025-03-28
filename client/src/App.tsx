@@ -5,7 +5,7 @@ import { useAccount } from "wagmi";
 import { GlobalContext } from "./context/globalContext";
 import { useReadManagerQueries } from "./hooks/useReadManagerQueries";
 import { OWNER_ROLE, CUSTOMER_ROLE } from "./models/roles";
-import { adressZero } from "./models/ERC20";
+import { isZeroAddress } from "./models/utils";
 import ERC20 from "./pages/ERC20";
 import Home from "./pages/Home";
 import Layout from "./components/UI/Layout";
@@ -56,7 +56,7 @@ function App() {
     if (
       fetchedERC20Data !== undefined &&
       fetchedERC20Data !== null &&
-      fetchedERC20Data !== adressZero
+      isZeroAddress(fetchedERC20Data as string) === false
     ) {
       globalCtx.setErc20Address(fetchedERC20Data.toString());
     }

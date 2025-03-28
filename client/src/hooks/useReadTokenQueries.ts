@@ -4,10 +4,10 @@ import { useReadContract, useAccount } from "wagmi";
 export const useReadTokenQueries = (deployedTokenAddress: string) => {
     const { address } = useAccount();
 
-    const useFetchedBalanceOf = useReadContract({
+    const useFetchedTotalSupply = useReadContract({
         address: deployedTokenAddress as `0x${string}`,
         abi: token_abi,
-        functionName: "getLotsInfos",
+        functionName: "totalSupply",
         account: address,
     });
 
@@ -19,7 +19,26 @@ export const useReadTokenQueries = (deployedTokenAddress: string) => {
     });
 
     return {
-        useFetchedBalanceOf,
-        useFetchedGeneralInfo
+        useFetchedGeneralInfo,
+        useFetchedTotalSupply
     };
 };
+
+export const useReadTokenBalanceOf = (requestedAddress: string, deployedTokenAddress: string) => {
+    const { address } = useAccount();
+
+    const useFetchedBalanceOf = useReadContract({
+        address: deployedTokenAddress as `0x${string}`,
+        abi: token_abi,
+        functionName: "getLotsInfos",
+        account: address,
+        args: [requestedAddress]
+    });
+
+    return {
+        useFetchedBalanceOf,
+    };
+};
+
+
+//https://wagmi.sh/core/api/actions/readContract
