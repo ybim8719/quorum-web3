@@ -27,7 +27,7 @@ export const manager_abi = [
   },
   {
     "type": "function",
-    "name": "convertSharesToToken",
+    "name": "convertLotSharesToToken",
     "inputs": [
       {
         "name": "_lotId",
@@ -51,6 +51,19 @@ export const manager_abi = [
     "inputs": [],
     "outputs": [],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "getAddingLotIsLocked",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -184,6 +197,36 @@ export const manager_abi = [
   },
   {
     "type": "function",
+    "name": "getGeneralInfos",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct CondoGeneralInfo",
+        "components": [
+          {
+            "name": "condoName",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "postalAddress",
+            "type": "string",
+            "internalType": "string"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "getLotById",
     "inputs": [
       {
@@ -301,6 +344,19 @@ export const manager_abi = [
   },
   {
     "type": "function",
+    "name": "getsDeployERC20IsPossible",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "linkCustomerToLot",
     "inputs": [
       {
@@ -314,6 +370,13 @@ export const manager_abi = [
         "internalType": "uint256"
       }
     ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "openTokenizingOfShares",
+    "inputs": [],
     "outputs": [],
     "stateMutability": "nonpayable"
   },
@@ -392,19 +455,6 @@ export const manager_abi = [
     "stateMutability": "nonpayable"
   },
   {
-    "type": "function",
-    "name": "verifyLotIsTokenized",
-    "inputs": [
-      {
-        "name": "lotId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
     "type": "event",
     "name": "CustomerCreated",
     "inputs": [
@@ -459,6 +509,12 @@ export const manager_abi = [
         "internalType": "address"
       }
     ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ERC20DeployedIsPossible",
+    "inputs": [],
     "anonymous": false
   },
   {
@@ -544,6 +600,16 @@ export const manager_abi = [
   },
   {
     "type": "error",
+    "name": "CondoGmManager__DeployERC20ConditionsNotReached",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CondoGmManager__ERC20NotDeployedYet",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "CondoGmManager__EmptyString",
     "inputs": []
   },
@@ -576,17 +642,6 @@ export const manager_abi = [
   },
   {
     "type": "error",
-    "name": "CondoGmManager__LotHasNoCustomer",
-    "inputs": [
-      {
-        "name": "lotId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ]
-  },
-  {
-    "type": "error",
     "name": "CondoGmManager__LotNotFound",
     "inputs": [
       {
@@ -598,7 +653,29 @@ export const manager_abi = [
   },
   {
     "type": "error",
+    "name": "CondoGmManager__LotSharesAlreadyTokenized",
+    "inputs": [
+      {
+        "name": "lotId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
     "name": "CondoGmManager__RegisteredLotIsLocked",
+    "inputs": [
+      {
+        "name": "lotOfficialNumber",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "CondoGmManager__SharesCantBeZero",
     "inputs": [
       {
         "name": "lotOfficialNumber",
@@ -671,11 +748,6 @@ export const token_abi = [
         "name": "_condoTotalShares",
         "type": "uint256",
         "internalType": "uint256"
-      },
-      {
-        "name": "_managerContract",
-        "type": "address",
-        "internalType": "address"
       }
     ],
     "stateMutability": "nonpayable"
@@ -762,19 +834,6 @@ export const token_abi = [
   },
   {
     "type": "function",
-    "name": "getCondoTotalShares",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
     "name": "getCurrentStatus",
     "inputs": [],
     "outputs": [
@@ -788,26 +847,35 @@ export const token_abi = [
   },
   {
     "type": "function",
-    "name": "getNbOfTokenizedLots",
+    "name": "getGeneralInfo",
     "inputs": [],
     "outputs": [
       {
         "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getSharesTokenized",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
+        "type": "tuple",
+        "internalType": "struct TokenGeneralInfo",
+        "components": [
+          {
+            "name": "condoTotalShares",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "nbOfTokenizedLots",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "sharesTokenized",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "currentStatus",
+            "type": "uint8",
+            "internalType": "enum TokenWorkflowStatus"
+          }
+        ]
       }
     ],
     "stateMutability": "view"
@@ -837,6 +905,13 @@ export const token_abi = [
       }
     ],
     "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "openTokenizingOfShares",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
     "type": "function",
@@ -977,6 +1052,12 @@ export const token_abi = [
   },
   {
     "type": "event",
+    "name": "MaxSharesTokenizingReached",
+    "inputs": [],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "OwnershipTransferred",
     "inputs": [
       {
@@ -1011,6 +1092,12 @@ export const token_abi = [
         "internalType": "uint256"
       }
     ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "TokenizingSharesOpen",
+    "inputs": [],
     "anonymous": false
   },
   {
@@ -1126,6 +1213,22 @@ export const token_abi = [
   },
   {
     "type": "error",
+    "name": "GMSharesToken__AmountExceededTotalSupply",
+    "inputs": [
+      {
+        "name": "to",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
     "name": "GMSharesToken__Cant",
     "inputs": [
       {
@@ -1196,6 +1299,11 @@ export const token_abi = [
   },
   {
     "type": "error",
+    "name": "GMSharesToken__InvalidPeriod",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "GMSharesToken__MintInitialAmountFirst",
     "inputs": [
       {
@@ -1228,6 +1336,11 @@ export const token_abi = [
   },
   {
     "type": "error",
+    "name": "GMSharesToken__TokenizedSharesMustBeNull",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "OwnableInvalidOwner",
     "inputs": [
       {
@@ -1248,6 +1361,6 @@ export const token_abi = [
       }
     ]
   }
-];
+]
 
 export const ballot_abi = [];

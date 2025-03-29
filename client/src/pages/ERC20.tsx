@@ -5,25 +5,48 @@ import { useAccount } from "wagmi";
 import { OWNER_ROLE, CUSTOMER_ROLE } from "../models/roles";
 import { isZeroAddress } from "../models/utils";
 import VerifyInitialMinting from "../components/shared/ERC20/VerifyInitialMinting";
-import { triggerReadContract } from "../hooks/useReadTokenQueries";
+import { triggerGetBalance, useReadTokenQueries } from "../hooks/useReadTokenQueries";
+import { CONTRACT_LOCK_KEY, INITIAL_MINTING_KEY, TOKEN_STATUS_INSTRUCTIONS, TRANSFERING_SHARES_KEY } from "../models/ERC20";
+import {
+  useValidateMinting
+} from "../hooks/useWriteTokenActions..ts";
 
 function ERC20() {
-  const { isConnected } = useAccount();
+  const { address: connectedAccount, isConnected } = useAccount();
   const globalCtx = useContext(GlobalContext);
   const [modalInfoText, setModalInfoText] = useState<string | null>(null);
-  const [ERC20Status, setERC20Status] = useState();
+  const [ownersBalance, setOwnersBalance] = useState<number>(0)
+  const [totalSupply, setTotalSupply] = useState<number>(0)
 
+  // read hooks
+  const { useFetchedTotalSupply } = useReadTokenQueries(globalCtx.erc20Address);
+  const { data: fetchedTotalSupplyData, refetch: refetchTotalSupply } = useFetchedTotalSupply;
+  const {
+    hash: validateMintingHash,
+    error: validateMintingError,
+    isConfirmed: validateMintingIsConfirming,
+    validateMintingWrite
+  } = useValidateMinting();
+  useEffect(() => {
+    const getBalance = async (addressToConsult: string) => {
+      return triggerGetBalance(globalCtx.erc20Address, addressToConsult);
+    }
+    if (globalCtx.erc20Address) {
+      const response = getBalance(globalCtx.deployedManagerAddress);
+      response
+        .then((truc: any) => {
+          setOwnersBalance(Number(truc));
+        }).catch((e) => {
+          console.log(e)
+        })
+    }
+  }, [globalCtx.erc20Address]);
 
   useEffect(() => {
-    const truc = async () => {
-      return await triggerReadContract(globalCtx.erc20Address, globalCtx.deployedManagerAddress);
+    if (fetchedTotalSupplyData) {
+      setTotalSupply(Number(fetchedTotalSupplyData) as number);
     }
-    const response = truc();
-    console.log(response, "ftch balance of owner in token ")
-    // fetch ERC20 status 
-    // fetch balance of owner
-    // fetch totalSupply
-  }, []);
+  }, [fetchedTotalSupplyData]);
 
 
   if (!isConnected) {
@@ -38,21 +61,37 @@ function ERC20() {
     return <p>NO ERC20 deployed yet</p>;
   }
 
-  const onChangeHandler = () => {
-    // confirm total minted and procedd to opening of shares transfer to token
+  // 
+  const onValidateMintingHandler = () => {
+    if (globalCtx.deployedManagerAddress) {
+      // DO MODAL AND STUFF
+      validateMintingWrite(connectedAccount, globalCtx.deployedManagerAddress);
+    }
   }
 
-  // if status if minting
-  let mainContent = <VerifyInitialMinting balanceOfOwner={10000} totalSupply={10000} onChangeStatus={onChangeHandler} role={globalCtx.role} />
-  // button close status
+  let mainContent;
+  if (globalCtx.erc20Status === INITIAL_MINTING_KEY && totalSupply && ownersBalance) {
+    mainContent = <VerifyInitialMinting balanceOfOwner={ownersBalance} totalSupply={totalSupply} onValidate={onValidateMintingHandler} role={globalCtx.role} />
+  }
+
+  if (globalCtx.erc20Status === TRANSFERING_SHARES_KEY) {
+    // show list of lots to tokenize 
+    // props : lots + customers + is verified + 
+    // tokenize onclick
+    // verifiy on click 
+  }
+
+  if (globalCtx.erc20Status === CONTRACT_LOCK_KEY) {
+    // final page: lots tokzneized + verify button
+    // div alert saying thta contract is locked
+  }
+
+
   return (
     <div>
       <h1>ERC20 TOKEN Status</h1>
-      <p>CURRENT ERC20 Status: XXXX</p>
-
-
-
-
+      <p>CURRENT ERC20 Status: {globalCtx.erc20Status}</p>
+      {mainContent}
       {modalInfoText && (
         <Modal onClose={() => setModalInfoText(null)}>{modalInfoText}</Modal>
       )}

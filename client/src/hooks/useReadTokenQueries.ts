@@ -2,7 +2,7 @@ import { readContract } from "@wagmi/core";
 import { token_abi } from "../../constants/deployed";
 import { useReadContract, useAccount } from "wagmi";
 import { http, createConfig } from '@wagmi/core'
-import { mainnet, sepolia } from '@wagmi/core/chains'
+import { anvil } from '@wagmi/core/chains'
 
 export const useReadTokenQueries = (deployedTokenAddress: string) => {
     const { address } = useAccount();
@@ -21,21 +21,31 @@ export const useReadTokenQueries = (deployedTokenAddress: string) => {
         account: address,
     });
 
+    const useFetchedCurrentStatus = useReadContract({
+        address: deployedTokenAddress as `0x${string}`,
+        abi: token_abi,
+        functionName: "getCurrentStatus",
+        account: address,
+    });
+
     return {
         useFetchedGeneralInfo,
+        useFetchedCurrentStatus,
         useFetchedTotalSupply
     };
 };
 
 export const config = createConfig({
-    chains: [mainnet, sepolia],
+    chains: [anvil],
     transports: {
-        [mainnet.id]: http(),
-        [sepolia.id]: http(),
+        [anvil.id]: http(),
     },
 })
 
-export const triggerReadContract = async (contractAddres: string, addressToGetBalanceFrom: string) => {
+export const triggerGetBalance = async (contractAddres: string, addressToGetBalanceFrom: string) => {
+    console.log(contractAddres, "ERC20 contractAddres")
+    console.log(addressToGetBalanceFrom, "manager address")
+
     return await readContract(config, {
         abi: token_abi,
         address: contractAddres as `0x${string}`,
@@ -43,4 +53,6 @@ export const triggerReadContract = async (contractAddres: string, addressToGetBa
         args: [addressToGetBalanceFrom]
     })
 }
+
+
 

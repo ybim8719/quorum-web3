@@ -5,7 +5,7 @@ import {
     useAddLot,
     useLinkCustomerToLot,
     useCreateERC20,
-} from "../hooks/useWriteActions.ts";
+} from "../hooks/useWriteManagerActions.ts";
 import { useReadManagerQueries } from "../hooks/useReadManagerQueries.ts";
 import { GlobalContext } from "../context/globalContext.tsx";
 import { Lot, MAX_SHARES_LIMIT } from "../models/lots";
@@ -96,6 +96,7 @@ function Home() {
                                 fetchedCustomer.lotOfficialNumber;
                         }
                         if (Number(fetchedCustomer.lotId) > 0) {
+
                             formatedCustomer.lotId = Number(fetchedCustomer.lotId);
                         }
                         return formatedCustomer;

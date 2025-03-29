@@ -4,11 +4,14 @@ import { BrowserRouter, Routes, Route } from "react-router";
 import { useAccount } from "wagmi";
 import { GlobalContext } from "./context/globalContext";
 import { useReadManagerQueries } from "./hooks/useReadManagerQueries";
+import { useReadTokenQueries } from "./hooks/useReadTokenQueries";
+
 import { OWNER_ROLE, CUSTOMER_ROLE } from "./models/roles";
 import { isZeroAddress } from "./models/utils";
 import ERC20 from "./pages/ERC20";
 import Home from "./pages/Home";
 import Layout from "./components/UI/Layout";
+import { TOKEN_STATUS_INSTRUCTIONS } from "./models/ERC20";
 
 
 function App() {
@@ -21,6 +24,12 @@ function App() {
     useFetchedERC20Adress,
   } = useReadManagerQueries(globalCtx.deployedManagerAddress);
 
+
+  const {
+    useFetchedCurrentStatus,
+  } = useReadTokenQueries(globalCtx.erc20Address);
+
+
   const { data: fetchedOwnerData, refetch: refetchOwner } = useFetchedOwner;
   const {
     data: fetchedCustomersAddressesData,
@@ -28,7 +37,8 @@ function App() {
   } = useFetchedCustomersAddresses;
   const { data: fetchedERC20Data, refetch: refetchERC20 } =
     useFetchedERC20Adress;
-
+  const { data: fetchCurrentStatusData, error: errorStatus, refetch: refetchCurrentStatus } =
+    useFetchedCurrentStatus;
   // fetch customers /owner addresses to apply authentication 
   useEffect(() => {
     if (
@@ -51,6 +61,7 @@ function App() {
     }
   }, [connectedAccount, fetchedOwnerData, fetchedCustomersAddressesData]);
 
+
   // fetch ERC20 contract is exist to handle access to token Page
   useEffect(() => {
     if (
@@ -59,8 +70,21 @@ function App() {
       isZeroAddress(fetchedERC20Data as string) === false
     ) {
       globalCtx.setErc20Address(fetchedERC20Data.toString());
+      refetchCurrentStatus();
     }
   }, [fetchedERC20Data]);
+
+  useEffect(() => {
+    if (fetchCurrentStatusData !== undefined) {
+      const currentStatusKey = Object.keys(TOKEN_STATUS_INSTRUCTIONS).find((key) => {
+        return TOKEN_STATUS_INSTRUCTIONS[key].statusId === fetchCurrentStatusData;
+      });
+      if (currentStatusKey) {
+        globalCtx.setErc20Status(currentStatusKey);
+      }
+    }
+
+  }, [fetchCurrentStatusData]);
 
   const routes = (
     <>
