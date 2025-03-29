@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../context/globalContext";
-import { Modal } from "../components/UI/Modal";
+import { Modal, NonClosableModal } from "../components/UI/Modal";
 import { useAccount } from "wagmi";
 import { OWNER_ROLE, CUSTOMER_ROLE } from "../models/roles";
 import { isZeroAddress } from "../models/utils";
@@ -8,8 +8,24 @@ import VerifyInitialMinting from "../components/shared/ERC20/VerifyInitialMintin
 import { triggerGetBalance, useReadTokenQueries } from "../hooks/useReadTokenQueries";
 import { CONTRACT_LOCK_KEY, INITIAL_MINTING_KEY, TOKEN_STATUS_INSTRUCTIONS, TRANSFERING_SHARES_KEY } from "../models/ERC20";
 import {
-  useValidateMinting
+  useValidateMinting, useTranferShares
 } from "../hooks/useWriteTokenActions..ts";
+import LoadingIndicator from "../components/UI/LoadingIndicator.tsx";
+import ErrorBlock from "../components/UI/ErrorBlock.tsx";
+import TokenizedLots from "../components/shared/ERC20/TokenizedLots.tsx";
+import { Lot } from "../models/lots.ts";
+import { useReadManagerQueries } from "../hooks/useReadManagerQueries.ts";
+
+
+interface IlotBeingVerified {
+  lot: Lot | null,
+  balanceOf: number | null,
+}
+
+const EmptyLotBeingVerified = {
+  lot: null,
+  balanceOf: null
+}
 
 function ERC20() {
   const { address: connectedAccount, isConnected } = useAccount();
@@ -17,16 +33,32 @@ function ERC20() {
   const [modalInfoText, setModalInfoText] = useState<string | null>(null);
   const [ownersBalance, setOwnersBalance] = useState<number>(0)
   const [totalSupply, setTotalSupply] = useState<number>(0)
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [lots, setLots] = useState<Lot[]>([]);
+  const [lotBeingVerified, setLotBeingVerified] = useState<IlotBeingVerified>(EmptyLotBeingVerified)
   // read hooks
   const { useFetchedTotalSupply } = useReadTokenQueries(globalCtx.erc20Address);
   const { data: fetchedTotalSupplyData, refetch: refetchTotalSupply } = useFetchedTotalSupply;
+  const { useFetchedLots, } = useReadManagerQueries(globalCtx.deployedManagerAddress);
+  const { data: fetchedLotsData, refetch: refetchLots } = useFetchedLots;
+
+
   const {
     hash: validateMintingHash,
     error: validateMintingError,
-    isConfirmed: validateMintingIsConfirming,
+    isConfirmed: validateMintingIsConfirmed,
     validateMintingWrite
   } = useValidateMinting();
+
+  const {
+    hash: transferSharesHash,
+    error: transferSharesError,
+    isConfirmed: transferSharesIsConfirmed,
+    transferSharesWrite
+  } = useTranferShares();
+
+
   useEffect(() => {
     const getBalance = async (addressToConsult: string) => {
       return triggerGetBalance(globalCtx.erc20Address, addressToConsult);
@@ -48,6 +80,59 @@ function ERC20() {
     }
   }, [fetchedTotalSupplyData]);
 
+  useEffect(() => {
+    if (
+      fetchedLotsData !== undefined &&
+      fetchedLotsData !== null
+    ) {
+      if (Array.isArray(fetchedLotsData) && fetchedLotsData.length > 0) {
+        const formatedLots = fetchedLotsData.map((lot) => {
+          let formatedLot: Lot = {
+            id: Number(lot.id),
+            shares: Number(lot.shares),
+            isTokenized: lot.isTokenized,
+            lotOfficialNumber: lot.lotOfficialNumber,
+          };
+          if (isZeroAddress(lot.customerAddress) === false) {
+            formatedLot.customer = {
+              address: lot.customerAddress,
+              firstName: lot.firstName,
+              lastName: lot.lastName,
+            };
+          }
+          return formatedLot;
+        });
+        setLots(formatedLots);
+      }
+    }
+  }, [fetchedLotsData]);
+
+  // tx successes => refetch current status of token
+  useEffect(() => {
+    if (
+      (validateMintingIsConfirmed)
+    ) {
+      setIsLoading(false);
+      setModalInfoText("Transaction confirmed");
+      const refreshAll = async () => {
+        // refetch the token current status
+        // await refetchCustomers();
+      };
+      refreshAll();
+    }
+
+  }, [validateMintingIsConfirmed]);
+
+  useEffect(() => {
+    if (
+      (transferSharesIsConfirmed)
+    ) {
+      setIsLoading(false);
+      setModalInfoText("Transaction confirmed");
+      refetchLots();
+    }
+
+  }, [transferSharesIsConfirmed]);
 
   if (!isConnected) {
     return <h1>Please connect your wallet first</h1>;
@@ -64,21 +149,52 @@ function ERC20() {
   // 
   const onValidateMintingHandler = () => {
     if (globalCtx.deployedManagerAddress) {
-      // DO MODAL AND STUFF
+      setIsLoading(true);
       validateMintingWrite(connectedAccount, globalCtx.deployedManagerAddress);
+    }
+  }
+
+  const onTransferSharesHandler = (lot: Lot) => {
+    // open loading
+    transferSharesWrite(connectedAccount, globalCtx.deployedManagerAddress, lot.id);
+  }
+
+  const onVerifyShares = (lot: Lot) => {
+    setIsLoading(true);
+    setLotBeingVerified((prev: IlotBeingVerified) => {
+      return {
+        ...prev,
+        lot: lot
+      }
+    })
+
+    const getBalance = async (addressToConsult: string) => {
+      return triggerGetBalance(globalCtx.erc20Address, addressToConsult);
+    }
+    if (globalCtx.erc20Address && lot?.customer?.address) {
+      const response = getBalance(lot.customer.address);
+      response
+        .then((balance: any) => {
+          setLotBeingVerified((prev: IlotBeingVerified) => {
+            return {
+              ...prev,
+              balanceOf: balance
+            }
+          })
+        }).catch((e) => {
+          console.log(e)
+        })
     }
   }
 
   let mainContent;
   if (globalCtx.erc20Status === INITIAL_MINTING_KEY && totalSupply && ownersBalance) {
-    mainContent = <VerifyInitialMinting balanceOfOwner={ownersBalance} totalSupply={totalSupply} onValidate={onValidateMintingHandler} role={globalCtx.role} />
+    mainContent = <VerifyInitialMinting balanceOfOwner={ownersBalance} totalSupply={totalSupply} onValidate={onValidateMintingHandler} role={globalCtx.role} currentStatus={globalCtx.erc20Status} />
   }
 
   if (globalCtx.erc20Status === TRANSFERING_SHARES_KEY) {
-    // show list of lots to tokenize 
-    // props : lots + customers + is verified + 
-    // tokenize onclick
-    // verifiy on click 
+    mainContent = <TokenizedLots role={globalCtx.role} lots={lots} balanceOfOwner={ownersBalance} onVerify={onVerifyShares}
+      onTokenize={onTransferSharesHandler} />
   }
 
   if (globalCtx.erc20Status === CONTRACT_LOCK_KEY) {
@@ -86,15 +202,52 @@ function ERC20() {
     // div alert saying thta contract is locked
   }
 
+  // Array of modals
+  let modals = [];
+  if (error) {
+    modals.push(
+      <Modal onClose={() => setError(null)}>
+        <ErrorBlock title="OUPS" message={error} />
+      </Modal>,
+    );
+  }
+  if (modalInfoText) {
+    modals.push(
+      <Modal onClose={() => setModalInfoText(null)}>{modalInfoText}</Modal>,
+    );
+  }
+
+  if (isLoading) {
+    modals.push(
+      <NonClosableModal>
+        <>
+          <h2>Transaction being processed</h2>
+          <LoadingIndicator />
+          {/* <p>Tx Hash: {currentHash}</p> */}
+        </>
+      </NonClosableModal>,
+    );
+  }
+
+  if (lotBeingVerified?.lot) {
+    modals.push(
+      <Modal onClose={() => setLotBeingVerified(EmptyLotBeingVerified)}>
+        <p>
+          ID LOT SHARES théoriques : {lotBeingVerified.lot.shares}
+        </p>
+        <p>
+          Consulté sur ERC20 : {lotBeingVerified.balanceOf}
+        </p>
+      </Modal>,
+    )
+  }
 
   return (
     <div>
-      <h1>ERC20 TOKEN Status</h1>
+      <h1>ERC20 TOKEN</h1>
       <p>CURRENT ERC20 Status: {globalCtx.erc20Status}</p>
       {mainContent}
-      {modalInfoText && (
-        <Modal onClose={() => setModalInfoText(null)}>{modalInfoText}</Modal>
-      )}
+      {modals}
       {/* {isLoading && <LoadingIndicator />} */}
     </div>
   );

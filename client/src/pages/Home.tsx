@@ -233,6 +233,7 @@ function Home() {
     const createERC20Handler = async () => {
         setTxBeingHandled(TRANSACTIONS.createERC20);
         setCurrentHash(null);
+        setLotIdBeingLinked(null);
         setIsLoading(true);
         await createERC20Write(connectedAccount, globalCtx.deployedManagerAddress);
     };

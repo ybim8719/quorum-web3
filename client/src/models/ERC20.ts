@@ -24,8 +24,8 @@ export const TOKEN_STATUS_INSTRUCTIONS: Record<
         title: "Transfering Shares",
         description: "Owner is actually proceeding to tokenization of shares",
         ownerInstruction:
-            "Token all the shares of each lot to handle the rest",
-        customerInstruction: "Verify during the process",
+            "Tokenize all the shares of each lot",
+        customerInstruction: "Verify your shares during the process",
     },
     [CONTRACT_LOCK_KEY]: {
         statusId: 2,

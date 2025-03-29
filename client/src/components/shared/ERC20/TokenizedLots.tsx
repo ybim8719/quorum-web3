@@ -1,12 +1,16 @@
+import { TOKEN_STATUS_INSTRUCTIONS, TRANSFERING_SHARES_KEY } from "../../../models/ERC20";
 import { Lot } from "../../../models/lots";
+import { CUSTOMER_ROLE, OWNER_ROLE } from "../../../models/roles";
 
 interface ITokenizedLotsProps {
   lots: Lot[];
+  role: string;
+  balanceOfOwner: number;
   onVerify: (lotToVerify: Lot) => void;
   onTokenize: (lotToTokenize: Lot) => void;
 }
 
-const TokenizedLots = ({ lots, onVerify, onTokenize }: ITokenizedLotsProps) => {
+const TokenizedLots = ({ lots, role, balanceOfOwner, onVerify, onTokenize }: ITokenizedLotsProps) => {
   let tableBody;
 
   if (lots.length > 0) {
@@ -14,10 +18,10 @@ const TokenizedLots = ({ lots, onVerify, onTokenize }: ITokenizedLotsProps) => {
       let actions;
       if (l.isTokenized) {
         actions = (
-          <button onClick={() => onVerify(l)}>Verify authenticity</button>
+          <button className="nes-btn" onClick={() => onVerify(l)}>Verify authenticity</button>
         );
       } else {
-        actions = <button onClick={() => onTokenize(l)}>Tokenize now</button>;
+        actions = <button className="nes-btn" onClick={() => onTokenize(l)}>Tokenize now</button>;
       }
       return (
         <tr key={`customer-${i}`}>
@@ -45,11 +49,17 @@ const TokenizedLots = ({ lots, onVerify, onTokenize }: ITokenizedLotsProps) => {
 
   return (
     <div className="">
+      <p><u>Desc: </u>{TOKEN_STATUS_INSTRUCTIONS[TRANSFERING_SHARES_KEY].description}</p>
+      {role === OWNER_ROLE &&
+        <p><u>Instructions: </u> {TOKEN_STATUS_INSTRUCTIONS[TRANSFERING_SHARES_KEY].ownerInstruction}</p>}
+      {role === CUSTOMER_ROLE &&
+        <p><u>Instructions: </u>{TOKEN_STATUS_INSTRUCTIONS[TRANSFERING_SHARES_KEY].customerInstruction}</p>}
+      <p>On Owner's balance:{balanceOfOwner}/1000</p>
       <h3>
         <u>Lots ({lots.length})</u>
       </h3>
       <p>Total shares : / 1000</p>
-      <i className="nes-ash"></i>
+      <i className="nes-charmander"></i>
       <table>
         <thead>
           <tr>
