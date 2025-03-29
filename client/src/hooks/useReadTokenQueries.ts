@@ -36,9 +36,9 @@ export const config = createConfig({
 })
 
 export const triggerReadContract = async (contractAddres: string, addressToGetBalanceFrom: string) => {
-    const result = await readContract(config, {
+    return await readContract(config, {
         abi: token_abi,
-        address: contractAddres as ,
+        address: contractAddres as `0x${string}`,
         functionName: 'balanceOf',
         args: [addressToGetBalanceFrom]
     })

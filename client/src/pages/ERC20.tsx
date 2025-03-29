@@ -5,6 +5,7 @@ import { useAccount } from "wagmi";
 import { OWNER_ROLE, CUSTOMER_ROLE } from "../models/roles";
 import { isZeroAddress } from "../models/utils";
 import VerifyInitialMinting from "../components/shared/ERC20/VerifyInitialMinting";
+import { triggerReadContract } from "../hooks/useReadTokenQueries";
 
 function ERC20() {
   const { isConnected } = useAccount();
@@ -14,6 +15,11 @@ function ERC20() {
 
 
   useEffect(() => {
+    const truc = async () => {
+      return await triggerReadContract(globalCtx.erc20Address, globalCtx.deployedManagerAddress);
+    }
+    const response = truc();
+    console.log(response, "ftch balance of owner in token ")
     // fetch ERC20 status 
     // fetch balance of owner
     // fetch totalSupply
