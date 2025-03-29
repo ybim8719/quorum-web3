@@ -1,5 +1,8 @@
+import { readContract } from "@wagmi/core";
 import { token_abi } from "../../constants/deployed";
 import { useReadContract, useAccount } from "wagmi";
+import { http, createConfig } from '@wagmi/core'
+import { mainnet, sepolia } from '@wagmi/core/chains'
 
 export const useReadTokenQueries = (deployedTokenAddress: string) => {
     const { address } = useAccount();
@@ -24,21 +27,20 @@ export const useReadTokenQueries = (deployedTokenAddress: string) => {
     };
 };
 
-export const useReadTokenBalanceOf = (requestedAddress: string, deployedTokenAddress: string) => {
-    const { address } = useAccount();
+export const config = createConfig({
+    chains: [mainnet, sepolia],
+    transports: {
+        [mainnet.id]: http(),
+        [sepolia.id]: http(),
+    },
+})
 
-    const useFetchedBalanceOf = useReadContract({
-        address: deployedTokenAddress as `0x${string}`,
+export const triggerReadContract = async (contractAddres: string, addressToGetBalanceFrom: string) => {
+    const result = await readContract(config, {
         abi: token_abi,
-        functionName: "getLotsInfos",
-        account: address,
-        args: [requestedAddress]
-    });
+        address: contractAddres as ,
+        functionName: 'balanceOf',
+        args: [addressToGetBalanceFrom]
+    })
+}
 
-    return {
-        useFetchedBalanceOf,
-    };
-};
-
-
-//https://wagmi.sh/core/api/actions/readContract
