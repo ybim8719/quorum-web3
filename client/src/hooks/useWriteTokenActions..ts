@@ -47,23 +47,3 @@ export const useTranferShares = () => {
 
   return { hash, error, isConfirming, isConfirmed, transferSharesWrite };
 };
-
-
-export const useCreateBallot = () => {
-  const { data: hash, error, writeContract } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
-    useWaitForTransactionReceipt({ hash });
-
-  const createERC20Write = (account: string | undefined, deployedManagerAddress: string) => {
-    if (account) {
-      writeContract({
-        address: deployedManagerAddress as `0x${string}`,
-        abi: manager_abi,
-        functionName: "createBallot",
-        account: account as `0x${string}`,
-      });
-    }
-  };
-
-  return { hash, error, isConfirming, isConfirmed, createERC20Write };
-};

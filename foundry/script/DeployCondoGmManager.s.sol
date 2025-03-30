@@ -3,21 +3,22 @@ pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
 import {CondoGmManager} from "../src/CondoGmManager.sol";
+import {GMBallot} from "../src/GmBallot.sol";
 
 contract DeployCondoGmManager is Script {
     CondoGmManager public s_manager;
+    GMBallot public s_ballot;
 
-    function run(string memory _name, string memory _description, string memory _postalAddress)
-        external
-        returns (CondoGmManager)
-    {
-        deployApp(_name, _description, _postalAddress);
-        return s_manager;
+    function run() external returns (CondoGmManager, GMBallot) {
+        deployApp();
+        return (s_manager, s_ballot);
     }
 
-    function deployApp(string memory _name, string memory _description, string memory _postalAddress) public {
+    function deployApp() public {
         vm.startBroadcast();
-        s_manager = new CondoGmManager(_name, _description, _postalAddress);
+        s_manager = new CondoGmManager("Copro des cocos", "Une retr'aite paisible", "rue du vent 223");
+        s_ballot = new GMBallot("la future ag de mai 2025", address(s_manager));
+        s_manager.setGMBallotAddress(address(s_ballot));
         vm.stopBroadcast();
     }
 }

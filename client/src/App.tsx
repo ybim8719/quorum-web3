@@ -22,14 +22,12 @@ function App() {
     useFetchedOwner,
     useFetchedCustomersAddresses,
     useFetchedERC20Address,
-    useFetchedBallotAddress
   } = useReadManagerQueries(globalCtx.deployedManagerAddress);
   const { useFetchedCurrentStatus } = useReadTokenQueries(globalCtx.erc20Address);
 
   const { data: fetchedOwnerData } = useFetchedOwner;
   const { data: fetchedCustomersAddressesData } = useFetchedCustomersAddresses;
   const { data: fetchedERC20Data } = useFetchedERC20Address;
-  const { data: fetchedBallotData } = useFetchedBallotAddress;
 
   const { data: fetchERC20CurrentStatusData, refetch: refetchERC20CurrentStatus } = useFetchedCurrentStatus;
 

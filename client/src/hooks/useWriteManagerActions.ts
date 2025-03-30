@@ -95,3 +95,4 @@ export const useCreateERC20 = () => {
 
   return { hash, error, isConfirming, isConfirmed, createERC20Write };
 };
+

@@ -15,7 +15,9 @@ import ErrorBlock from "../components/UI/ErrorBlock.tsx";
 import TokenizedLots from "../components/shared/ERC20/TokenizedLots.tsx";
 import { Lot } from "../models/lots.ts";
 import { useReadManagerQueries } from "../hooks/useReadManagerQueries.ts";
-
+import {
+  useCreateBallot
+} from "../hooks/useWriteManagerActions.ts";
 
 interface IlotBeingVerified {
   lot: Lot | null,
@@ -43,9 +45,11 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
   const [lotBeingVerified, setLotBeingVerified] = useState<IlotBeingVerified>(EmptyLotBeingVerified)
   // read hooks
   const { useFetchedTotalSupply } = useReadTokenQueries(globalCtx.erc20Address);
-  const { data: fetchedTotalSupplyData, refetch: refetchTotalSupply } = useFetchedTotalSupply;
-  const { useFetchedLots, } = useReadManagerQueries(globalCtx.deployedManagerAddress);
+  const { data: fetchedTotalSupplyData } = useFetchedTotalSupply;
+  const { useFetchedLots, useFetchedBallotAddress } = useReadManagerQueries(globalCtx.deployedManagerAddress);
   const { data: fetchedLotsData, refetch: refetchLots } = useFetchedLots;
+  const { data: fetchedBallotAddressData } = useFetchedBallotAddress;
+
 
 
   const {
@@ -61,6 +65,15 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
     isConfirmed: transferSharesIsConfirmed,
     transferSharesWrite
   } = useTranferShares();
+
+
+  const {
+    hash: createBallotHash,
+    error: createBallotError,
+    isConfirmed: createBallotIsConfirmed,
+    createBallotWrite,
+  } = useCreateBallot();
+
 
 
   useEffect(() => {
@@ -133,6 +146,12 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
 
   }, [transferSharesIsConfirmed]);
 
+  useEffect(() => {
+    if (isZeroAddress(fetchedBallotAddressData as string) === false) {
+      globalCtx.setBallotAddress(fetchedBallotAddressData as string);
+    }
+  }, [fetchedBallotAddressData]);
+
   if (!isConnected) {
     return <h1>Please connect your wallet first</h1>;
   }
@@ -160,6 +179,7 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
 
   const onCreateBallotHandler = () => {
     setIsLoading(true);
+    createBallotWrite(connectedAccount, globalCtx.deployedManagerAddress);
     // usewrite, call manager functionn that deployed the new ballot contract
   }
 
@@ -175,6 +195,7 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
     const getBalance = async (addressToConsult: string) => {
       return triggerGetBalance(globalCtx.erc20Address, addressToConsult);
     }
+
     if (globalCtx.erc20Address && lot?.customer?.address) {
       const response = getBalance(lot.customer.address);
       response

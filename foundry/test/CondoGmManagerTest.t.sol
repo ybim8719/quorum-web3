@@ -3,10 +3,11 @@ pragma solidity ^0.8.28;
 
 import {Test, console} from "forge-std/Test.sol";
 import {CondoGmManager} from "../src/CondoGmManager.sol";
+import {GMSharesToken} from "../src/GmSharesToken.sol";
+import {GMBallot} from "../src/GmBallot.sol";
 import {DeployCondoGmManager} from "../script/DeployCondoGmManager.s.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Customer, Lot, GeneralMeeting} from "../src/structs/Manager.sol";
-import {GMSharesToken} from "../src/GmSharesToken.sol";
 import {TokenGeneralInfo, TokenWorkflowStatus} from "../src/structs/Token.sol";
 
 contract CondoGmManagerTest is Test {
@@ -15,6 +16,7 @@ contract CondoGmManagerTest is Test {
                                 STORAGE
     //////////////////////////////////////////////////////////////*/
     CondoGmManager public s_manager;
+    GMBallot public s_ballot;
 
     /*//////////////////////////////////////////////////////////////
                             MOCK CONSTANTS / constructor
@@ -43,7 +45,7 @@ contract CondoGmManagerTest is Test {
 
     function setUp() public {
         DeployCondoGmManager script = new DeployCondoGmManager();
-        s_manager = script.run(NAME, DESCRIPTION, POSTAL_ADDRESS);
+        (s_manager, s_ballot) = script.run();
     }
 
     modifier lotAndCustomerAdded() {
@@ -428,26 +430,11 @@ contract CondoGmManagerTest is Test {
     /*//////////////////////////////////////////////////////////////
                          create BALLOT
     //////////////////////////////////////////////////////////////*/
-    function test_suceeds_createBallot() public tokenLocked {
-        // instantiate BALLOT contract with xxxxxx
-        // GMBallot deployed = new GMBallot("General meeting of june 2025", s_deployedERC20, address(this));
-        // verify s_deployedBallot = address(deployed);
-    }
-
-    // fail ownable
-
-    // fail 1) if (s_deployedERC20 == address(0)) {
-    //     revert CondoGmManager__ERC20NotDeployedYet();
+    // function test_revert_unauthorized() public {
+    //     vm.prank(NOT_REGISTERED);
+    //     vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, NOT_REGISTERED));
+    //     s_manager.createGMBallot();
     // }
-
-    //fail 2) if (s_ERC20isLocked == false) {
-    //     revert CondoGmManager__DeployBallotConditionsNotReached();
-    // }
-
-    // fail 3) if (s_deployedBallot != address(0)) {
-    //     revert CondoGmManager__CantDeployAnotherBallot();
-    // }
-
     /*//////////////////////////////////////////////////////////////
                          other
     //////////////////////////////////////////////////////////////*/

@@ -25,11 +25,11 @@ import { Modal, NonClosableModal } from "../components/UI/Modal";
 function Home() {
     const { address: connectedAccount, isConnected } = useAccount();
     const globalCtx = useContext(GlobalContext);
-    const { useFetchedCustomers, useFetchedLots, useFetchedERC20Adress } = useReadManagerQueries(globalCtx.deployedManagerAddress);
+    const { useFetchedCustomers, useFetchedLots, useFetchedERC20Address } = useReadManagerQueries(globalCtx.deployedManagerAddress);
     // read hooks
     const { data: fetchedCustomersData, refetch: refetchCustomers } = useFetchedCustomers;
     const { data: fetchedLotsData, refetch: refetchLots } = useFetchedLots;
-    const { data: fetchedERC20AddressData, refetch: refetchERC20Address } = useFetchedERC20Adress;
+    const { data: fetchedERC20AddressData, refetch: refetchERC20Address } = useFetchedERC20Address;
     // write hooks
     const {
         hash: addCustomerHash,

@@ -39,23 +39,11 @@ export const useReadManagerQueries = (deployedManagerAddress: string) => {
     account: address,
   });
 
-  const useFetchedBallotAddress = useReadContract({
-    address: deployedManagerAddress as `0x${string}`,
-    abi: manager_abi,
-    functionName: "getBallotAddress",
-    account: address,
-  });
-
-
-  //    getCustomerDetail(address _customerAddress)
-  //    getLotById()
-
   return {
     useFetchedLots,
     useFetchedCustomers,
     useFetchedOwner,
     useFetchedCustomersAddresses,
     useFetchedERC20Address,
-    useFetchedBallotAddress
   };
 };

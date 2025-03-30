@@ -9,7 +9,7 @@ type GlobalContextType = {
   deployedManagerAddress: string;
   erc20Address: string;
   erc20Status: string | null;
-  ballotAddress: string;
+  deployedBallotAddress: string;
   ballotStatus: string | null;
   setRole: React.Dispatch<React.SetStateAction<string>>;
   setOwner: React.Dispatch<React.SetStateAction<string>>;
@@ -31,10 +31,10 @@ type ContextProviderProps = {
 export const GlobalContextProvider = ({ children }: ContextProviderProps) => {
   const [role, setRole] = useState<string>(UNAUTHORIZED_ROLE);
   const [erc20Address, setErc20Address] = useState<string>("");
-  const [ballotAddress, setBallotAddress] = useState<string>("");
   const [owner, setOwner] = useState<string>("");
   const [customersAddresses, setCustomersAddresses] = useState<string[]>([]);
-  const deployedManagerAddress = network.anvil;
+  const deployedManagerAddress = network.anvil.manager;
+  const deployedBallotAddress = network.anvil.manager;
   const [erc20Status, setErc20Status] = useState<string | null>(null);
   const [ballotStatus, setBallotStatus] = useState<string | null>(null);
 
@@ -43,16 +43,15 @@ export const GlobalContextProvider = ({ children }: ContextProviderProps) => {
     owner,
     customersAddresses,
     deployedManagerAddress,
+    deployedBallotAddress,
     erc20Address,
     erc20Status,
-    ballotAddress,
     ballotStatus,
     setRole,
     setOwner,
     setCustomersAddresses,
     setErc20Address,
     setErc20Status,
-    setBallotAddress,
     setBallotStatus
   };
 

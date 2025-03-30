@@ -2,12 +2,11 @@
 pragma solidity ^0.8.28;
 
 enum BallotWorkflowStatus {
-    BallotReady,
-    AttendeesSigning,
-    AttendeesSigningCountRevealed,
-    ProposalBeingSubmitted,
+    WaitingForGmData,
+    ProposalsSubmittingOpen,
+    ProposalsSubmittingClsode,
+    ProposalBeingDiscussed,
     ProposalVotingOpen,
-    ProposalVotingClosed,
     ProposalVotingCountRevealed,
     MeetingEnded,
     ContractLocked
@@ -17,7 +16,7 @@ enum VotingResult {
     Draw,
     Pending,
     Approved,
-    Refused,
+    Refused
 }
 
 struct Voter {

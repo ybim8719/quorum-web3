@@ -30,7 +30,7 @@ contract GMBallot is Ownable {
     /*//////////////////////////////////////////////////////////////
                             IMMUTABLEs
     //////////////////////////////////////////////////////////////*/
-    address i_tokenAddress;
+    address s_tokenAddress;
     address i_managerAddress;
     string i_description;
 
@@ -42,11 +42,14 @@ contract GMBallot is Ownable {
                             MODIFIERS
     //////////////////////////////////////////////////////////////*/
 
-    constructor(string memory _description, address _managerAddress address, _tokenAddress) Ownable(_msgSender()) {
+    constructor(string memory _description, address _managerAddress) Ownable(_msgSender()) {
         i_description = _description;
-        i_tokenAddress = _tokenAddress;
         i_managerAddress = _managerAddress;
     }
+
+    function addLot(address customerAddress, uint256 _fefsfserf, string memory lotOfficialNumber, bool isTokenized)
+        external
+    {}
 
     // INTERFACE write
     // vote for a proposal

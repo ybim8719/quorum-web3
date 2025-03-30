@@ -254,21 +254,14 @@ contract CondoGmManager is Ownable {
     /*//////////////////////////////////////////////////////////////
                      WRITE FUNCTIONS -> BALLOT
     //////////////////////////////////////////////////////////////*/
-    function createGMBallot() external onlyOwner {
-        if (s_deployedERC20 == address(0)) {
-            revert CondoGmManager__ERC20NotDeployedYet();
-        }
+    function loadSharesAndCustomersToBallot() external onlyOwner {
+        // todo add controls
+        Lot memory lot = s_lotsList[1];
+        GMBallot(s_deployedBallot).addLot(lot.customerAddress, lot.shares, lot.lotOfficialNumber, lot.isTokenized);
+    }
 
-        if (s_ERC20isLocked == false) {
-            revert CondoGmManager__DeployBallotConditionsNotReached();
-        }
-
-        if (s_deployedBallot != address(0)) {
-            revert CondoGmManager__CantDeployAnotherBallot();
-        }
-        // instantiate BALLOT contract with xxxxxx
-        GMBallot deployed = new GMBallot("General meeting of june 2025", s_deployedERC20, address(this));
-        s_deployedBallot = address(deployed);
+    function setGMBallotAddress(address _ballotAddress) external {
+        s_deployedBallot = _ballotAddress;
     }
 
     /*//////////////////////////////////////////////////////////////

@@ -5,6 +5,7 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {TokenWorkflowStatus, TokenGeneralInfo} from "./structs/Token.sol";
 import {console} from "forge-std/Test.sol";
+import {GMBallot} from "./GmBallot.sol";
 
 /// @notice ERC20 based token designed to store 1000 shares from a condo for a given generalMeeting
 /// Approvals are deactivated for now
@@ -20,6 +21,7 @@ contract GMSharesToken is ERC20, Ownable {
     uint256 i_condoTotalShares;
     uint256 s_nbOfTokenizedLots;
     address i_managerContract;
+    address s_deployedBallot;
 
     /*//////////////////////////////////////////////////////////////
                         EVENTS
@@ -41,8 +43,10 @@ contract GMSharesToken is ERC20, Ownable {
     error GMSharesToken__InvalidPeriod();
     error GMSharesToken__TokenizedSharesMustBeNull();
     error GMSharesToken__AmountExceededTotalSupply(address to, uint256 amount);
-    /// @notice parent contract (manager) becomes the owner of the contract
+    error CondoGmManager__CantDeployAnotherBallot();
+    error CondoGmManager__DeployBallotConditionsNotReached();
 
+    /// @notice parent contract (manager) becomes the owner of the contract
     constructor(string memory _name, string memory _symbol, uint256 _condoTotalShares)
         ERC20(_name, _symbol)
         Ownable(msg.sender)
@@ -108,6 +112,22 @@ contract GMSharesToken is ERC20, Ownable {
 
         return response;
     }
+
+    /*//////////////////////////////////////////////////////////////
+                     WRITE FUNCTIONS -> BALLOT
+    //////////////////////////////////////////////////////////////*/
+    // function createGMBallot(address owner) external onlyOwner {
+    //     if (s_currentStatus != TokenWorkflowStatus.ContractLocked) {
+    //         revert CondoGmManager__DeployBallotConditionsNotReached();
+    //     }
+
+    //     if (s_deployedBallot != address(0)) {
+    //         revert CondoGmManager__CantDeployAnotherBallot();
+    //     }
+    //     // instantiate BALLOT contract with xxxxxx
+    //     GMBallot deployed = new GMBallot("General meeting of june 2025", owner, address(this));
+    //     s_deployedBallot = address(deployed);
+    // }
 
     /*//////////////////////////////////////////////////////////////
                         VIEW FUNCTIONS

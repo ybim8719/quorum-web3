@@ -79,7 +79,7 @@ function ERC20({ onRefetchStatus }: IBallotProps) {
         return <h1>Unauthorized</h1>;
     }
 
-    if (isZeroAddress(globalCtx.ballotAddress) || globalCtx.ballotAddress === undefined) {
+    if (isZeroAddress(globalCtx.deployedBallotAddress) || globalCtx.deployedBallotAddress === undefined) {
         return <p>NO GM Ballot deployed yet</p>;
     }
 
