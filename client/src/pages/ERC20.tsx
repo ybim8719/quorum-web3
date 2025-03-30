@@ -195,11 +195,6 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
       onTokenize={onTransferSharesHandler} />
   }
 
-  if (globalCtx.erc20Status === CONTRACT_LOCK_KEY) {
-    // final page: lots tokzneized + verify button
-    // div alert saying thta contract is locked
-  }
-
   // Array of modals
   let modals = [];
   if (error) {
