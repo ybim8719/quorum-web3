@@ -127,6 +127,7 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
     ) {
       setIsLoading(false);
       setModalInfoText("Transaction confirmed");
+      onRefetchStatus();
       refetchLots();
     }
 
@@ -153,7 +154,7 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
   }
 
   const onTransferSharesHandler = (lot: Lot) => {
-    // open loading
+    setIsLoading(true);
     transferSharesWrite(connectedAccount, globalCtx.deployedManagerAddress, lot.id);
   }
 
@@ -179,6 +180,7 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
               balanceOf: balance
             }
           })
+          setIsLoading(false);
         }).catch((e) => {
           setError('fetch baklance of owner failed');
         })
@@ -237,11 +239,10 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
 
   return (
     <div>
-      <h1>ERC20 TOKEN</h1>
-      <p>CURRENT ERC20 Status: {globalCtx.erc20Status}</p>
+      <h1>Shares Referential (ERC20)</h1>
+      <p>Current Status: {globalCtx.erc20Status}</p>
       {mainContent}
       {modals}
-      {/* {isLoading && <LoadingIndicator />} */}
     </div>
   );
 }

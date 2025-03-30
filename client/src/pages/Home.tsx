@@ -143,15 +143,8 @@ function Home() {
             refreshAll();
         }
 
-    }, [addCustomerIsConfirmed, addLotIsConfirmed, linkCustomerToLotIsConfirmed, createErc20IsConfirmed]);
+    }, [addCustomerIsConfirmed, addLotIsConfirmed, linkCustomerToLotIsConfirmed]);
 
-    // error in tx / open error modal
-    useEffect(() => {
-        if (addCustomerError || addLotError || linkCustomerToLotError) {
-            setIsLoading(false);
-            setError("Transaction failed");
-        }
-    }, [addCustomerError, addLotError, linkCustomerToLotError, createErc20Error]);
 
     // deployment of ERC20 => triggers fetch of its address
     useEffect(() => {
@@ -168,6 +161,17 @@ function Home() {
             globalCtx.setErc20Address(fetchedERC20AddressData as string);
         }
     }, [fetchedERC20AddressData]);
+
+
+    // error in tx / open error modal
+    useEffect(() => {
+        if (addCustomerError || addLotError || linkCustomerToLotError) {
+            setIsLoading(false);
+            setError("Transaction failed");
+        }
+    }, [addCustomerError, addLotError, linkCustomerToLotError, createErc20Error]);
+
+
 
     useEffect(() => {
         if ((addCustomerHash !== addCustomerHashRef.current) && addCustomerIsConfirmed === false) {
@@ -190,6 +194,7 @@ function Home() {
             createErc20HashRef.current = createErc20Hash;
         }
     }, [addCustomerHash, addLotHash, linkCustomerToLotHash, createErc20Hash]);
+
 
     // triger add customer tx
     const addCustomerHandler = async (
@@ -232,8 +237,7 @@ function Home() {
     // triger link customer to lot tx
     const createERC20Handler = async () => {
         setTxBeingHandled(TRANSACTIONS.createERC20);
-        setCurrentHash(null);
-        setLotIdBeingLinked(null);
+        setOpenCreateErc20Modal(false);
         setIsLoading(true);
         await createERC20Write(connectedAccount, globalCtx.deployedManagerAddress);
     };
@@ -317,9 +321,9 @@ function Home() {
     if (openCreateErc20Modal) {
         modals.push(
             <Modal onClose={() => setOpenCreateErc20Modal(false)}>
-                <div>Créer un ERC unique.</div>
+                <div>Ready to deploy ERC20 token ?</div>
                 <button className="nes-btn is-success" onClick={createERC20Handler}>
-                    GO
+                    For sure !
                 </button>
                 <br></br>
             </Modal>,
@@ -344,7 +348,7 @@ function Home() {
             {globalCtx.erc20Address && <p className="notification">ERC20 is Created ! Switch to ERC20 page !</p>}
             <CustomersList customers={customers} />
             <hr />
-            {globalCtx.role === OWNER_ROLE && (
+            {(globalCtx.role === OWNER_ROLE && (globalCtx.erc20Address === undefined || isZeroAddress(globalCtx.erc20Address))) && (
                 <>
                     <AddCustomerInput onValidate={addCustomerHandler} /> <hr />
                 </>
