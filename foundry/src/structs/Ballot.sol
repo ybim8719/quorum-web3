@@ -21,10 +21,10 @@ enum VotingResult {
 
 struct Voter {
     bool tokenVerified;
-    address customer;
     string firstName;
     string lastName;
     uint256 shares;
+    string lotOfficialNumber;
 }
 
 struct Proposal {

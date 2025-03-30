@@ -3,3 +3,4 @@ Events listener to check status changes
 
 camemberts et charts de scrutins
 
+loadSharesAndCustomersToBallot pue car ça loope sur un array qui peut causer un gas limit 

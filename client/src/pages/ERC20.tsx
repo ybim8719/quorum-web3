@@ -15,9 +15,7 @@ import ErrorBlock from "../components/UI/ErrorBlock.tsx";
 import TokenizedLots from "../components/shared/ERC20/TokenizedLots.tsx";
 import { Lot } from "../models/lots.ts";
 import { useReadManagerQueries } from "../hooks/useReadManagerQueries.ts";
-import {
-  useCreateBallot
-} from "../hooks/useWriteManagerActions.ts";
+
 
 interface IlotBeingVerified {
   lot: Lot | null,
@@ -46,9 +44,8 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
   // read hooks
   const { useFetchedTotalSupply } = useReadTokenQueries(globalCtx.erc20Address);
   const { data: fetchedTotalSupplyData } = useFetchedTotalSupply;
-  const { useFetchedLots, useFetchedBallotAddress } = useReadManagerQueries(globalCtx.deployedManagerAddress);
+  const { useFetchedLots } = useReadManagerQueries(globalCtx.deployedManagerAddress);
   const { data: fetchedLotsData, refetch: refetchLots } = useFetchedLots;
-  const { data: fetchedBallotAddressData } = useFetchedBallotAddress;
 
 
 
@@ -65,15 +62,6 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
     isConfirmed: transferSharesIsConfirmed,
     transferSharesWrite
   } = useTranferShares();
-
-
-  const {
-    hash: createBallotHash,
-    error: createBallotError,
-    isConfirmed: createBallotIsConfirmed,
-    createBallotWrite,
-  } = useCreateBallot();
-
 
 
   useEffect(() => {
@@ -146,12 +134,6 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
 
   }, [transferSharesIsConfirmed]);
 
-  useEffect(() => {
-    if (isZeroAddress(fetchedBallotAddressData as string) === false) {
-      globalCtx.setBallotAddress(fetchedBallotAddressData as string);
-    }
-  }, [fetchedBallotAddressData]);
-
   if (!isConnected) {
     return <h1>Please connect your wallet first</h1>;
   }
@@ -175,12 +157,6 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
   const onTransferSharesHandler = (lot: Lot) => {
     setIsLoading(true);
     transferSharesWrite(connectedAccount, globalCtx.deployedManagerAddress, lot.id);
-  }
-
-  const onCreateBallotHandler = () => {
-    setIsLoading(true);
-    createBallotWrite(connectedAccount, globalCtx.deployedManagerAddress);
-    // usewrite, call manager functionn that deployed the new ballot contract
   }
 
   const onVerifyShares = (lot: Lot) => {
@@ -267,18 +243,7 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
     <div>
       <h1>Shares Referential (ERC20)</h1>
       <p>Current Status: {globalCtx.erc20Status}</p>
-      {globalCtx.erc20Status === CONTRACT_LOCK_KEY && globalCtx.ballotAddress !== undefined &&
-        <div>
-          <p>Create new general meeting ? </p>
-          <button
-            className="nes-btn is-success"
-            onClick={() => onCreateBallotHandler()}
-          >
-            GO CREATE GM !
-          </button>
-        </div>
-      }
-      {globalCtx.ballotAddress && <p className="notification">General meeting is Created ! Switch to Ballot page !</p>}
+      {globalCtx.erc20Status === CONTRACT_LOCK_KEY && <p className="notification">TOKEN IS LOCKED ! Check general meeting / Ballot page !</p>}
       {mainContent}
       {modals}
     </div>

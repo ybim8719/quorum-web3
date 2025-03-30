@@ -36,6 +36,7 @@ contract CondoGmManager is Ownable {
     error CondoGmManager__SharesCantBeZero(string lotOfficialNumber);
     error CondoGmManager__CantDeployAnotherBallot();
     error CondoGmManager__DeployBallotConditionsNotReached();
+    error CondoGmManager__VotersAlreadyImported();
 
     /*//////////////////////////////////////////////////////////////
                          Immutables and constants
@@ -60,6 +61,7 @@ contract CondoGmManager is Ownable {
     bool s_ERC20isLocked;
     address s_deployedERC20;
     address s_deployedBallot;
+    bool s_allVotersRegistered;
 
     /*//////////////////////////////////////////////////////////////
                             EVENTS
@@ -247,6 +249,8 @@ contract CondoGmManager is Ownable {
             TokenWorkflowStatus status = GMSharesToken(s_deployedERC20).getCurrentStatus();
             if (status == TokenWorkflowStatus.ContractLocked) {
                 s_ERC20isLocked = true;
+                // when erc20 lock, information is given to ballot
+                GMBallot(s_deployedBallot).setERC20Address(s_deployedERC20);
             }
         }
     }
@@ -255,9 +259,24 @@ contract CondoGmManager is Ownable {
                      WRITE FUNCTIONS -> BALLOT
     //////////////////////////////////////////////////////////////*/
     function loadSharesAndCustomersToBallot() external onlyOwner {
-        // todo add controls
-        Lot memory lot = s_lotsList[1];
-        GMBallot(s_deployedBallot).addLot(lot.customerAddress, lot.shares, lot.lotOfficialNumber, lot.isTokenized);
+        if (s_allVotersRegistered) {
+            revert CondoGmManager__VotersAlreadyImported();
+        }
+        if (s_nbOfLots > 1) {
+            // prevent from reentrancy
+            s_allVotersRegistered = true;
+            // lot ids start at 1, we'll register each customer as voter in ballot
+            for (uint256 id = 1; id < s_nextLotIndex; ++id) {
+                Customer memory tempCustomer = s_customersInfo[s_lotsList[id].customerAddress];
+                GMBallot(s_deployedBallot).registerVoter(
+                    s_lotsList[id].customerAddress,
+                    tempCustomer.firstName,
+                    tempCustomer.lastName,
+                    s_lotsList[id].lotOfficialNumber,
+                    s_lotsList[id].shares
+                );
+            }
+        }
     }
 
     function setGMBallotAddress(address _ballotAddress) external {

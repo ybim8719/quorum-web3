@@ -43,8 +43,6 @@ contract GMSharesToken is ERC20, Ownable {
     error GMSharesToken__InvalidPeriod();
     error GMSharesToken__TokenizedSharesMustBeNull();
     error GMSharesToken__AmountExceededTotalSupply(address to, uint256 amount);
-    error CondoGmManager__CantDeployAnotherBallot();
-    error CondoGmManager__DeployBallotConditionsNotReached();
 
     /// @notice parent contract (manager) becomes the owner of the contract
     constructor(string memory _name, string memory _symbol, uint256 _condoTotalShares)
@@ -112,22 +110,6 @@ contract GMSharesToken is ERC20, Ownable {
 
         return response;
     }
-
-    /*//////////////////////////////////////////////////////////////
-                     WRITE FUNCTIONS -> BALLOT
-    //////////////////////////////////////////////////////////////*/
-    // function createGMBallot(address owner) external onlyOwner {
-    //     if (s_currentStatus != TokenWorkflowStatus.ContractLocked) {
-    //         revert CondoGmManager__DeployBallotConditionsNotReached();
-    //     }
-
-    //     if (s_deployedBallot != address(0)) {
-    //         revert CondoGmManager__CantDeployAnotherBallot();
-    //     }
-    //     // instantiate BALLOT contract with xxxxxx
-    //     GMBallot deployed = new GMBallot("General meeting of june 2025", owner, address(this));
-    //     s_deployedBallot = address(deployed);
-    // }
 
     /*//////////////////////////////////////////////////////////////
                         VIEW FUNCTIONS

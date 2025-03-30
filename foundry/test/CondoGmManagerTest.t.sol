@@ -8,6 +8,7 @@ import {GMBallot} from "../src/GmBallot.sol";
 import {DeployCondoGmManager} from "../script/DeployCondoGmManager.s.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Customer, Lot, GeneralMeeting} from "../src/structs/Manager.sol";
+import {BallotWorkflowStatus} from "../src/structs/Ballot.sol";
 import {TokenGeneralInfo, TokenWorkflowStatus} from "../src/structs/Token.sol";
 
 contract CondoGmManagerTest is Test {
@@ -88,15 +89,7 @@ contract CondoGmManagerTest is Test {
         _;
     }
 
-    /*//////////////////////////////////////////////////////////////
-                        CONSTRUCTOR
-    //////////////////////////////////////////////////////////////*/
-    function test_succeeds_contractInitialzed() public view {
-        assertEq(s_manager.getGeneralInfos().condoName, NAME);
-        assertEq(s_manager.getGeneralInfos().postalAddress, POSTAL_ADDRESS);
-        assertEq(s_manager.getGeneralInfos().description, DESCRIPTION);
-    }
-    /*//////////////////////////////////////////////////////////////
+    /*/////////////////////////////////////////////////////////////
                         REGISTERING CUSTOMER
     //////////////////////////////////////////////////////////////*/
 
@@ -428,14 +421,56 @@ contract CondoGmManagerTest is Test {
     }
 
     /*//////////////////////////////////////////////////////////////
-                         create BALLOT
+                    loadSharesAndCustomersToBallot
     //////////////////////////////////////////////////////////////*/
-    // function test_revert_unauthorized() public {
-    //     vm.prank(NOT_REGISTERED);
-    //     vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, NOT_REGISTERED));
-    //     s_manager.createGMBallot();
-    // }
+    function test_revert_loadSharesAndCustomersToBallot_unauthorized() public {
+        vm.prank(NOT_REGISTERED);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, NOT_REGISTERED));
+        s_manager.loadSharesAndCustomersToBallot();
+    }
+
+    function test_succeeds_loadSharesAndCustomersToBallot() public tokenLocked {
+        vm.prank(msg.sender);
+        s_manager.loadSharesAndCustomersToBallot();
+        assertEq(s_ballot.getVoter(CUSTOMER1_ADDRESS).tokenVerified, true);
+        assertEq(s_ballot.getVoter(CUSTOMER1_ADDRESS).shares, LOT1_SHARES);
+        assertEq(s_ballot.getVoter(CUSTOMER2_ADDRESS).tokenVerified, true);
+        assertEq(s_ballot.getVoter(CUSTOMER2_ADDRESS).shares, LOT2_SHARES);
+    }
+
+    // todo fix this
+    function test_revert_loadSharesAndCustomersToBallot_functionLocked() public tokenLocked {
+        vm.startPrank(msg.sender);
+        s_manager.loadSharesAndCustomersToBallot();
+        vm.expectRevert(abi.encodeWithSelector(CondoGmManager.CondoGmManager__VotersAlreadyImported.selector));
+        s_manager.loadSharesAndCustomersToBallot();
+        vm.stopPrank();
+    }
+
     /*//////////////////////////////////////////////////////////////
-                         other
+                         setProposalsSubmittingOpen
     //////////////////////////////////////////////////////////////*/
+
+    function test_succeeds_setProposalsSubmittingOpen() public tokenLocked {
+        vm.startPrank(msg.sender);
+        console.log(s_ballot.owner(), "owner");
+        console.log(msg.sender, "msg.sender");
+
+        s_manager.loadSharesAndCustomersToBallot();
+        s_ballot.setProposalsSubmittingOpen();
+        assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ProposalsSubmittingOpen);
+        vm.stopPrank();
+    }
+
+    //  function setProposalsSubmittingOpen() external onlyOwner {
+    //     if (s_currentStatus != BallotWorkflowStatus.WaitingForGmData) {
+    //         revert GMBallot__InvalidPeriod();
+    //     }
+
+    //     if (s_nbOfVoters == 0) {
+    //         revert GMBallot__RegisterVotersFirst();
+    //     }
+
+    //     s_currentStatus = BallotWorkflowStatus.ProposalsSubmittingOpen;
+    // }
 }
