@@ -115,4 +115,8 @@ contract GMSharesToken is ERC20, Ownable {
     function getGeneralInfo() external view returns (TokenGeneralInfo memory) {
         return TokenGeneralInfo(i_condoTotalShares, s_nbOfTokenizedLots, s_sharesTokenized, s_currentStatus);
     }
+
+    function getCurrentStatus() external view returns (TokenWorkflowStatus) {
+        return s_currentStatus;
+    }
 }

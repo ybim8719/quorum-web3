@@ -27,7 +27,11 @@ const EmptyLotBeingVerified = {
   balanceOf: null
 }
 
-function ERC20() {
+interface IERC20Props {
+  onRefetchStatus: () => void;
+}
+
+function ERC20({ onRefetchStatus }: IERC20Props) {
   const { address: connectedAccount, isConnected } = useAccount();
   const globalCtx = useContext(GlobalContext);
   const [modalInfoText, setModalInfoText] = useState<string | null>(null);
@@ -107,20 +111,14 @@ function ERC20() {
     }
   }, [fetchedLotsData]);
 
-  // tx successes => refetch current status of token
+
   useEffect(() => {
-    if (
-      (validateMintingIsConfirmed)
-    ) {
+    if (validateMintingIsConfirmed) {
       setIsLoading(false);
       setModalInfoText("Transaction confirmed");
-      const refreshAll = async () => {
-        // refetch the token current status
-        // await refetchCustomers();
-      };
-      refreshAll();
+      // set current status passed to "transfering shares and reload page
+      onRefetchStatus();
     }
-
   }, [validateMintingIsConfirmed]);
 
   useEffect(() => {
@@ -182,7 +180,7 @@ function ERC20() {
             }
           })
         }).catch((e) => {
-          console.log(e)
+          setError('fetch baklance of owner failed');
         })
     }
   }
@@ -192,7 +190,7 @@ function ERC20() {
     mainContent = <VerifyInitialMinting balanceOfOwner={ownersBalance} totalSupply={totalSupply} onValidate={onValidateMintingHandler} role={globalCtx.role} currentStatus={globalCtx.erc20Status} />
   }
 
-  if (globalCtx.erc20Status === TRANSFERING_SHARES_KEY) {
+  if (globalCtx.erc20Status === TRANSFERING_SHARES_KEY || globalCtx.erc20Status === CONTRACT_LOCK_KEY) {
     mainContent = <TokenizedLots role={globalCtx.role} lots={lots} balanceOfOwner={ownersBalance} onVerify={onVerifyShares}
       onTokenize={onTransferSharesHandler} />
   }

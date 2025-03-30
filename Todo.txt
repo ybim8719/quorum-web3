@@ -1,0 +1,3 @@
+- quand je click sur créer un ERC20 => form pas joli, et surtout, une modale de transaction se superpose à l'ancienne qui contoent le form et ne se ferme pas seule
+
+-refecteh ercRoken20 status after status changed

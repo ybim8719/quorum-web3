@@ -12,7 +12,6 @@ interface ITokenizedLotsProps {
 
 const TokenizedLots = ({ lots, role, balanceOfOwner, onVerify, onTokenize }: ITokenizedLotsProps) => {
   let tableBody;
-
   if (lots.length > 0) {
     tableBody = lots.map((l, i) => {
       let actions;
@@ -32,7 +31,7 @@ const TokenizedLots = ({ lots, role, balanceOfOwner, onVerify, onTokenize }: ITo
           <td className="">
             {l.customer && l.customer.firstName} /{" "}
             {l.customer && l.customer.lastName} /{" "}
-            {l.customer && l.customer.address}
+            {l.customer && `${l.customer.address.slice(0, 12)}...`}
           </td>
           <td className="">{l.isTokenized ? "yes" : "no"}</td>
           <td>{actions}</td>
@@ -49,6 +48,7 @@ const TokenizedLots = ({ lots, role, balanceOfOwner, onVerify, onTokenize }: ITo
 
   return (
     <div className="">
+      {balanceOfOwner === 0 && <p>All shares went transfered to customers !</p>}
       <p><u>Desc: </u>{TOKEN_STATUS_INSTRUCTIONS[TRANSFERING_SHARES_KEY].description}</p>
       {role === OWNER_ROLE &&
         <p><u>Instructions: </u> {TOKEN_STATUS_INSTRUCTIONS[TRANSFERING_SHARES_KEY].ownerInstruction}</p>}
@@ -58,7 +58,6 @@ const TokenizedLots = ({ lots, role, balanceOfOwner, onVerify, onTokenize }: ITo
       <h3>
         <u>Lots ({lots.length})</u>
       </h3>
-      <p>Total shares : / 1000</p>
       <i className="nes-charmander"></i>
       <table>
         <thead>

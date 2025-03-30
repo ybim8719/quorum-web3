@@ -37,7 +37,7 @@ function App() {
   } = useFetchedCustomersAddresses;
   const { data: fetchedERC20Data, refetch: refetchERC20 } =
     useFetchedERC20Adress;
-  const { data: fetchCurrentStatusData, error: errorStatus, refetch: refetchCurrentStatus } =
+  const { data: fetchERC20CurrentStatusData, error: errorStatus, refetch: refetchERC20CurrentStatus } =
     useFetchedCurrentStatus;
   // fetch customers /owner addresses to apply authentication 
   useEffect(() => {
@@ -70,26 +70,26 @@ function App() {
       isZeroAddress(fetchedERC20Data as string) === false
     ) {
       globalCtx.setErc20Address(fetchedERC20Data.toString());
-      refetchCurrentStatus();
+      refetchERC20CurrentStatus();
     }
   }, [fetchedERC20Data]);
 
   useEffect(() => {
-    if (fetchCurrentStatusData !== undefined) {
+    if (fetchERC20CurrentStatusData !== undefined) {
       const currentStatusKey = Object.keys(TOKEN_STATUS_INSTRUCTIONS).find((key) => {
-        return TOKEN_STATUS_INSTRUCTIONS[key].statusId === fetchCurrentStatusData;
+        return TOKEN_STATUS_INSTRUCTIONS[key].statusId === fetchERC20CurrentStatusData;
       });
       if (currentStatusKey) {
         globalCtx.setErc20Status(currentStatusKey);
       }
     }
 
-  }, [fetchCurrentStatusData]);
+  }, [fetchERC20CurrentStatusData]);
 
   const routes = (
     <>
       <Route path="/" element={<Home />} />
-      <Route path="/erc20" element={<ERC20 />} />
+      <Route path="/erc20" element={<ERC20 onRefetchStatus={refetchERC20CurrentStatus} />} />
       {/* and so on....   */}
     </>
   );
