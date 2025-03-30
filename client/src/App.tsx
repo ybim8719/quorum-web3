@@ -21,24 +21,18 @@ function App() {
   const {
     useFetchedOwner,
     useFetchedCustomersAddresses,
-    useFetchedERC20Adress,
+    useFetchedERC20Address,
+    useFetchedBallotAddress
   } = useReadManagerQueries(globalCtx.deployedManagerAddress);
+  const { useFetchedCurrentStatus } = useReadTokenQueries(globalCtx.erc20Address);
 
+  const { data: fetchedOwnerData } = useFetchedOwner;
+  const { data: fetchedCustomersAddressesData } = useFetchedCustomersAddresses;
+  const { data: fetchedERC20Data } = useFetchedERC20Address;
+  const { data: fetchedBallotData } = useFetchedBallotAddress;
 
-  const {
-    useFetchedCurrentStatus,
-  } = useReadTokenQueries(globalCtx.erc20Address);
+  const { data: fetchERC20CurrentStatusData, refetch: refetchERC20CurrentStatus } = useFetchedCurrentStatus;
 
-
-  const { data: fetchedOwnerData, refetch: refetchOwner } = useFetchedOwner;
-  const {
-    data: fetchedCustomersAddressesData,
-    refetch: refetchCustomersAddresses,
-  } = useFetchedCustomersAddresses;
-  const { data: fetchedERC20Data, refetch: refetchERC20 } =
-    useFetchedERC20Adress;
-  const { data: fetchERC20CurrentStatusData, error: errorStatus, refetch: refetchERC20CurrentStatus } =
-    useFetchedCurrentStatus;
   // fetch customers /owner addresses to apply authentication 
   useEffect(() => {
     if (

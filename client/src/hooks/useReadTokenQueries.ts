@@ -14,13 +14,6 @@ export const useReadTokenQueries = (deployedTokenAddress: string) => {
         account: address,
     });
 
-    const useFetchedGeneralInfo = useReadContract({
-        address: deployedTokenAddress as `0x${string}`,
-        abi: token_abi,
-        functionName: "getGeneralInfo",
-        account: address,
-    });
-
     const useFetchedCurrentStatus = useReadContract({
         address: deployedTokenAddress as `0x${string}`,
         abi: token_abi,
@@ -29,7 +22,6 @@ export const useReadTokenQueries = (deployedTokenAddress: string) => {
     });
 
     return {
-        useFetchedGeneralInfo,
         useFetchedCurrentStatus,
         useFetchedTotalSupply
     };
@@ -43,9 +35,6 @@ export const config = createConfig({
 })
 
 export const triggerGetBalance = async (contractAddres: string, addressToGetBalanceFrom: string) => {
-    console.log(contractAddres, "ERC20 contractAddres")
-    console.log(addressToGetBalanceFrom, "manager address")
-
     return await readContract(config, {
         abi: token_abi,
         address: contractAddres as `0x${string}`,

@@ -14,10 +14,10 @@ enum BallotWorkflowStatus {
 }
 
 enum VotingResult {
+    Draw,
     Pending,
     Approved,
     Refused,
-    Draw
 }
 
 struct Voter {

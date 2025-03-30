@@ -141,7 +141,7 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
     return <h1>Unauthorized</h1>;
   }
 
-  if (isZeroAddress(globalCtx.erc20Address)) {
+  if (isZeroAddress(globalCtx.erc20Address) || globalCtx.erc20Address === undefined) {
     return <p>NO ERC20 deployed yet</p>;
   }
 
@@ -156,6 +156,11 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
   const onTransferSharesHandler = (lot: Lot) => {
     setIsLoading(true);
     transferSharesWrite(connectedAccount, globalCtx.deployedManagerAddress, lot.id);
+  }
+
+  const onCreateBallotHandler = () => {
+    setIsLoading(true);
+    // usewrite, call manager functionn that deployed the new ballot contract
   }
 
   const onVerifyShares = (lot: Lot) => {
@@ -241,6 +246,18 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
     <div>
       <h1>Shares Referential (ERC20)</h1>
       <p>Current Status: {globalCtx.erc20Status}</p>
+      {globalCtx.erc20Status === CONTRACT_LOCK_KEY && globalCtx.ballotAddress !== undefined &&
+        <div>
+          <p>Create new general meeting ? </p>
+          <button
+            className="nes-btn is-success"
+            onClick={() => onCreateBallotHandler()}
+          >
+            GO CREATE GM !
+          </button>
+        </div>
+      }
+      {globalCtx.ballotAddress && <p className="notification">General meeting is Created ! Switch to Ballot page !</p>}
       {mainContent}
       {modals}
     </div>

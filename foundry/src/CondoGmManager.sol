@@ -4,6 +4,7 @@ pragma solidity ^0.8.26;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Customer, CustomerView, Lot, LotView, CondoGeneralInfo} from "./structs/Manager.sol";
+import {TokenWorkflowStatus} from "./structs/Token.sol";
 import {GMSharesToken} from "./GmSharesToken.sol";
 import {GMBallot} from "./GmBallot.sol";
 import {console} from "forge-std/Test.sol";
@@ -33,6 +34,8 @@ contract CondoGmManager is Ownable {
     error CondoGmManager__ERC20NotDeployedYet();
     error CondoGmManager__LotSharesAlreadyTokenized(uint256 lotId);
     error CondoGmManager__SharesCantBeZero(string lotOfficialNumber);
+    error CondoGmManager__CantDeployAnotherBallot();
+    error CondoGmManager__DeployBallotConditionsNotReached();
 
     /*//////////////////////////////////////////////////////////////
                          Immutables and constants
@@ -54,6 +57,7 @@ contract CondoGmManager is Ownable {
     uint256 s_nextLotIndex;
     bool s_addingLotIsLocked;
     bool s_deployERC20IsPossible;
+    bool s_ERC20isLocked;
     address s_deployedERC20;
     address s_deployedBallot;
 
@@ -240,13 +244,32 @@ contract CondoGmManager is Ownable {
         bool response = GMSharesToken(s_deployedERC20).transfer(lot.customerAddress, lot.shares);
         if (response) {
             lot.isTokenized = true;
+            TokenWorkflowStatus status = GMSharesToken(s_deployedERC20).getCurrentStatus();
+            if (status == TokenWorkflowStatus.ContractLocked) {
+                s_ERC20isLocked = true;
+            }
         }
     }
 
     /*//////////////////////////////////////////////////////////////
                      WRITE FUNCTIONS -> BALLOT
     //////////////////////////////////////////////////////////////*/
-    function createGMBallot() external {}
+    function createGMBallot() external onlyOwner {
+        if (s_deployedERC20 == address(0)) {
+            revert CondoGmManager__ERC20NotDeployedYet();
+        }
+
+        if (s_ERC20isLocked == false) {
+            revert CondoGmManager__DeployBallotConditionsNotReached();
+        }
+
+        if (s_deployedBallot != address(0)) {
+            revert CondoGmManager__CantDeployAnotherBallot();
+        }
+        // instantiate BALLOT contract with xxxxxx
+        GMBallot deployed = new GMBallot("General meeting of june 2025", s_deployedERC20, address(this));
+        s_deployedBallot = address(deployed);
+    }
 
     /*//////////////////////////////////////////////////////////////
                         VIEW FUNCTIONS / CONDO INFO
@@ -330,8 +353,15 @@ contract CondoGmManager is Ownable {
         return s_addingLotIsLocked;
     }
 
+    /*//////////////////////////////////////////////////////////////
+                        VIEW FUNCTIONS / LOTS
+    //////////////////////////////////////////////////////////////*/
     function getsDeployERC20IsPossible() external view returns (bool) {
         return s_deployERC20IsPossible;
+    }
+
+    function getERC20isLocked() external view returns (bool) {
+        return s_ERC20isLocked;
     }
 
     /*//////////////////////////////////////////////////////////////

@@ -70,6 +70,22 @@ contract CondoGmManagerTest is Test {
         _;
     }
 
+    modifier tokenLocked() {
+        vm.startPrank(msg.sender);
+        s_manager.registerLot(LOT1_OFFICIAL_CODE, LOT1_SHARES);
+        s_manager.registerLot(LOT2_OFFICIAL_CODE, LOT2_SHARES);
+        s_manager.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
+        s_manager.registerCustomer(CUSTOMER2_FIRST_NAME, CUSTOMER2_LAST_NAME, CUSTOMER2_ADDRESS);
+        s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, LOT1_ID);
+        s_manager.linkCustomerToLot(CUSTOMER2_ADDRESS, LOT2_ID);
+        s_manager.createGMSharesToken();
+        s_manager.openTokenizingOfShares();
+        s_manager.convertLotSharesToToken(LOT1_ID);
+        s_manager.convertLotSharesToToken(LOT2_ID);
+        vm.stopPrank();
+        _;
+    }
+
     /*//////////////////////////////////////////////////////////////
                         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
@@ -404,6 +420,35 @@ contract CondoGmManagerTest is Test {
         assert(info.currentStatus == TokenWorkflowStatus.ContractLocked);
         assertEq(info.sharesTokenized, LOT2_SHARES + LOT1_SHARES);
         assertEq(info.nbOfTokenizedLots, 2);
+        // TEST THIS
+        assertEq(s_manager.getERC20isLocked(), true);
         vm.stopPrank();
     }
+
+    /*//////////////////////////////////////////////////////////////
+                         create BALLOT
+    //////////////////////////////////////////////////////////////*/
+    function test_suceeds_createBallot() public tokenLocked {
+        // instantiate BALLOT contract with xxxxxx
+        // GMBallot deployed = new GMBallot("General meeting of june 2025", s_deployedERC20, address(this));
+        // verify s_deployedBallot = address(deployed);
+    }
+
+    // fail ownable
+
+    // fail 1) if (s_deployedERC20 == address(0)) {
+    //     revert CondoGmManager__ERC20NotDeployedYet();
+    // }
+
+    //fail 2) if (s_ERC20isLocked == false) {
+    //     revert CondoGmManager__DeployBallotConditionsNotReached();
+    // }
+
+    // fail 3) if (s_deployedBallot != address(0)) {
+    //     revert CondoGmManager__CantDeployAnotherBallot();
+    // }
+
+    /*//////////////////////////////////////////////////////////////
+                         other
+    //////////////////////////////////////////////////////////////*/
 }

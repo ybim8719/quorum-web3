@@ -32,6 +32,7 @@ contract GMBallot is Ownable {
     //////////////////////////////////////////////////////////////*/
     address i_tokenAddress;
     address i_managerAddress;
+    string i_description;
 
     /*//////////////////////////////////////////////////////////////
                             EVENTS
@@ -41,7 +42,8 @@ contract GMBallot is Ownable {
                             MODIFIERS
     //////////////////////////////////////////////////////////////*/
 
-    constructor(string memory _condoName, address _tokenAddress, address _managerAddress) Ownable(_msgSender()) {
+    constructor(string memory _description, address _managerAddress address, _tokenAddress) Ownable(_msgSender()) {
+        i_description = _description;
         i_tokenAddress = _tokenAddress;
         i_managerAddress = _managerAddress;
     }
