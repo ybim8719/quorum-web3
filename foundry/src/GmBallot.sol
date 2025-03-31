@@ -1,7 +1,7 @@
 pragma solidity 0.8.28;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {BallotWorkflowStatus, Voter, Proposal} from "./structs/Ballot.sol";
+import {BallotWorkflowStatus, Voter, Proposal, VoteType} from "./structs/Ballot.sol";
 import {GMSharesToken} from "./GmSharesToken.sol";
 
 /// @notice Will store results from general Meeting proposals votings made in session
@@ -22,10 +22,10 @@ contract GMBallot is Ownable {
     error GMBallot__OnlyCustomerAuthorized(address unauthorized);
     error GMBallot__DescriptionCantBeEmpty();
     error GMBallot__LastProposalWasAlreadyHandled();
-
-    /*//////////////////////////////////////////////////////////////
-                         Immutables and constants
-    //////////////////////////////////////////////////////////////*/
+    error GMBallot__LastProposalStillBeingHandled();
+    error GMBallot__ProposalBeingHandledCantBeNull();
+    error GMBallot__InexistentVoteType();
+    error GMBallot__ProposalIdNotFound(uint256 proposalId);
 
     /*//////////////////////////////////////////////////////////////
                             STATES
@@ -64,6 +64,7 @@ contract GMBallot is Ownable {
                             EVENTS
     //////////////////////////////////////////////////////////////*/
     event ProposalRegistered();
+    event ProposalVotingOpen(uint256 proposalId);
 
     constructor(string memory _description, address _managerAddress) Ownable(_msgSender()) {
         i_description = _description;
@@ -143,6 +144,8 @@ contract GMBallot is Ownable {
         }
         Proposal storage proposal = s_proposals[s_nextProposalId];
         proposal.description = _description;
+        proposal.isRegistered = true;
+
         emit ProposalRegistered();
         // increment id for next proposal submitting
         ++s_nextProposalId;
@@ -174,46 +177,62 @@ contract GMBallot is Ownable {
         if (s_currentProposalBeingVoted > 0 && s_currentStatus != BallotWorkflowStatus.ProposalVotingCountRevealed) {
             revert GMBallot__InvalidPeriod();
         }
-        //
+        // if it's the last proposal being discussed,
         if (s_currentProposalBeingVoted == s_nbOfProposals) {
-            if (s_currentStatus != BallotWorkflowStatus.ProposalVotingCountRevealed) {
-                /// GO TO MeetingEnded and ballot is achieved
+            if (s_currentStatus == BallotWorkflowStatus.ProposalVotingCountRevealed) {
+                /// last proposal was revealed, ballot is achieved
+                s_currentStatus = BallotWorkflowStatus.MeetingEnded;
             } else {
-                //
-                revert GMBallot__LastProposalBeingHandled();
+                revert GMBallot__LastProposalStillBeingHandled();
             }
         }
-
+        // proposal id is now set for discussion and future votes
         ++s_currentProposalBeingVoted;
         s_currentStatus = BallotWorkflowStatus.ProposalBeingDiscussed;
     }
 
     function setProposalVotingOpenStatus() external onlyOwner {
-        // first proposal to be discussed
-        // if () {
-
-        // }
-        if (s_currentStatus != BallotWorkflowStatus.ProposalsSubmittingOpen) {
+        // prior step must definitively be ProposalBeingDiscussed
+        if (s_currentStatus != BallotWorkflowStatus.ProposalBeingDiscussed) {
             revert GMBallot__InvalidPeriod();
         }
 
         s_currentStatus = BallotWorkflowStatus.ProposalVotingOpen;
     }
 
-    function vote() external customerOnly {}
+    function vote(uint256 _ProposalId, uint256 _voteEnum) external customerOnly {
+        if (s_currentStatus != BallotWorkflowStatus.ProposalVotingOpen) {
+            revert GMBallot__InvalidPeriod();
+        }
+        if (s_proposals[_ProposalId].isRegistered == false) {
+            revert GMBallot__ProposalIdNotFound(_ProposalId);
+        }
+        if (_voteEnum > uint256(VoteType.Blank)) {
+            revert GMBallot__InexistentVoteType();
+        }
 
-    function closeProposalVotingStatus() external onlyOwner {
-        // first proposal to be discussed
-        // if () {
+        // has already voted
 
-        // }
-        // if (s_currentStatus != BallotWorkflowStatus.ProposalsSubmittingOpen) {
-        //     revert GMBallot__InvalidPeriod();
-        // }
+        VoteType vote = VoteType(_voteEnum);
+        Voter memory voter = s_voters[msg.sender];
+        if (vote == VoteType.Approval) {
+            // add approval shares,
+        } else if (vote == VoteType.Refusal) {
+            // add refusal shares,
+            voter.shares
+        } else if (vote == VoteType.Blank) {
+            // add blank shares,
+        }
+    }
 
-        s_currentStatus = BallotWorkflowStatus.ProposalVotingCountRevealed;
+    /*//////////////////////////////////////////////////////////////
+                    WRITE func -> voting 
+    //////////////////////////////////////////////////////////////*/
 
-        // do count add set results
+    function lockContract() external onlyOwner {
+        // must be MeetingEnded 
+
+        // do count add set results of the proposals
     }
 
     /*//////////////////////////////////////////////////////////////

@@ -19,6 +19,12 @@ enum VotingResult {
     Draw
 }
 
+enum VoteType {
+    Approva,
+    Refusal,
+    Blank
+}
+
 struct Voter {
     bool tokenVerified;
     string firstName;
@@ -28,6 +34,7 @@ struct Voter {
 }
 
 struct Proposal {
+    bool isRegistered;
     string description;
     VotingResult votingResult;
     address[] approvals;
