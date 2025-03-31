@@ -138,6 +138,32 @@ contract CondoGmManagerTest is Test {
         _;
     }
 
+    modifier proposal1BeingDiscussedWithTwoSameShares() {
+        vm.startPrank(msg.sender);
+        s_manager.registerLot(LOT1_OFFICIAL_CODE, 500);
+        s_manager.registerLot(LOT2_OFFICIAL_CODE, 500);
+        s_manager.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
+        s_manager.registerCustomer(CUSTOMER2_FIRST_NAME, CUSTOMER2_LAST_NAME, CUSTOMER2_ADDRESS);
+        s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, LOT1_ID);
+        s_manager.linkCustomerToLot(CUSTOMER2_ADDRESS, LOT2_ID);
+        s_manager.createGMSharesToken();
+        s_manager.openTokenizingOfShares();
+        s_manager.convertLotSharesToToken(LOT1_ID);
+        s_manager.convertLotSharesToToken(LOT2_ID);
+        s_manager.loadSharesAndCustomersToBallot();
+        s_ballot.setProposalsSubmittingOpen();
+        vm.stopPrank();
+        vm.startPrank(CUSTOMER1_ADDRESS);
+        s_ballot.submitProposal(PROPOSAL1);
+        s_ballot.submitProposal(PROPOSAL2);
+        vm.stopPrank();
+        vm.startPrank(msg.sender);
+        s_ballot.setProposalsSubmittingClosed();
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        vm.stopPrank();
+        _;
+    }
+
     /*/////////////////////////////////////////////////////////////
                         REGISTERING CUSTOMER
     //////////////////////////////////////////////////////////////*/
@@ -624,7 +650,6 @@ contract CondoGmManagerTest is Test {
     /*//////////////////////////////////////////////////////////////
                     setProposalVotingOpenStatus
     //////////////////////////////////////////////////////////////*/
-
     function test_succeeds_setProposalVotingOpenStatus() public proposal1BeingDiscussed {
         vm.prank(msg.sender);
         s_ballot.setProposalVotingOpenStatus();
@@ -745,15 +770,119 @@ contract CondoGmManagerTest is Test {
     }
 
     /*//////////////////////////////////////////////////////////////
-                     close curent proposal vote
+                    setProposalVotingCountReveal
     //////////////////////////////////////////////////////////////*/
+    function test_revert_setProposalVotingCountReveal_unauthorized() public {
+        vm.prank(NOT_REGISTERED);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, NOT_REGISTERED));
+        s_ballot.setCurrentProposalVotingCountReveal();
+    }
+
+    function test_revert_setProposalVotingCountReveal_invalidPeriod() public proposal1BeingDiscussed {
+        vm.prank(msg.sender);
+        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__InvalidPeriod.selector));
+        s_ballot.setCurrentProposalVotingCountReveal();
+    }
+
+    function test_suceed_setProposalVotingCountReveal_RefusalsWin() public proposal1BeingDiscussed {
+        vm.prank(msg.sender);
+        s_ballot.setProposalVotingOpenStatus();
+        vm.prank(CUSTOMER1_ADDRESS);
+        // customer 1 shares = 450
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Approval));
+        vm.prank(CUSTOMER2_ADDRESS);
+        // customer 2 shares = 550
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Refusal));
+        vm.prank(msg.sender);
+        s_ballot.setCurrentProposalVotingCountReveal();
+        Proposal memory proposal = s_ballot.getProposal(PROPOSAL1_ID);
+        assert(proposal.votingResult == VotingResult.Refused);
+        assertEq(proposal.approvals[0], CUSTOMER1_ADDRESS);
+        assertEq(proposal.refusals[0], CUSTOMER2_ADDRESS);
+        assertEq(proposal.approvalShares, LOT1_SHARES);
+        assertEq(proposal.refusalShares, LOT2_SHARES);
+        assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ProposalVotingCountRevealed);
+    }
+
+    function test_suceed_setProposalVotingCountReveal_ApprovalsWin() public proposal1BeingDiscussed {
+        vm.prank(msg.sender);
+        s_ballot.setProposalVotingOpenStatus();
+        vm.prank(CUSTOMER1_ADDRESS);
+        // customer 1 shares = 450
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Refusal));
+        vm.prank(CUSTOMER2_ADDRESS);
+        // customer 2 shares = 550
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Approval));
+        vm.prank(msg.sender);
+        s_ballot.setCurrentProposalVotingCountReveal();
+        Proposal memory proposal = s_ballot.getProposal(PROPOSAL1_ID);
+        assert(proposal.votingResult == VotingResult.Approved);
+        assertEq(proposal.approvals[0], CUSTOMER2_ADDRESS);
+        assertEq(proposal.refusals[0], CUSTOMER1_ADDRESS);
+        assertEq(proposal.approvalShares, LOT2_SHARES);
+        assertEq(proposal.refusalShares, LOT1_SHARES);
+        assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ProposalVotingCountRevealed);
+    }
+
+    function test_suceed_setProposalVotingCountReveal_DrawWin1() public proposal1BeingDiscussed {
+        vm.prank(msg.sender);
+        s_ballot.setProposalVotingOpenStatus();
+        vm.prank(CUSTOMER1_ADDRESS);
+        // customer 1 shares = 450
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Blank));
+        vm.prank(msg.sender);
+        s_ballot.setCurrentProposalVotingCountReveal();
+        Proposal memory proposal = s_ballot.getProposal(PROPOSAL1_ID);
+        assert(proposal.votingResult == VotingResult.Draw);
+        assertEq(proposal.blankVotes[0], CUSTOMER1_ADDRESS);
+        assertEq(proposal.blankVotesShares, LOT1_SHARES);
+        assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ProposalVotingCountRevealed);
+    }
+
+    function test_suceed_setProposalVotingCountReveal_DrawWin2() public proposal1BeingDiscussedWithTwoSameShares {
+        vm.prank(msg.sender);
+        s_ballot.setProposalVotingOpenStatus();
+        vm.prank(CUSTOMER1_ADDRESS);
+        // customer 1 shares = 500
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Refusal));
+        vm.prank(CUSTOMER2_ADDRESS);
+        // customer 2 shares = 500
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Approval));
+        vm.prank(msg.sender);
+        s_ballot.setCurrentProposalVotingCountReveal();
+        Proposal memory proposal = s_ballot.getProposal(PROPOSAL1_ID);
+        assert(proposal.votingResult == VotingResult.Draw);
+        assertEq(proposal.approvals[0], CUSTOMER2_ADDRESS);
+        assertEq(proposal.refusals[0], CUSTOMER1_ADDRESS);
+        assertEq(proposal.approvalShares, 500);
+        assertEq(proposal.refusalShares, 500);
+    }
 
     /*//////////////////////////////////////////////////////////////
                             close GM 
     //////////////////////////////////////////////////////////////*/
     // TODO Normal workflow with 2 proposals and 2 voters
+    function test_revert_vote_AlreadyVotedForThisProposal2() public proposal1BeingDiscussed {
+        vm.prank(msg.sender);
+        s_ballot.setProposalVotingOpenStatus();
+        vm.prank(CUSTOMER1_ADDRESS);
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Refusal));
+        vm.startPrank(msg.sender);
+        s_ballot.setCurrentProposalVotingCountReveal();
+        // open proposal N°2
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        s_ballot.setProposalVotingOpenStatus();
+        vm.stopPrank();
+        vm.prank(CUSTOMER1_ADDRESS);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                GMBallot.GMBallot__AlreadyVotedForThisProposal.selector, PROPOSAL1_ID, CUSTOMER1_ADDRESS
+            )
+        );
+        // vote for a past proposal already closed
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Approval));
+    }
 
-    //TODO
     // 8) revert wih GMBallot__AlreadyVotedForThisProposal =>  and voted, but not for this proposals => 2 rounds of VOTES !
     // /
     // function vote(uint256 _proposalId, uint256 _voteEnum) external customerOnly {

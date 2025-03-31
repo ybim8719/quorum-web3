@@ -28,6 +28,7 @@ contract GMBallot is Ownable {
     error GMBallot__ProposalIdNotFound(uint256 proposalId);
     error GMBallot__AlreadyVotedForThisProposal(uint256 proposalId, address voter);
     error GMBallot__VotingForWrongProposalId(uint256 proposalId);
+    error GMBallot__LastProposalNotRevealedYet();
 
     /*//////////////////////////////////////////////////////////////
                             STATES
@@ -178,7 +179,8 @@ contract GMBallot is Ownable {
         if (s_currentProposalBeingVoted > 0 && s_currentStatus != BallotWorkflowStatus.ProposalVotingCountRevealed) {
             revert GMBallot__LastProposalStillBeingHandled();
         }
-        // if it's the last proposal being discussed,
+
+        // if the last proposal being discussed,
         if (s_currentProposalBeingVoted == s_nbOfProposals) {
             if (s_currentStatus == BallotWorkflowStatus.ProposalVotingCountRevealed) {
                 /// last proposal was revealed, ballot is achieved
@@ -239,32 +241,33 @@ contract GMBallot is Ownable {
         if (s_voters[_customerAddress].votedProposalIds.length == 0) {
             return false;
         }
-
+        bool hasAlreadyVoted = false;
         for (uint256 i; i < nfOfVotes; i++) {
             if (s_voters[_customerAddress].votedProposalIds[i] == _proposalId) {
-                return true;
+                hasAlreadyVoted = true;
             }
         }
 
-        return false;
+        return hasAlreadyVoted;
     }
 
-    function setProposalVotingCountReveal() external onlyOwner {
+    function setCurrentProposalVotingCountReveal() external onlyOwner {
         // prior step must definitively be ProposalBeingDiscussed
-        if (s_currentStatus != BallotWorkflowStatus.ProposalsSubmittingOpen) {
+        if (s_currentStatus != BallotWorkflowStatus.ProposalVotingOpen) {
             revert GMBallot__InvalidPeriod();
         }
 
         s_currentStatus = BallotWorkflowStatus.ProposalVotingCountRevealed;
-        // calculate winner of proposal.
+        // calculate result of proposal balot.
         Proposal storage proposal = s_proposals[s_currentProposalBeingVoted];
-
         if (proposal.refusalShares > 0 || proposal.approvalShares > 0) {
             // if at least one vote for yes or no, then cant be DRAW
             if (proposal.refusalShares > proposal.approvalShares) {
                 proposal.votingResult = VotingResult.Refused;
             } else if (proposal.refusalShares < proposal.approvalShares) {
                 proposal.votingResult = VotingResult.Approved;
+            } else if (proposal.refusalShares == proposal.approvalShares) {
+                proposal.votingResult = VotingResult.Draw;
             }
         } else {
             proposal.votingResult = VotingResult.Draw;
