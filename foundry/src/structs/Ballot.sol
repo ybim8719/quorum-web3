@@ -20,7 +20,7 @@ enum VotingResult {
 }
 
 enum VoteType {
-    Approva,
+    Approval,
     Refusal,
     Blank
 }
@@ -31,6 +31,7 @@ struct Voter {
     string lastName;
     uint256 shares;
     string lotOfficialNumber;
+    uint256[] votedProposalIds;
 }
 
 struct Proposal {
@@ -41,4 +42,6 @@ struct Proposal {
     uint256 approvalShares;
     address[] refusals;
     uint256 refusalShares;
+    address[] blankVotes;
+    uint256 blankVotesShares;
 }

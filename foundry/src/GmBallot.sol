@@ -26,6 +26,7 @@ contract GMBallot is Ownable {
     error GMBallot__ProposalBeingHandledCantBeNull();
     error GMBallot__InexistentVoteType();
     error GMBallot__ProposalIdNotFound(uint256 proposalId);
+    error GMBallot__AlreadyVotedForThisProposal(uint256 proposalId, address voter);
 
     /*//////////////////////////////////////////////////////////////
                             STATES
@@ -106,14 +107,12 @@ contract GMBallot is Ownable {
         uint256 balance = GMSharesToken(s_ERC20Address).balanceOf(_customerAddress);
         // verify that the owner has the correct rights
         if (balance == _shares) {
-            Voter memory voter = Voter({
-                tokenVerified: true,
-                firstName: _customerFirstName,
-                lastName: _customerLastName,
-                shares: _shares,
-                lotOfficialNumber: _lotOfficialNumber
-            });
-            s_voters[_customerAddress] = voter;
+            Voter storage voter = s_voters[_customerAddress];
+            voter.tokenVerified = true;
+            voter.firstName = _customerFirstName;
+            voter.lastName = _customerLastName;
+            voter.shares = _shares;
+            voter.lotOfficialNumber = _lotOfficialNumber;
             ++s_nbOfVoters;
         }
     }
@@ -200,29 +199,49 @@ contract GMBallot is Ownable {
         s_currentStatus = BallotWorkflowStatus.ProposalVotingOpen;
     }
 
-    function vote(uint256 _ProposalId, uint256 _voteEnum) external customerOnly {
+    function vote(uint256 _proposalId, uint256 _voteEnum) external customerOnly {
         if (s_currentStatus != BallotWorkflowStatus.ProposalVotingOpen) {
             revert GMBallot__InvalidPeriod();
         }
-        if (s_proposals[_ProposalId].isRegistered == false) {
-            revert GMBallot__ProposalIdNotFound(_ProposalId);
+        if (s_proposals[_proposalId].isRegistered == false) {
+            revert GMBallot__ProposalIdNotFound(_proposalId);
         }
         if (_voteEnum > uint256(VoteType.Blank)) {
             revert GMBallot__InexistentVoteType();
         }
-
-        // has already voted
-
-        VoteType vote = VoteType(_voteEnum);
-        Voter memory voter = s_voters[msg.sender];
-        if (vote == VoteType.Approval) {
-            // add approval shares,
-        } else if (vote == VoteType.Refusal) {
-            // add refusal shares,
-            voter.shares
-        } else if (vote == VoteType.Blank) {
-            // add blank shares,
+        if (_checkIfHasAlreadyVoted(_proposalId, msg.sender)) {
+            revert GMBallot__AlreadyVotedForThisProposal(_proposalId, msg.sender);
         }
+
+        VoteType formatedVote = VoteType(_voteEnum);
+        Voter memory voter = s_voters[msg.sender];
+        if (formatedVote == VoteType.Approval) {
+            s_proposals[_proposalId].approvals.push(msg.sender);
+            s_proposals[_proposalId].approvalShares += voter.shares;
+        } else if (formatedVote == VoteType.Refusal) {
+            s_proposals[_proposalId].refusals.push(msg.sender);
+            s_proposals[_proposalId].refusalShares += voter.shares;
+        } else if (formatedVote == VoteType.Blank) {
+            s_proposals[_proposalId].blankVotes.push(msg.sender);
+            s_proposals[_proposalId].blankVotesShares += voter.shares;
+        }
+
+        s_voters[msg.sender].votedProposalIds.push(_proposalId);
+    }
+
+    function _checkIfHasAlreadyVoted(uint256 _proposalId, address _customerAddress) internal returns (bool) {
+        uint256 nfOfVotes = s_voters[_customerAddress].votedProposalIds.length;
+        if (s_voters[_customerAddress].votedProposalIds.length == 0) {
+            return false;
+        }
+
+        for (uint256 i; i < nfOfVotes; i++) {
+            if (s_voters[_customerAddress].votedProposalIds[i] == _proposalId) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -230,7 +249,7 @@ contract GMBallot is Ownable {
     //////////////////////////////////////////////////////////////*/
 
     function lockContract() external onlyOwner {
-        // must be MeetingEnded 
+        // must be MeetingEnded
 
         // do count add set results of the proposals
     }
@@ -257,6 +276,7 @@ contract GMBallot is Ownable {
     function getVoter(address _voter) external view returns (Voter memory) {
         return s_voters[_voter];
     }
+    // TODO PROTECT THIS SHIT while given proposal is maybe being voted
 
     function getProposal(uint256 _lotId) external view returns (Proposal memory) {
         return s_proposals[_lotId];
