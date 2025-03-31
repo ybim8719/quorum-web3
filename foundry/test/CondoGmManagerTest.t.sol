@@ -7,7 +7,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {CondoGmManager} from "../src/CondoGmManager.sol";
 import {GMSharesToken} from "../src/GmSharesToken.sol";
 import {GMBallot} from "../src/GmBallot.sol";
-import {DeployCondoGmManager} from "../script/DeployCondoGmManager.s.sol";
+import {DeployCondoGmManagerAndBallot} from "../script/DeployCondoGmManagerAndBallot.s.sol";
 import {Customer, Lot, GeneralMeeting} from "../src/structs/Manager.sol";
 import {BallotWorkflowStatus, VoteType, Proposal, VotingResult} from "../src/structs/Ballot.sol";
 import {TokenGeneralInfo, TokenWorkflowStatus} from "../src/structs/Token.sol";
@@ -50,7 +50,7 @@ contract CondoGmManagerTest is Test {
     uint256 public constant PROPOSAL2_ID = 2;
 
     function setUp() public {
-        DeployCondoGmManager script = new DeployCondoGmManager();
+        DeployCondoGmManagerAndBallot script = new DeployCondoGmManagerAndBallot();
         (s_manager, s_ballot) = script.run();
     }
 
@@ -859,62 +859,85 @@ contract CondoGmManagerTest is Test {
     }
 
     /*//////////////////////////////////////////////////////////////
-                            close GM 
+         setProposalBeingDiscussedStatusOrEndBallot => end of GM
     //////////////////////////////////////////////////////////////*/
-    // TODO Normal workflow with 2 proposals and 2 voters
-    function test_revert_vote_AlreadyVotedForThisProposal2() public proposal1BeingDiscussed {
+    function test_revert_setProposalBeingDiscussedStatusOrEndBallot_LastProposalStillBeingHandled2()
+        public
+        proposal1BeingDiscussed
+    {
+        // 2 proposals
         vm.prank(msg.sender);
         s_ballot.setProposalVotingOpenStatus();
         vm.prank(CUSTOMER1_ADDRESS);
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Refusal));
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Blank));
         vm.startPrank(msg.sender);
         s_ballot.setCurrentProposalVotingCountReveal();
-        // open proposal N°2
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__LastProposalStillBeingHandled.selector));
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        vm.stopPrank();
+    }
+
+    function test_succeeds_setProposalBeingDiscussedStatusOrEndBallot_forBallotsClosure()
+        public
+        proposal1BeingDiscussed
+    {
+        // proposal 1 being treated
+        vm.prank(msg.sender);
+        s_ballot.setProposalVotingOpenStatus();
+        vm.prank(CUSTOMER1_ADDRESS);
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Blank));
+        vm.startPrank(msg.sender);
+        s_ballot.setCurrentProposalVotingCountReveal();
+        // proposal 2 being treated
         s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
         s_ballot.setProposalVotingOpenStatus();
         vm.stopPrank();
         vm.prank(CUSTOMER1_ADDRESS);
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                GMBallot.GMBallot__AlreadyVotedForThisProposal.selector, PROPOSAL1_ID, CUSTOMER1_ADDRESS
-            )
-        );
-        // vote for a past proposal already closed
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Approval));
+        s_ballot.vote(PROPOSAL2_ID, uint256(VoteType.Blank));
+        vm.startPrank(msg.sender);
+        s_ballot.setCurrentProposalVotingCountReveal();
+        // end all votes
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        vm.stopPrank();
+        assert(s_ballot.getProposal(PROPOSAL1_ID).votingResult == VotingResult.Draw);
+        assert(s_ballot.getProposal(PROPOSAL2_ID).votingResult == VotingResult.Draw);
+        assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.MeetingEnded);
     }
 
-    // 8) revert wih GMBallot__AlreadyVotedForThisProposal =>  and voted, but not for this proposals => 2 rounds of VOTES !
-    // /
-    // function vote(uint256 _proposalId, uint256 _voteEnum) external customerOnly {
-    //     if (_checkIfHasAlreadyVoted(_proposalId, msg.sender)) {
-    //         revert GMBallot__AlreadyVotedForThisProposal(_proposalId, msg.sender);
-    //     }
-    // ....
-    // }
-    // function _checkIfHasAlreadyVoted(uint256 _proposalId, address _customerAddress) internal view returns (bool)
-    //     for (uint256 i; i < nfOfVotes; i++) {
-    //         if (s_voters[_customerAddress].votedProposalIds[i] == _proposalId) {
-    //             => LAAAAAAAAAAAAAAA return true;
-    //         }
-    //     }
-    //     return false;
-    // }
+    /*//////////////////////////////////////////////////////////////
+         setProposalBeingDiscussedStatusOrEndBallot => end of GM
+    //////////////////////////////////////////////////////////////*/
+    function test_revert_lockContract_unauthorized() public {
+        vm.prank(NOT_REGISTERED);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, NOT_REGISTERED));
+        s_ballot.lockContract();
+    }
 
-    // TODOOOOOOOOOOOOOOOOOOOO BCP + TARD QUAND TEST DE TOUTES LES VOTES COMPTés fait !
-    // function test_succeeds_setProposalBeingDiscussedStatusOrEndBallot_forBallotClosure() public proposalSubmittingIsOpen {
-    //     vm.prank(CUSTOMER1_ADDRESS);
-    //     s_ballot.submitProposal(PROPOSAL1);
-    //     vm.prank(msg.sender);
-    //     s_ballot.setProposalsSubmittingClosed();
-    //     assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ProposalsSubmittingClosed);
-    // }
+    function test_revert_lockContract_invalidPeriod() public {
+        vm.prank(msg.sender);
+        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__InvalidPeriod.selector));
+        s_ballot.lockContract();
+    }
 
-    //     AVEC CODE CODE => if (s_currentProposalBeingVoted == s_nbOfProposals) {
-    //         if (s_currentStatus == BallotWorkflowStatus.ProposalVotingCountRevealed) {
-    //             /// last proposal was revealed, ballot is achieved
-    //             s_currentStatus = BallotWorkflowStatus.MeetingEnded;
-    //         } else {
-    //             revert GMBallot__LastProposalStillBeingHandled();
-    //         }
-    // }
+    function test_succeed_lockContract() public proposal1BeingDiscussed {
+        vm.prank(msg.sender);
+        s_ballot.setProposalVotingOpenStatus();
+        vm.prank(CUSTOMER1_ADDRESS);
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Blank));
+        vm.startPrank(msg.sender);
+        s_ballot.setCurrentProposalVotingCountReveal();
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        s_ballot.setProposalVotingOpenStatus();
+        vm.stopPrank();
+        vm.prank(CUSTOMER1_ADDRESS);
+        s_ballot.vote(PROPOSAL2_ID, uint256(VoteType.Blank));
+        vm.startPrank(msg.sender);
+        s_ballot.setCurrentProposalVotingCountReveal();
+        // end all votes
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        s_ballot.lockContract();
+        vm.stopPrank();
+        assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ContractLocked);
+    }
 }

@@ -5,7 +5,7 @@ import {Script, console} from "forge-std/Script.sol";
 import {CondoGmManager} from "../src/CondoGmManager.sol";
 import {GMBallot} from "../src/GmBallot.sol";
 
-contract DeployCondoGmManager is Script {
+contract DeployCondoGmManagerAndBallot is Script {
     CondoGmManager public s_manager;
     GMBallot public s_ballot;
 

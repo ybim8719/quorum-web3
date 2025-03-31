@@ -3,17 +3,17 @@ pragma solidity 0.8.28;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {BallotWorkflowStatus, Voter, Proposal, VoteType, VotingResult} from "./structs/Ballot.sol";
 import {GMSharesToken} from "./GmSharesToken.sol";
+import {console} from "forge-std/Test.sol";
 
 /// @notice Will store results from general Meeting proposals votings made in session
 /// @dev inherits OpenZep ownable / will be deployed with manager contract in a script
+
 contract GMBallot is Ownable {
     /*//////////////////////////////////////////////////////////////
                             ERRORS
     //////////////////////////////////////////////////////////////*/
     error GMBallot__Unauthorized(address unauthorizedVoter);
-    error GMBallot__TokenMustLocked();
     error GMBallot__TokenAlreadyRegistered();
-    error GMBallot__VoterAlreadyRegistered();
     error GMBallot__SharesCantBeZero();
     error GMBallot__OnlyManagerAuthorized();
     error GMBallot__InvalidPeriod();
@@ -21,9 +21,7 @@ contract GMBallot is Ownable {
     error GMBallot__ProposalsAreEmpty();
     error GMBallot__OnlyCustomerAuthorized(address unauthorized);
     error GMBallot__DescriptionCantBeEmpty();
-    error GMBallot__LastProposalWasAlreadyHandled();
     error GMBallot__LastProposalStillBeingHandled();
-    error GMBallot__ProposalBeingHandledCantBeNull();
     error GMBallot__InexistentVoteType();
     error GMBallot__ProposalIdNotFound(uint256 proposalId);
     error GMBallot__AlreadyVotedForThisProposal(uint256 proposalId, address voter);
@@ -96,19 +94,11 @@ contract GMBallot is Ownable {
         if (s_currentStatus != BallotWorkflowStatus.WaitingForGmData) {
             revert GMBallot__InvalidPeriod();
         }
-        // Token must created and locked
-        if (s_ERC20Address == address(0)) {
-            revert GMBallot__TokenMustLocked();
-        }
-        // voter must not be already registered
-        if (s_voters[_customerAddress].tokenVerified) {
-            revert GMBallot__VoterAlreadyRegistered();
-        }
         if (_shares == 0) {
             revert GMBallot__SharesCantBeZero();
         }
+        // verify by asking ERC20 that the owner has the correct rights
         uint256 balance = GMSharesToken(s_ERC20Address).balanceOf(_customerAddress);
-        // verify that the owner has the correct rights
         if (balance == _shares) {
             Voter storage voter = s_voters[_customerAddress];
             voter.tokenVerified = true;
@@ -179,8 +169,7 @@ contract GMBallot is Ownable {
         if (s_currentProposalBeingVoted > 0 && s_currentStatus != BallotWorkflowStatus.ProposalVotingCountRevealed) {
             revert GMBallot__LastProposalStillBeingHandled();
         }
-
-        // if the last proposal being discussed,
+        // if the last proposal being discussed, close all ballots
         if (s_currentProposalBeingVoted == s_nbOfProposals) {
             if (s_currentStatus == BallotWorkflowStatus.ProposalVotingCountRevealed) {
                 /// last proposal was revealed, ballot is achieved
@@ -188,10 +177,11 @@ contract GMBallot is Ownable {
             } else {
                 revert GMBallot__LastProposalStillBeingHandled();
             }
+        } else {
+            // if not last proposal, go with cycle flow discussion -> voting -> count reveal etc...
+            ++s_currentProposalBeingVoted;
+            s_currentStatus = BallotWorkflowStatus.ProposalBeingDiscussed;
         }
-        // proposal id is now set for discussion and future votes
-        ++s_currentProposalBeingVoted;
-        s_currentStatus = BallotWorkflowStatus.ProposalBeingDiscussed;
     }
 
     function setProposalVotingOpenStatus() external onlyOwner {
@@ -277,11 +267,12 @@ contract GMBallot is Ownable {
     /*//////////////////////////////////////////////////////////////
                     WRITE func -> voting 
     //////////////////////////////////////////////////////////////*/
-    // TODO
     function lockContract() external onlyOwner {
         // must be MeetingEnded
-
-        // do count add set results of the proposals
+        if (s_currentProposalBeingVoted == 0 && s_currentStatus != BallotWorkflowStatus.MeetingEnded) {
+            revert GMBallot__InvalidPeriod();
+        }
+        s_currentStatus = BallotWorkflowStatus.ContractLocked;
     }
 
     /*//////////////////////////////////////////////////////////////
