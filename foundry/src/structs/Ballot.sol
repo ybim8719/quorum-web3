@@ -4,7 +4,7 @@ pragma solidity ^0.8.28;
 enum BallotWorkflowStatus {
     WaitingForGmData,
     ProposalsSubmittingOpen,
-    ProposalsSubmittingClsode,
+    ProposalsSubmittingClosed,
     ProposalBeingDiscussed,
     ProposalVotingOpen,
     ProposalVotingCountRevealed,
@@ -13,10 +13,10 @@ enum BallotWorkflowStatus {
 }
 
 enum VotingResult {
-    Draw,
     Pending,
     Approved,
-    Refused
+    Refused,
+    Draw
 }
 
 struct Voter {
@@ -28,8 +28,7 @@ struct Voter {
 }
 
 struct Proposal {
-    string content;
-    uint256 quorum;
+    string description;
     VotingResult votingResult;
     address[] approvals;
     uint256 approvalShares;

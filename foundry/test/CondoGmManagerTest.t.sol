@@ -43,6 +43,9 @@ contract CondoGmManagerTest is Test {
     uint256 public constant LOT2_ID = 2;
     string public constant LOT3_OFFICIAL_CODE = "Coco198";
     uint256 public constant LOT3_SHARES = 600;
+    string public constant PROPOSAL1 = "Travaux du sol du couloir batiment B (parties communes)";
+    string public constant PROPOSAL2 = "Augmenter de 15% le salaire du gardien";
+    uint256 public constant PROPOSAL_ID1 = 1;
 
     function setUp() public {
         DeployCondoGmManager script = new DeployCondoGmManager();
@@ -85,6 +88,24 @@ contract CondoGmManagerTest is Test {
         s_manager.openTokenizingOfShares();
         s_manager.convertLotSharesToToken(LOT1_ID);
         s_manager.convertLotSharesToToken(LOT2_ID);
+        vm.stopPrank();
+        _;
+    }
+
+    modifier proposalSubmittingIsOpen() {
+        vm.startPrank(msg.sender);
+        s_manager.registerLot(LOT1_OFFICIAL_CODE, LOT1_SHARES);
+        s_manager.registerLot(LOT2_OFFICIAL_CODE, LOT2_SHARES);
+        s_manager.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
+        s_manager.registerCustomer(CUSTOMER2_FIRST_NAME, CUSTOMER2_LAST_NAME, CUSTOMER2_ADDRESS);
+        s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, LOT1_ID);
+        s_manager.linkCustomerToLot(CUSTOMER2_ADDRESS, LOT2_ID);
+        s_manager.createGMSharesToken();
+        s_manager.openTokenizingOfShares();
+        s_manager.convertLotSharesToToken(LOT1_ID);
+        s_manager.convertLotSharesToToken(LOT2_ID);
+        s_manager.loadSharesAndCustomersToBallot();
+        s_ballot.setProposalsSubmittingOpen();
         vm.stopPrank();
         _;
     }
@@ -450,27 +471,83 @@ contract CondoGmManagerTest is Test {
     /*//////////////////////////////////////////////////////////////
                          setProposalsSubmittingOpen
     //////////////////////////////////////////////////////////////*/
-
     function test_succeeds_setProposalsSubmittingOpen() public tokenLocked {
         vm.startPrank(msg.sender);
-        console.log(s_ballot.owner(), "owner");
-        console.log(msg.sender, "msg.sender");
-
         s_manager.loadSharesAndCustomersToBallot();
         s_ballot.setProposalsSubmittingOpen();
         assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ProposalsSubmittingOpen);
         vm.stopPrank();
     }
 
-    //  function setProposalsSubmittingOpen() external onlyOwner {
-    //     if (s_currentStatus != BallotWorkflowStatus.WaitingForGmData) {
-    //         revert GMBallot__InvalidPeriod();
-    //     }
+    function test_revert_setProposalsSubmittingOpen_ifInvalidPeriod() public tokenLocked {
+        vm.startPrank(msg.sender);
+        s_manager.loadSharesAndCustomersToBallot();
+        s_ballot.setProposalsSubmittingOpen();
+        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__InvalidPeriod.selector));
+        s_ballot.setProposalsSubmittingOpen();
+        vm.stopPrank();
+    }
 
-    //     if (s_nbOfVoters == 0) {
-    //         revert GMBallot__RegisterVotersFirst();
-    //     }
+    function test_revert_setProposalsSubmittingOpen_RegisterVotersFirst() public tokenLocked {
+        vm.startPrank(msg.sender);
+        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__RegisterVotersFirst.selector));
+        s_ballot.setProposalsSubmittingOpen();
+        vm.stopPrank();
+    }
 
-    //     s_currentStatus = BallotWorkflowStatus.ProposalsSubmittingOpen;
-    // }
+    /*//////////////////////////////////////////////////////////////
+                        SUBMIT PROPOSAL
+    //////////////////////////////////////////////////////////////*/
+    function test_succeeds_submitProposal() public proposalSubmittingIsOpen {
+        vm.prank(CUSTOMER1_ADDRESS);
+        s_ballot.submitProposal(PROPOSAL1);
+        assertEq(s_ballot.getProposal(PROPOSAL_ID1).description, PROPOSAL1);
+        assertEq(s_ballot.getProposal(PROPOSAL_ID1).refusalShares, 0);
+        assertEq(s_ballot.getProposal(PROPOSAL_ID1).approvalShares, 0);
+        assertEq(s_ballot.getProposal(PROPOSAL_ID1).refusals.length, 0);
+        assertEq(s_ballot.getNextProposalId(), 2);
+    }
+
+    function test_revert_submitProposal_unauthorized() public proposalSubmittingIsOpen {
+        vm.prank(NOT_REGISTERED);
+        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__OnlyCustomerAuthorized.selector, NOT_REGISTERED));
+        s_ballot.submitProposal(PROPOSAL1);
+    }
+
+    function test_revert_submitProposal_InvalidPeriod() public tokenLocked {
+        vm.prank(msg.sender);
+        s_manager.loadSharesAndCustomersToBallot();
+        vm.prank(CUSTOMER1_ADDRESS);
+        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__InvalidPeriod.selector));
+        s_ballot.submitProposal(PROPOSAL1);
+    }
+
+    function test_revert_submitProposal_ifDescriptionEmpty() public proposalSubmittingIsOpen {
+        vm.prank(CUSTOMER1_ADDRESS);
+        vm.expectRevert(GMBallot.GMBallot__DescriptionCantBeEmpty.selector);
+        s_ballot.submitProposal("");
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                        CLOSE SUBMIT PROPOSAL STATUS
+    //////////////////////////////////////////////////////////////*/
+    function test_succeeds_setProposalsSubmittingClosed() public proposalSubmittingIsOpen {
+        vm.prank(CUSTOMER1_ADDRESS);
+        s_ballot.submitProposal(PROPOSAL1);
+        vm.prank(msg.sender);
+        s_ballot.setProposalsSubmittingClosed();
+        assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ProposalsSubmittingClosed);
+    }
+
+    function test_revert_setProposalsSubmittingClosed_InvalidPeriod() public tokenLocked {
+        vm.prank(msg.sender);
+        vm.expectRevert(GMBallot.GMBallot__InvalidPeriod.selector);
+        s_ballot.setProposalsSubmittingClosed();
+    }
+
+    function test_revert_setProposalsSubmittingClosed_ProposalsAreEmpty() public proposalSubmittingIsOpen {
+        vm.prank(msg.sender);
+        vm.expectRevert(GMBallot.GMBallot__ProposalsAreEmpty.selector);
+        s_ballot.setProposalsSubmittingClosed();
+    }
 }

@@ -16,8 +16,8 @@ contract DeployCondoGmManager is Script {
 
     function deployApp() public {
         vm.startBroadcast();
-        s_manager = new CondoGmManager("Copro des cocos", "Une retr'aite paisible", "rue du vent 223");
-        s_ballot = new GMBallot("la future ag de mai 2025", address(s_manager));
+        s_manager = new CondoGmManager("Copro des cocos", "Une retraite paisible", "rue du soleil levant 223");
+        s_ballot = new GMBallot("AGO des copro mai 2025", address(s_manager));
         s_manager.setGMBallotAddress(address(s_ballot));
         vm.stopBroadcast();
     }
