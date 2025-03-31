@@ -1,7 +1,7 @@
 pragma solidity 0.8.28;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {BallotWorkflowStatus, Voter, Proposal, VoteType} from "./structs/Ballot.sol";
+import {BallotWorkflowStatus, Voter, Proposal, VoteType, VotingResult} from "./structs/Ballot.sol";
 import {GMSharesToken} from "./GmSharesToken.sol";
 
 /// @notice Will store results from general Meeting proposals votings made in session
@@ -249,10 +249,32 @@ contract GMBallot is Ownable {
         return false;
     }
 
+    function setProposalVotingCountReveal() external onlyOwner {
+        // prior step must definitively be ProposalBeingDiscussed
+        if (s_currentStatus != BallotWorkflowStatus.ProposalsSubmittingOpen) {
+            revert GMBallot__InvalidPeriod();
+        }
+
+        s_currentStatus = BallotWorkflowStatus.ProposalVotingCountRevealed;
+        // calculate winner of proposal.
+        Proposal storage proposal = s_proposals[s_currentProposalBeingVoted];
+
+        if (proposal.refusalShares > 0 || proposal.approvalShares > 0) {
+            // if at least one vote for yes or no, then cant be DRAW
+            if (proposal.refusalShares > proposal.approvalShares) {
+                proposal.votingResult = VotingResult.Refused;
+            } else if (proposal.refusalShares < proposal.approvalShares) {
+                proposal.votingResult = VotingResult.Approved;
+            }
+        } else {
+            proposal.votingResult = VotingResult.Draw;
+        }
+    }
+
     /*//////////////////////////////////////////////////////////////
                     WRITE func -> voting 
     //////////////////////////////////////////////////////////////*/
-
+    // TODO
     function lockContract() external onlyOwner {
         // must be MeetingEnded
 

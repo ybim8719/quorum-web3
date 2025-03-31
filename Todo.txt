@@ -4,3 +4,7 @@ Events listener to check status changes
 camemberts et charts de scrutins
 
 loadSharesAndCustomersToBallot pue car ça loope sur un array qui peut causer un gas limit 
+
+y a eu souci 
+
+vote en cours, rendre impossible la lecture des votes d'un proposal non clos. (get Proposal et getProposals)

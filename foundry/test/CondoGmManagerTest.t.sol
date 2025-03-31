@@ -680,63 +680,78 @@ contract CondoGmManagerTest is Test {
         assertEq(proposal.blankVotesShares, LOT1_SHARES);
     }
 
-    // 4) revert wityh GMBallot__InvalidPeriod
-    // 5) revert wih GMBallot__ProposalIdNotFound
-    // // 3.5) revert    if (s_currentProposalBeingVoted != _proposalId) {
-    //    revert GMBallot__VotingForWrongProposalId(_proposalId);
-    //     }
-    // 6) revert wih GMBallot__InexistentVoteType
-    // 7) revert wih GMBallot__AlreadyVotedForThisProposal =>  cases dnever voted before
+    function test_revert_vote_unauthorized() public {
+        vm.prank(NOT_REGISTERED);
+        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__OnlyCustomerAuthorized.selector, NOT_REGISTERED));
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Refusal));
+    }
 
-    // /
-    // function vote(uint256 _proposalId, uint256 _voteEnum) external customerOnly {
-    //     if (s_currentStatus != BallotWorkflowStatus.ProposalVotingOpen) {
-    //         revert GMBallot__InvalidPeriod();
-    //     }
-    //     if (s_proposals[_proposalId].isRegistered == false) {
-    //         revert GMBallot__ProposalIdNotFound(_proposalId);
-    //     }
-    //     if (_voteEnum > uint256(VoteType.Blank)) {
-    //         revert GMBallot__InexistentVoteType();
-    //     }
-    //     if (_checkIfHasAlreadyVoted(_proposalId, msg.sender)) {
-    //         revert GMBallot__AlreadyVotedForThisProposal(_proposalId, msg.sender);
-    //     }
+    function test_revert_vote_ProposalIdNotFound() public proposal1BeingDiscussed {
+        vm.prank(msg.sender);
+        s_ballot.setProposalVotingOpenStatus();
+        vm.prank(CUSTOMER1_ADDRESS);
+        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__ProposalIdNotFound.selector, 22));
+        s_ballot.vote(22, uint256(VoteType.Refusal));
+    }
 
-    //     VoteType formatedVote = VoteType(_voteEnum);
-    //     Voter memory voter = s_voters[msg.sender];
-    //     if (formatedVote == VoteType.Approval) {
-    //         s_proposals[_proposalId].approvals.push(msg.sender);
-    //         s_proposals[_proposalId].approvalShares += voter.shares;
-    //     } else if (formatedVote == VoteType.Refusal) {
-    //         s_proposals[_proposalId].refusals.push(msg.sender);
-    //         s_proposals[_proposalId].refusalShares += voter.shares;
-    //     } else if (formatedVote == VoteType.Blank) {
-    //         s_proposals[_proposalId].blankVotes.push(msg.sender);
-    //         s_proposals[_proposalId].blankVotesShares += voter.shares;
-    //     }
+    function test_revert_vote_invalidPeriod() public proposal1BeingDiscussed {
+        vm.prank(CUSTOMER1_ADDRESS);
+        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__InvalidPeriod.selector));
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Refusal));
+    }
 
-    //     s_voters[msg.sender].votedProposalIds.push(_proposalId);
-    // }
+    function test_revert_vote_InexistentVoteType() public proposal1BeingDiscussed {
+        vm.prank(msg.sender);
+        s_ballot.setProposalVotingOpenStatus();
+        vm.prank(CUSTOMER1_ADDRESS);
+        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__InexistentVoteType.selector));
+        s_ballot.vote(PROPOSAL1_ID, 3);
+    }
 
-    // function _checkIfHasAlreadyVoted(uint256 _proposalId, address _customerAddress) internal view returns (bool) {
-    //     uint256 nfOfVotes = s_voters[_customerAddress].votedProposalIds.length;
-    //     if (s_voters[_customerAddress].votedProposalIds.length == 0) {
-    //         return false;
-    //     }
+    function test_revert_vote_AlreadyVotedForThisProposal() public proposal1BeingDiscussed {
+        vm.prank(msg.sender);
+        s_ballot.setProposalVotingOpenStatus();
+        vm.prank(CUSTOMER1_ADDRESS);
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Refusal));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                GMBallot.GMBallot__AlreadyVotedForThisProposal.selector, PROPOSAL1_ID, CUSTOMER1_ADDRESS
+            )
+        );
+        vm.prank(CUSTOMER1_ADDRESS);
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Approval));
+    }
 
-    //     for (uint256 i; i < nfOfVotes; i++) {
-    //         if (s_voters[_customerAddress].votedProposalIds[i] == _proposalId) {
-    //             return true;
-    //         }
-    //     }
+    function test_revert_vote_VotingForWrongProposalId() public proposal1BeingDiscussed {
+        vm.prank(msg.sender);
+        s_ballot.setProposalVotingOpenStatus();
+        vm.prank(CUSTOMER1_ADDRESS);
+        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__VotingForWrongProposalId.selector, PROPOSAL2_ID));
+        s_ballot.vote(PROPOSAL2_ID, uint256(VoteType.Refusal));
+    }
 
-    //     return false;
-    // }
+    function test_succeeds_vote_twoVoters() public proposal1BeingDiscussed {
+        vm.prank(msg.sender);
+        s_ballot.setProposalVotingOpenStatus();
+        vm.prank(CUSTOMER1_ADDRESS);
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Approval));
+        vm.prank(CUSTOMER2_ADDRESS);
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Approval));
+        Proposal memory proposal = s_ballot.getProposal(PROPOSAL1_ID);
+        assert(proposal.votingResult == VotingResult.Pending);
+        assertEq(proposal.approvals[0], CUSTOMER1_ADDRESS);
+        assertEq(proposal.approvals[1], CUSTOMER2_ADDRESS);
+        assertEq(proposal.approvalShares, LOT1_SHARES + LOT2_SHARES);
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                     close curent proposal vote
+    //////////////////////////////////////////////////////////////*/
 
     /*//////////////////////////////////////////////////////////////
                             close GM 
     //////////////////////////////////////////////////////////////*/
+    // TODO Normal workflow with 2 proposals and 2 voters
 
     //TODO
     // 8) revert wih GMBallot__AlreadyVotedForThisProposal =>  and voted, but not for this proposals => 2 rounds of VOTES !
@@ -750,7 +765,7 @@ contract CondoGmManagerTest is Test {
     // function _checkIfHasAlreadyVoted(uint256 _proposalId, address _customerAddress) internal view returns (bool)
     //     for (uint256 i; i < nfOfVotes; i++) {
     //         if (s_voters[_customerAddress].votedProposalIds[i] == _proposalId) {
-    //             return true;
+    //             => LAAAAAAAAAAAAAAA return true;
     //         }
     //     }
     //     return false;
