@@ -27,10 +27,12 @@ contract GMBallot is Ownable {
     error GMBallot__InexistentVoteType();
     error GMBallot__ProposalIdNotFound(uint256 proposalId);
     error GMBallot__AlreadyVotedForThisProposal(uint256 proposalId, address voter);
+    error GMBallot__VotingForWrongProposalId(uint256 proposalId);
 
     /*//////////////////////////////////////////////////////////////
                             STATES
     //////////////////////////////////////////////////////////////*/
+
     mapping(uint256 proposalId => Proposal) s_proposals;
     mapping(address attendee => Voter) s_voters;
     uint256 s_nbOfVoters;
@@ -206,6 +208,9 @@ contract GMBallot is Ownable {
         if (s_proposals[_proposalId].isRegistered == false) {
             revert GMBallot__ProposalIdNotFound(_proposalId);
         }
+        if (s_currentProposalBeingVoted != _proposalId) {
+            revert GMBallot__VotingForWrongProposalId(_proposalId);
+        }
         if (_voteEnum > uint256(VoteType.Blank)) {
             revert GMBallot__InexistentVoteType();
         }
@@ -276,10 +281,10 @@ contract GMBallot is Ownable {
     function getVoter(address _voter) external view returns (Voter memory) {
         return s_voters[_voter];
     }
-    // TODO PROTECT THIS SHIT while given proposal is maybe being voted
 
-    function getProposal(uint256 _lotId) external view returns (Proposal memory) {
-        return s_proposals[_lotId];
+    // TODO PROTECT THIS SHIT while given proposal is maybe being voted
+    function getProposal(uint256 _proposalId) external view returns (Proposal memory) {
+        return s_proposals[_proposalId];
     }
 
     function getNbOfPrpposals() external view returns (uint256) {

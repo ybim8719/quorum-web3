@@ -2,13 +2,14 @@
 pragma solidity ^0.8.28;
 
 import {Test, console} from "forge-std/Test.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+
 import {CondoGmManager} from "../src/CondoGmManager.sol";
 import {GMSharesToken} from "../src/GmSharesToken.sol";
 import {GMBallot} from "../src/GmBallot.sol";
 import {DeployCondoGmManager} from "../script/DeployCondoGmManager.s.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Customer, Lot, GeneralMeeting} from "../src/structs/Manager.sol";
-import {BallotWorkflowStatus} from "../src/structs/Ballot.sol";
+import {BallotWorkflowStatus, VoteType, Proposal, VotingResult} from "../src/structs/Ballot.sol";
 import {TokenGeneralInfo, TokenWorkflowStatus} from "../src/structs/Token.sol";
 
 contract CondoGmManagerTest is Test {
@@ -111,10 +112,35 @@ contract CondoGmManagerTest is Test {
         _;
     }
 
+    modifier proposal1BeingDiscussed() {
+        vm.startPrank(msg.sender);
+        s_manager.registerLot(LOT1_OFFICIAL_CODE, LOT1_SHARES);
+        s_manager.registerLot(LOT2_OFFICIAL_CODE, LOT2_SHARES);
+        s_manager.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
+        s_manager.registerCustomer(CUSTOMER2_FIRST_NAME, CUSTOMER2_LAST_NAME, CUSTOMER2_ADDRESS);
+        s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, LOT1_ID);
+        s_manager.linkCustomerToLot(CUSTOMER2_ADDRESS, LOT2_ID);
+        s_manager.createGMSharesToken();
+        s_manager.openTokenizingOfShares();
+        s_manager.convertLotSharesToToken(LOT1_ID);
+        s_manager.convertLotSharesToToken(LOT2_ID);
+        s_manager.loadSharesAndCustomersToBallot();
+        s_ballot.setProposalsSubmittingOpen();
+        vm.stopPrank();
+        vm.startPrank(CUSTOMER1_ADDRESS);
+        s_ballot.submitProposal(PROPOSAL1);
+        s_ballot.submitProposal(PROPOSAL2);
+        vm.stopPrank();
+        vm.startPrank(msg.sender);
+        s_ballot.setProposalsSubmittingClosed();
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        vm.stopPrank();
+        _;
+    }
+
     /*/////////////////////////////////////////////////////////////
                         REGISTERING CUSTOMER
     //////////////////////////////////////////////////////////////*/
-
     function test_revert_registerCustomer_alreadyAdded() public {
         vm.startPrank(msg.sender);
         s_manager.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
@@ -460,7 +486,6 @@ contract CondoGmManagerTest is Test {
         assertEq(s_ballot.getVoter(CUSTOMER2_ADDRESS).shares, LOT2_SHARES);
     }
 
-    // todo fix this
     function test_revert_loadSharesAndCustomersToBallot_functionLocked() public tokenLocked {
         vm.startPrank(msg.sender);
         s_manager.loadSharesAndCustomersToBallot();
@@ -580,7 +605,6 @@ contract CondoGmManagerTest is Test {
         s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
     }
 
-    // TODO LATER si déjà ProposalBeingDiscussed
     function test_revert_setProposalBeingDiscussedStatusOrEndBallot_LastProposalStillBeingHandled()
         public
         proposalSubmittingIsOpen
@@ -600,33 +624,69 @@ contract CondoGmManagerTest is Test {
     /*//////////////////////////////////////////////////////////////
                     setProposalVotingOpenStatus
     //////////////////////////////////////////////////////////////*/
-    // 1) suceeds
-    // 2) revert unauthorized
-    // 3) revert GMBallot__InvalidPeriod
 
-    // function setProposalVotingOpenStatus() external onlyOwner {
-    //     // prior step must definitively be ProposalBeingDiscussed
-    //     if (s_currentStatus != BallotWorkflowStatus.ProposalBeingDiscussed) {
-    //         revert GMBallot__InvalidPeriod();
-    //     }
+    function test_succeeds_setProposalVotingOpenStatus() public proposal1BeingDiscussed {
+        vm.prank(msg.sender);
+        s_ballot.setProposalVotingOpenStatus();
+        assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ProposalVotingOpen);
+        assertEq(s_ballot.getCurrentProposalBeingVoted(), 1);
+    }
 
-    //     s_currentStatus = BallotWorkflowStatus.ProposalVotingOpen;
-    // }
+    function test_revert_setProposalVotingOpenStatus_unauthorized() public {
+        vm.prank(NOT_REGISTERED);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, NOT_REGISTERED));
+        s_ballot.setProposalVotingOpenStatus();
+    }
+
+    function test_revert_setProposalVotingOpenStatus_invalidPeriod() public {
+        vm.prank(msg.sender);
+        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__InvalidPeriod.selector));
+        s_ballot.setProposalVotingOpenStatus();
+    }
 
     /*//////////////////////////////////////////////////////////////
                                 vote
     //////////////////////////////////////////////////////////////*/
+    function test_succeeds_vote_approval() public proposal1BeingDiscussed {
+        vm.prank(msg.sender);
+        s_ballot.setProposalVotingOpenStatus();
+        vm.prank(CUSTOMER1_ADDRESS);
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Approval));
+        Proposal memory proposal = s_ballot.getProposal(PROPOSAL1_ID);
+        assert(proposal.votingResult == VotingResult.Pending);
+        assertEq(proposal.approvals[0], CUSTOMER1_ADDRESS);
+        assertEq(proposal.approvalShares, LOT1_SHARES);
+    }
 
-    // 1) succeed with approve
-    // 2) succeed with refuse
+    function test_succeeds_vote_refusal() public proposal1BeingDiscussed {
+        vm.prank(msg.sender);
+        s_ballot.setProposalVotingOpenStatus();
+        vm.prank(CUSTOMER1_ADDRESS);
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Refusal));
+        Proposal memory proposal = s_ballot.getProposal(PROPOSAL1_ID);
+        assert(proposal.votingResult == VotingResult.Pending);
+        assertEq(proposal.refusals[0], CUSTOMER1_ADDRESS);
+        assertEq(proposal.refusalShares, LOT1_SHARES);
+    }
 
-    // 3) succeed with blank
+    function test_succeeds_vote_blank() public proposal1BeingDiscussed {
+        vm.prank(msg.sender);
+        s_ballot.setProposalVotingOpenStatus();
+        vm.prank(CUSTOMER1_ADDRESS);
+        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Blank));
+        Proposal memory proposal = s_ballot.getProposal(PROPOSAL1_ID);
+        assert(proposal.votingResult == VotingResult.Pending);
+        assertEq(proposal.blankVotes[0], CUSTOMER1_ADDRESS);
+        assertEq(proposal.blankVotesShares, LOT1_SHARES);
+    }
+
     // 4) revert wityh GMBallot__InvalidPeriod
     // 5) revert wih GMBallot__ProposalIdNotFound
-
+    // // 3.5) revert    if (s_currentProposalBeingVoted != _proposalId) {
+    //    revert GMBallot__VotingForWrongProposalId(_proposalId);
+    //     }
     // 6) revert wih GMBallot__InexistentVoteType
     // 7) revert wih GMBallot__AlreadyVotedForThisProposal =>  cases dnever voted before
-    // 8) revert wih GMBallot__AlreadyVotedForThisProposal =>  and voted, but not for this proposals => 2 rounds of VOTES !
 
     // /
     // function vote(uint256 _proposalId, uint256 _voteEnum) external customerOnly {
