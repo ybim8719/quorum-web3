@@ -45,7 +45,8 @@ contract CondoGmManagerTest is Test {
     uint256 public constant LOT3_SHARES = 600;
     string public constant PROPOSAL1 = "Travaux du sol du couloir batiment B (parties communes)";
     string public constant PROPOSAL2 = "Augmenter de 15% le salaire du gardien";
-    uint256 public constant PROPOSAL_ID1 = 1;
+    uint256 public constant PROPOSAL1_ID = 1;
+    uint256 public constant PROPOSAL2_ID = 2;
 
     function setUp() public {
         DeployCondoGmManager script = new DeployCondoGmManager();
@@ -501,10 +502,10 @@ contract CondoGmManagerTest is Test {
     function test_succeeds_submitProposal() public proposalSubmittingIsOpen {
         vm.prank(CUSTOMER1_ADDRESS);
         s_ballot.submitProposal(PROPOSAL1);
-        assertEq(s_ballot.getProposal(PROPOSAL_ID1).description, PROPOSAL1);
-        assertEq(s_ballot.getProposal(PROPOSAL_ID1).refusalShares, 0);
-        assertEq(s_ballot.getProposal(PROPOSAL_ID1).approvalShares, 0);
-        assertEq(s_ballot.getProposal(PROPOSAL_ID1).refusals.length, 0);
+        assertEq(s_ballot.getProposal(PROPOSAL1_ID).description, PROPOSAL1);
+        assertEq(s_ballot.getProposal(PROPOSAL1_ID).refusalShares, 0);
+        assertEq(s_ballot.getProposal(PROPOSAL1_ID).approvalShares, 0);
+        assertEq(s_ballot.getProposal(PROPOSAL1_ID).refusals.length, 0);
         assertEq(s_ballot.getNextProposalId(), 2);
     }
 
@@ -550,4 +551,166 @@ contract CondoGmManagerTest is Test {
         vm.expectRevert(GMBallot.GMBallot__ProposalsAreEmpty.selector);
         s_ballot.setProposalsSubmittingClosed();
     }
+
+    /*//////////////////////////////////////////////////////////////
+                setProposalBeingDiscussedStatusOrEndBallot
+    //////////////////////////////////////////////////////////////*/
+    function test_succeeds_setProposalBeingDiscussedStatusOrEndBallot() public proposalSubmittingIsOpen {
+        vm.startPrank(CUSTOMER1_ADDRESS);
+        s_ballot.submitProposal(PROPOSAL1);
+        s_ballot.submitProposal(PROPOSAL2);
+        vm.stopPrank();
+        vm.startPrank(msg.sender);
+        s_ballot.setProposalsSubmittingClosed();
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        vm.stopPrank();
+        assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ProposalBeingDiscussed);
+        assertEq(s_ballot.getCurrentProposalBeingVoted(), 1);
+    }
+
+    function test_revert_setProposalBeingDiscussedStatusOrEndBallot_unauthorized() public {
+        vm.prank(NOT_REGISTERED);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, NOT_REGISTERED));
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+    }
+
+    function test_revert_setProposalBeingDiscussedStatusOrEndBallot_invalidPeriod() public {
+        vm.prank(msg.sender);
+        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__InvalidPeriod.selector));
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+    }
+
+    // TODO LATER si déjà ProposalBeingDiscussed
+    function test_revert_setProposalBeingDiscussedStatusOrEndBallot_LastProposalStillBeingHandled()
+        public
+        proposalSubmittingIsOpen
+    {
+        vm.startPrank(CUSTOMER1_ADDRESS);
+        s_ballot.submitProposal(PROPOSAL1);
+        s_ballot.submitProposal(PROPOSAL2);
+        vm.stopPrank();
+        vm.startPrank(msg.sender);
+        s_ballot.setProposalsSubmittingClosed();
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__LastProposalStillBeingHandled.selector));
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        vm.stopPrank();
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                    setProposalVotingOpenStatus
+    //////////////////////////////////////////////////////////////*/
+    // 1) suceeds
+    // 2) revert unauthorized
+    // 3) revert GMBallot__InvalidPeriod
+
+    // function setProposalVotingOpenStatus() external onlyOwner {
+    //     // prior step must definitively be ProposalBeingDiscussed
+    //     if (s_currentStatus != BallotWorkflowStatus.ProposalBeingDiscussed) {
+    //         revert GMBallot__InvalidPeriod();
+    //     }
+
+    //     s_currentStatus = BallotWorkflowStatus.ProposalVotingOpen;
+    // }
+
+    /*//////////////////////////////////////////////////////////////
+                                vote
+    //////////////////////////////////////////////////////////////*/
+
+    // 1) succeed with approve
+    // 2) succeed with refuse
+
+    // 3) succeed with blank
+    // 4) revert wityh GMBallot__InvalidPeriod
+    // 5) revert wih GMBallot__ProposalIdNotFound
+
+    // 6) revert wih GMBallot__InexistentVoteType
+    // 7) revert wih GMBallot__AlreadyVotedForThisProposal =>  cases dnever voted before
+    // 8) revert wih GMBallot__AlreadyVotedForThisProposal =>  and voted, but not for this proposals => 2 rounds of VOTES !
+
+    // /
+    // function vote(uint256 _proposalId, uint256 _voteEnum) external customerOnly {
+    //     if (s_currentStatus != BallotWorkflowStatus.ProposalVotingOpen) {
+    //         revert GMBallot__InvalidPeriod();
+    //     }
+    //     if (s_proposals[_proposalId].isRegistered == false) {
+    //         revert GMBallot__ProposalIdNotFound(_proposalId);
+    //     }
+    //     if (_voteEnum > uint256(VoteType.Blank)) {
+    //         revert GMBallot__InexistentVoteType();
+    //     }
+    //     if (_checkIfHasAlreadyVoted(_proposalId, msg.sender)) {
+    //         revert GMBallot__AlreadyVotedForThisProposal(_proposalId, msg.sender);
+    //     }
+
+    //     VoteType formatedVote = VoteType(_voteEnum);
+    //     Voter memory voter = s_voters[msg.sender];
+    //     if (formatedVote == VoteType.Approval) {
+    //         s_proposals[_proposalId].approvals.push(msg.sender);
+    //         s_proposals[_proposalId].approvalShares += voter.shares;
+    //     } else if (formatedVote == VoteType.Refusal) {
+    //         s_proposals[_proposalId].refusals.push(msg.sender);
+    //         s_proposals[_proposalId].refusalShares += voter.shares;
+    //     } else if (formatedVote == VoteType.Blank) {
+    //         s_proposals[_proposalId].blankVotes.push(msg.sender);
+    //         s_proposals[_proposalId].blankVotesShares += voter.shares;
+    //     }
+
+    //     s_voters[msg.sender].votedProposalIds.push(_proposalId);
+    // }
+
+    // function _checkIfHasAlreadyVoted(uint256 _proposalId, address _customerAddress) internal view returns (bool) {
+    //     uint256 nfOfVotes = s_voters[_customerAddress].votedProposalIds.length;
+    //     if (s_voters[_customerAddress].votedProposalIds.length == 0) {
+    //         return false;
+    //     }
+
+    //     for (uint256 i; i < nfOfVotes; i++) {
+    //         if (s_voters[_customerAddress].votedProposalIds[i] == _proposalId) {
+    //             return true;
+    //         }
+    //     }
+
+    //     return false;
+    // }
+
+    /*//////////////////////////////////////////////////////////////
+                            close GM 
+    //////////////////////////////////////////////////////////////*/
+
+    //TODO
+    // 8) revert wih GMBallot__AlreadyVotedForThisProposal =>  and voted, but not for this proposals => 2 rounds of VOTES !
+    // /
+    // function vote(uint256 _proposalId, uint256 _voteEnum) external customerOnly {
+    //     if (_checkIfHasAlreadyVoted(_proposalId, msg.sender)) {
+    //         revert GMBallot__AlreadyVotedForThisProposal(_proposalId, msg.sender);
+    //     }
+    // ....
+    // }
+    // function _checkIfHasAlreadyVoted(uint256 _proposalId, address _customerAddress) internal view returns (bool)
+    //     for (uint256 i; i < nfOfVotes; i++) {
+    //         if (s_voters[_customerAddress].votedProposalIds[i] == _proposalId) {
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
+
+    // TODOOOOOOOOOOOOOOOOOOOO BCP + TARD QUAND TEST DE TOUTES LES VOTES COMPTés fait !
+    // function test_succeeds_setProposalBeingDiscussedStatusOrEndBallot_forBallotClosure() public proposalSubmittingIsOpen {
+    //     vm.prank(CUSTOMER1_ADDRESS);
+    //     s_ballot.submitProposal(PROPOSAL1);
+    //     vm.prank(msg.sender);
+    //     s_ballot.setProposalsSubmittingClosed();
+    //     assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ProposalsSubmittingClosed);
+    // }
+
+    //     AVEC CODE CODE => if (s_currentProposalBeingVoted == s_nbOfProposals) {
+    //         if (s_currentStatus == BallotWorkflowStatus.ProposalVotingCountRevealed) {
+    //             /// last proposal was revealed, ballot is achieved
+    //             s_currentStatus = BallotWorkflowStatus.MeetingEnded;
+    //         } else {
+    //             revert GMBallot__LastProposalStillBeingHandled();
+    //         }
+    // }
 }

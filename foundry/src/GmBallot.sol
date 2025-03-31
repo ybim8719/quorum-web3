@@ -166,7 +166,7 @@ contract GMBallot is Ownable {
     /*//////////////////////////////////////////////////////////////
                     WRITE func -> voting 
     //////////////////////////////////////////////////////////////*/
-    // this  is a cycle between status discuttions => openvoting => countVote
+    // this  is a cycle between status discuttings => openvoting => countVote
     function setProposalBeingDiscussedStatusOrEndBallot() external onlyOwner {
         // if it's the first proposal to be discussed, then current Status must be ProposalsSubmittingClosed
         if (s_currentProposalBeingVoted == 0 && s_currentStatus != BallotWorkflowStatus.ProposalsSubmittingClosed) {
@@ -174,7 +174,7 @@ contract GMBallot is Ownable {
         }
         // if it's the n-proposal to be discussed, then current status must be ProposalVotingCountRevealed (because it was n-1 proposal)
         if (s_currentProposalBeingVoted > 0 && s_currentStatus != BallotWorkflowStatus.ProposalVotingCountRevealed) {
-            revert GMBallot__InvalidPeriod();
+            revert GMBallot__LastProposalStillBeingHandled();
         }
         // if it's the last proposal being discussed,
         if (s_currentProposalBeingVoted == s_nbOfProposals) {
@@ -229,7 +229,7 @@ contract GMBallot is Ownable {
         s_voters[msg.sender].votedProposalIds.push(_proposalId);
     }
 
-    function _checkIfHasAlreadyVoted(uint256 _proposalId, address _customerAddress) internal returns (bool) {
+    function _checkIfHasAlreadyVoted(uint256 _proposalId, address _customerAddress) internal view returns (bool) {
         uint256 nfOfVotes = s_voters[_customerAddress].votedProposalIds.length;
         if (s_voters[_customerAddress].votedProposalIds.length == 0) {
             return false;
