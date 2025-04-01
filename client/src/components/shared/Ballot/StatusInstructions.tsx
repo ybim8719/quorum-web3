@@ -1,19 +1,19 @@
-import { STATUS_INSTRUCTIONS } from "../../../models/ballot";
+import { BALLOT_STATUS_INSTRUCTIONS } from "../../../models/ballot";
 import { ADMIN_ROLE } from "../../../models/roles";
 
 interface StatusProps {
-  status: keyof typeof STATUS_INSTRUCTIONS | null;
+  status: keyof typeof BALLOT_STATUS_INSTRUCTIONS | null;
   role: string;
 }
 
 const StatusInstructions = ({ status, role }: StatusProps) => {
-  if (status === null || Object.keys(STATUS_INSTRUCTIONS).includes(status) === false) {
+  if (status === null || Object.keys(BALLOT_STATUS_INSTRUCTIONS).includes(status) === false) {
     return <p>Undefined Status</p>;
   }
 
-  let instructions = STATUS_INSTRUCTIONS[status]["customerInstruction"];
+  let instructions = BALLOT_STATUS_INSTRUCTIONS[status]["customerInstruction"];
   if (role === ADMIN_ROLE) {
-    instructions = STATUS_INSTRUCTIONS[status]["ownerInstruction"];
+    instructions = BALLOT_STATUS_INSTRUCTIONS[status]["ownerInstruction"];
   }
 
   return (
@@ -21,13 +21,13 @@ const StatusInstructions = ({ status, role }: StatusProps) => {
       <h2>
         <u>
           <b>
-            Status: {STATUS_INSTRUCTIONS[status].title} (
-            {STATUS_INSTRUCTIONS[status].statusId + 1} / 8)
+            Status: {BALLOT_STATUS_INSTRUCTIONS[status].title} (
+            {BALLOT_STATUS_INSTRUCTIONS[status].statusId + 1} / 8)
           </b>
         </u>
       </h2>
       <p>
-        <u>Description:</u> {STATUS_INSTRUCTIONS[status].description}
+        <u>Description:</u> {BALLOT_STATUS_INSTRUCTIONS[status].description}
       </p>
       <p>
         <u>Instructions</u>: {instructions}

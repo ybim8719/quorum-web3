@@ -17,6 +17,7 @@ import LoadingIndicator from "../components/UI/LoadingIndicator.tsx";
 import ErrorBlock from "../components/UI/ErrorBlock.tsx";
 import { useReadBallotQueries } from "../hooks/useReadBallotQueries.ts";
 import StatusInstructions from "../components/shared/Ballot/StatusInstructions.tsx";
+import Actions from "../components/shared/Ballot/Actions/Actions.tsx";
 
 
 interface IBallotProps {
@@ -74,6 +75,17 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
     // }, [validateMintingIsConfirmed]);
 
 
+    // TODO HANDLERS here : 
+
+    // onOpenSubmittingProposals={ }
+    // onSubmittedProposal={ }
+    // onCloseSubmittingProposals={ }
+    // onOpenProposalForDiscussing={ }
+    // onOpenProposalForVoting={ }
+    // onVoted={ }
+    // onCloseVoting={ }
+    // onNextProposal={ }
+    // onLockContract={ }
     if (!isConnected) {
         return <h1>Please connect your wallet first</h1>;
     }
@@ -141,7 +153,22 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
         <div>
             <h1>General meeting ! (Ballot)</h1>
             <StatusInstructions status={globalCtx.ballotStatus} role={globalCtx.role} />
+            {/* {modals} */}
 
+            <Actions
+                userVoted={false}
+                hasProposal={false}
+                ballotHasVotes={false}
+                onOpenSubmittingProposals={ }
+                onSubmittedProposal={ }
+                onCloseSubmittingProposals={ }
+                onOpenProposalForDiscussing={ }
+                onOpenProposalForVoting={ }
+                onVoted={ }
+                onCloseVoting={ }
+                onNextProposal={ }
+                onLockContract={ }
+            />
             {/* {modals} */}
         </div>
     );

@@ -1,14 +1,14 @@
 // import classes from './SwitchToNextStepButton.module.css';
 
 interface ISwitchToNextStepButton {
-  btnDesription: string;
+  btnDescription: string;
   onValidate: () => void;
 }
 
-const SwitchToNextStepButton = ({ btnDesription, onValidate }: ISwitchToNextStepButton) => {
+const SwitchToNextStepButton = ({ btnDescription, onValidate }: ISwitchToNextStepButton) => {
   return (
     <div>
-      <p>{btnDesription}</p>
+      <p>{btnDescription}</p>
       <button className="nes-btn is-primary" onClick={onValidate}>
         OK
       </button>

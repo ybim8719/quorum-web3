@@ -13,12 +13,13 @@ import Home from "./pages/Home";
 import Layout from "./components/UI/Layout";
 import { TOKEN_STATUS_INSTRUCTIONS } from "./models/ERC20";
 import Ballot from "./pages/Ballot";
+import { BALLOT_STATUS_INSTRUCTIONS } from "./models/ballot";
 
 
 function App() {
   const { address: connectedAccount } = useAccount();
   const globalCtx = useContext(GlobalContext);
-  // read MANAGER Contract queries
+  // use read queries from contracts
   const {
     useFetchedOwner,
     useFetchedCustomersAddresses,
@@ -26,7 +27,6 @@ function App() {
   } = useReadManagerQueries(globalCtx.deployedManagerAddress);
   const { useFetchedERC20CurrentStatus } = useReadTokenQueries(globalCtx.erc20Address);
   const { useFetchedBallotStatus } = useReadBallotQueries(globalCtx.deployedBallotAddress);
-
   const { data: fetchedOwnerData } = useFetchedOwner;
   const { data: fetchedCustomersAddressesData } = useFetchedCustomersAddresses;
   const { data: fetchedERC20Data } = useFetchedERC20Address;
@@ -78,16 +78,16 @@ function App() {
       }
     }
 
-    if (useFetchedBallotStatus !== undefined) {
-      const currentStatusKey = Object.keys(TOKEN_STATUS_INSTRUCTIONS).find((key) => {
-        return TOKEN_STATUS_INSTRUCTIONS[key].statusId === fetchERC20CurrentStatusData;
+    if (fetchBallotCurrentStatusData !== undefined) {
+      const currentStatusKey = Object.keys(BALLOT_STATUS_INSTRUCTIONS).find((key) => {
+        return BALLOT_STATUS_INSTRUCTIONS[key].statusId === fetchBallotCurrentStatusData;
       });
       if (currentStatusKey) {
-        globalCtx.setErc20Status(currentStatusKey);
+        globalCtx.setBallotStatus(currentStatusKey);
       }
     }
 
-  }, [fetchERC20CurrentStatusData]);
+  }, [fetchERC20CurrentStatusData, fetchBallotCurrentStatusData]);
 
   const routes = (
     <>

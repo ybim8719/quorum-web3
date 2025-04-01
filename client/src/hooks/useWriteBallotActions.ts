@@ -25,8 +25,6 @@ export const useSubmitProposal = () => {
   return { hash, error, isConfirming, isConfirmed, submitProposalWrite };
 };
 
-
-
 export const useSetProposalsSubmittingClosed = () => {
   const { data: hash, error, writeContract } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
@@ -48,8 +46,6 @@ export const useSetProposalsSubmittingClosed = () => {
   return { hash, error, isConfirming, isConfirmed, setProposalsSubmittingClosedWrite };
 };
 
-
-
 export const useSetProposalBeingDiscussedStatusOrEndBallot = () => {
   const { data: hash, error, writeContract } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
@@ -70,7 +66,6 @@ export const useSetProposalBeingDiscussedStatusOrEndBallot = () => {
 
   return { hash, error, isConfirming, isConfirmed, setProposalBeingDiscussedStatusOrEndBallotWrite };
 };
-
 
 export const useSetProposalVotingOpenStatus = () => {
   const { data: hash, error, writeContract } = useWriteContract();
@@ -115,7 +110,6 @@ export const useVoteForCurrentProposal = () => {
 
   return { hash, error, isConfirming, isConfirmed, voteForCurrentProposalWrite };
 };
-
 
 export const useSetCurrentProposalVotingCountReveal = () => {
   const { data: hash, error, writeContract } = useWriteContract();

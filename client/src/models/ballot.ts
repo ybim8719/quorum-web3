@@ -34,7 +34,7 @@ export enum VotingResult {
 //     uint256 blankVotesShares;
 // }
 
-export const STATUS_INSTRUCTIONS: Record<
+export const BALLOT_STATUS_INSTRUCTIONS: Record<
   string,
   {
     statusId: number;
@@ -109,12 +109,12 @@ export const STATUS_INSTRUCTIONS: Record<
   },
 };
 
-export function getNextStatusIdToRequest(statusKey: keyof typeof STATUS_INSTRUCTIONS) {
+export function getNextStatusIdToRequest(statusKey: keyof typeof BALLOT_STATUS_INSTRUCTIONS) {
   if (
-    Object.keys(STATUS_INSTRUCTIONS).includes(statusKey) &&
+    Object.keys(BALLOT_STATUS_INSTRUCTIONS).includes(statusKey) &&
     statusKey !== CONTRACT_LOCKED_KEY
   ) {
-    return STATUS_INSTRUCTIONS[statusKey].statusId + 1;
+    return BALLOT_STATUS_INSTRUCTIONS[statusKey].statusId + 1;
   }
   return null;
 }
