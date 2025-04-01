@@ -27,11 +27,11 @@ contract GMBallot is Ownable {
     error GMBallot__AlreadyVotedForThisProposal(uint256 proposalId, address voter);
     error GMBallot__VotingForWrongProposalId(uint256 proposalId);
     error GMBallot__LastProposalNotRevealedYet();
+    error GMBallot__ContractLocked();
 
     /*//////////////////////////////////////////////////////////////
                             STATES
     //////////////////////////////////////////////////////////////*/
-
     mapping(uint256 proposalId => Proposal) s_proposals;
     mapping(address attendee => Voter) s_voters;
     uint256 s_nbOfVoters;
@@ -62,6 +62,13 @@ contract GMBallot is Ownable {
         _;
     }
 
+    modifier isContractLocked() {
+        if (s_currentStatus == BallotWorkflowStatus.ContractLocked) {
+            revert GMBallot__ContractLocked();
+        }
+        _;
+    }
+
     /*//////////////////////////////////////////////////////////////
                             EVENTS
     //////////////////////////////////////////////////////////////*/
@@ -77,7 +84,7 @@ contract GMBallot is Ownable {
     /*//////////////////////////////////////////////////////////////
                     WRITE func -> voteregisterVoterrs
     //////////////////////////////////////////////////////////////*/
-    function setERC20Address(address _tokenAddress) external onlyManager {
+    function setERC20Address(address _tokenAddress) external onlyManager isContractLocked {
         if (s_ERC20Address != address(0)) {
             revert GMBallot__TokenAlreadyRegistered();
         }
@@ -90,7 +97,7 @@ contract GMBallot is Ownable {
         string memory _customerLastName,
         string memory _lotOfficialNumber,
         uint256 _shares
-    ) external onlyManager {
+    ) external onlyManager isContractLocked {
         if (s_currentStatus != BallotWorkflowStatus.WaitingForGmData) {
             revert GMBallot__InvalidPeriod();
         }
@@ -113,7 +120,7 @@ contract GMBallot is Ownable {
     /*//////////////////////////////////////////////////////////////
                     WRITE func -> proposals
     //////////////////////////////////////////////////////////////*/
-    function setProposalsSubmittingOpen() external onlyOwner {
+    function setProposalsSubmittingOpen() external onlyOwner isContractLocked {
         if (s_currentStatus != BallotWorkflowStatus.WaitingForGmData) {
             revert GMBallot__InvalidPeriod();
         }
@@ -127,7 +134,7 @@ contract GMBallot is Ownable {
 
     /// @param _description is the body of the description
     /// @notice any voter address can add description and a proposalId (starting from 1) will be granted to the proposal
-    function submitProposal(string calldata _description) external customerOnly {
+    function submitProposal(string calldata _description) external customerOnly isContractLocked {
         if (s_currentStatus != BallotWorkflowStatus.ProposalsSubmittingOpen) {
             revert GMBallot__InvalidPeriod();
         }
@@ -144,7 +151,7 @@ contract GMBallot is Ownable {
         ++s_nbOfProposals;
     }
 
-    function setProposalsSubmittingClosed() external onlyOwner {
+    function setProposalsSubmittingClosed() external onlyOwner isContractLocked {
         if (s_currentStatus != BallotWorkflowStatus.ProposalsSubmittingOpen) {
             revert GMBallot__InvalidPeriod();
         }
@@ -160,7 +167,7 @@ contract GMBallot is Ownable {
                     WRITE func -> voting 
     //////////////////////////////////////////////////////////////*/
     // this  is a cycle between status discuttings => openvoting => countVote
-    function setProposalBeingDiscussedStatusOrEndBallot() external onlyOwner {
+    function setProposalBeingDiscussedStatusOrEndBallot() external onlyOwner isContractLocked {
         // if it's the first proposal to be discussed, then current Status must be ProposalsSubmittingClosed
         if (s_currentProposalBeingVoted == 0 && s_currentStatus != BallotWorkflowStatus.ProposalsSubmittingClosed) {
             revert GMBallot__InvalidPeriod();
@@ -184,7 +191,7 @@ contract GMBallot is Ownable {
         }
     }
 
-    function setProposalVotingOpenStatus() external onlyOwner {
+    function setProposalVotingOpenStatus() external onlyOwner isContractLocked {
         // prior step must definitively be ProposalBeingDiscussed
         if (s_currentStatus != BallotWorkflowStatus.ProposalBeingDiscussed) {
             revert GMBallot__InvalidPeriod();
@@ -193,37 +200,31 @@ contract GMBallot is Ownable {
         s_currentStatus = BallotWorkflowStatus.ProposalVotingOpen;
     }
 
-    function vote(uint256 _proposalId, uint256 _voteEnum) external customerOnly {
+    function voteForCurrentProposal(uint256 _voteEnum) external customerOnly isContractLocked {
         if (s_currentStatus != BallotWorkflowStatus.ProposalVotingOpen) {
             revert GMBallot__InvalidPeriod();
-        }
-        if (s_proposals[_proposalId].isRegistered == false) {
-            revert GMBallot__ProposalIdNotFound(_proposalId);
-        }
-        if (s_currentProposalBeingVoted != _proposalId) {
-            revert GMBallot__VotingForWrongProposalId(_proposalId);
         }
         if (_voteEnum > uint256(VoteType.Blank)) {
             revert GMBallot__InexistentVoteType();
         }
-        if (_checkIfHasAlreadyVoted(_proposalId, msg.sender)) {
-            revert GMBallot__AlreadyVotedForThisProposal(_proposalId, msg.sender);
+        if (_checkIfHasAlreadyVoted(s_currentProposalBeingVoted, msg.sender)) {
+            revert GMBallot__AlreadyVotedForThisProposal(s_currentProposalBeingVoted, msg.sender);
         }
 
         VoteType formatedVote = VoteType(_voteEnum);
         Voter memory voter = s_voters[msg.sender];
         if (formatedVote == VoteType.Approval) {
-            s_proposals[_proposalId].approvals.push(msg.sender);
-            s_proposals[_proposalId].approvalShares += voter.shares;
+            s_proposals[s_currentProposalBeingVoted].approvals.push(msg.sender);
+            s_proposals[s_currentProposalBeingVoted].approvalShares += voter.shares;
         } else if (formatedVote == VoteType.Refusal) {
-            s_proposals[_proposalId].refusals.push(msg.sender);
-            s_proposals[_proposalId].refusalShares += voter.shares;
+            s_proposals[s_currentProposalBeingVoted].refusals.push(msg.sender);
+            s_proposals[s_currentProposalBeingVoted].refusalShares += voter.shares;
         } else if (formatedVote == VoteType.Blank) {
-            s_proposals[_proposalId].blankVotes.push(msg.sender);
-            s_proposals[_proposalId].blankVotesShares += voter.shares;
+            s_proposals[s_currentProposalBeingVoted].blankVotes.push(msg.sender);
+            s_proposals[s_currentProposalBeingVoted].blankVotesShares += voter.shares;
         }
 
-        s_voters[msg.sender].votedProposalIds.push(_proposalId);
+        s_voters[msg.sender].votedProposalIds.push(s_currentProposalBeingVoted);
     }
 
     function _checkIfHasAlreadyVoted(uint256 _proposalId, address _customerAddress) internal view returns (bool) {
@@ -241,7 +242,7 @@ contract GMBallot is Ownable {
         return hasAlreadyVoted;
     }
 
-    function setCurrentProposalVotingCountReveal() external onlyOwner {
+    function setCurrentProposalVotingCountReveal() external onlyOwner isContractLocked {
         // prior step must definitively be ProposalBeingDiscussed
         if (s_currentStatus != BallotWorkflowStatus.ProposalVotingOpen) {
             revert GMBallot__InvalidPeriod();

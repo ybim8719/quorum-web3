@@ -26,6 +26,7 @@ contract CondoGmManagerTest is Test {
     string public constant DESCRIPTION = "Une villa cossue pleine de gens qui jouent au polo";
     string public constant NAME = "Le refuge des nantis";
     string public constant POSTAL_ADDRESS = "15 rue de l'ISF, Puteaux";
+
     /*//////////////////////////////////////////////////////////////
                             MOCK CONSTANTS / states
     //////////////////////////////////////////////////////////////*/
@@ -164,6 +165,48 @@ contract CondoGmManagerTest is Test {
         _;
     }
 
+    modifier ballotLocked() {
+        vm.startPrank(msg.sender);
+        s_manager.registerLot(LOT1_OFFICIAL_CODE, 500);
+        s_manager.registerLot(LOT2_OFFICIAL_CODE, 500);
+        s_manager.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
+        s_manager.registerCustomer(CUSTOMER2_FIRST_NAME, CUSTOMER2_LAST_NAME, CUSTOMER2_ADDRESS);
+        s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, LOT1_ID);
+        s_manager.linkCustomerToLot(CUSTOMER2_ADDRESS, LOT2_ID);
+        s_manager.createGMSharesToken();
+        s_manager.openTokenizingOfShares();
+        s_manager.convertLotSharesToToken(LOT1_ID);
+        s_manager.convertLotSharesToToken(LOT2_ID);
+        s_manager.loadSharesAndCustomersToBallot();
+        s_ballot.setProposalsSubmittingOpen();
+        vm.stopPrank();
+        vm.startPrank(CUSTOMER1_ADDRESS);
+        s_ballot.submitProposal(PROPOSAL1);
+        s_ballot.submitProposal(PROPOSAL2);
+        vm.stopPrank();
+        vm.startPrank(msg.sender);
+        s_ballot.setProposalsSubmittingClosed();
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        s_ballot.setProposalVotingOpenStatus();
+        vm.stopPrank();
+        vm.prank(CUSTOMER1_ADDRESS);
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Blank));
+        vm.startPrank(msg.sender);
+        s_ballot.setCurrentProposalVotingCountReveal();
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        s_ballot.setProposalVotingOpenStatus();
+        vm.stopPrank();
+        vm.prank(CUSTOMER1_ADDRESS);
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Blank));
+        vm.startPrank(msg.sender);
+        s_ballot.setCurrentProposalVotingCountReveal();
+        // end all votes
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        s_ballot.lockContract();
+        vm.stopPrank();
+        _;
+    }
+
     /*/////////////////////////////////////////////////////////////
                         REGISTERING CUSTOMER
     //////////////////////////////////////////////////////////////*/
@@ -244,22 +287,6 @@ contract CondoGmManagerTest is Test {
         );
         s_manager.registerLot(LOT1_OFFICIAL_CODE, 0);
     }
-
-    // TODO UN JOUR
-    // function test_fuzz_registerLot(string calldata _lotOfficialNumber, uint256 _shares) public {
-    //     vm.assume(_shares < 1000);
-    //     vm.startPrank(msg.sender);
-
-    //     if (bytes(_lotOfficialNumber).length == 0) {
-    //         vm.expectRevert(abi.encodeWithSelector(CondoGmManager.CondoGmManager__EmptyString.selector));
-    //         s_manager.registerLot(_lotOfficialNumber, _shares);
-    //     } else {
-    //         s_manager.registerLot(_lotOfficialNumber, _shares);
-    //         assertEq(s_manager.getLotById(LOT1_ID).shares, _shares);
-    //         assertEq(s_manager.getLotById(LOT1_ID).lotOfficialNumber, _lotOfficialNumber);
-    //     }
-    //     vm.stopPrank();
-    // }
 
     function test_revert_registerLot_isLocked() public {
         vm.startPrank(msg.sender);
@@ -547,9 +574,15 @@ contract CondoGmManagerTest is Test {
         vm.stopPrank();
     }
 
+    function test_revert_setProposalsSubmittingOpen_ballotLocked() public ballotLocked {
+        vm.prank(msg.sender);
+        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__ContractLocked.selector));
+        s_ballot.setProposalsSubmittingOpen();
+    }
     /*//////////////////////////////////////////////////////////////
                         SUBMIT PROPOSAL
     //////////////////////////////////////////////////////////////*/
+
     function test_succeeds_submitProposal() public proposalSubmittingIsOpen {
         vm.prank(CUSTOMER1_ADDRESS);
         s_ballot.submitProposal(PROPOSAL1);
@@ -578,6 +611,12 @@ contract CondoGmManagerTest is Test {
         vm.prank(CUSTOMER1_ADDRESS);
         vm.expectRevert(GMBallot.GMBallot__DescriptionCantBeEmpty.selector);
         s_ballot.submitProposal("");
+    }
+
+    function test_revert_submitProposal_ballotLocked() public ballotLocked {
+        vm.prank(CUSTOMER1_ADDRESS);
+        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__ContractLocked.selector));
+        s_ballot.submitProposal("coucou");
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -676,7 +715,7 @@ contract CondoGmManagerTest is Test {
         vm.prank(msg.sender);
         s_ballot.setProposalVotingOpenStatus();
         vm.prank(CUSTOMER1_ADDRESS);
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Approval));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Approval));
         Proposal memory proposal = s_ballot.getProposal(PROPOSAL1_ID);
         assert(proposal.votingResult == VotingResult.Pending);
         assertEq(proposal.approvals[0], CUSTOMER1_ADDRESS);
@@ -687,7 +726,7 @@ contract CondoGmManagerTest is Test {
         vm.prank(msg.sender);
         s_ballot.setProposalVotingOpenStatus();
         vm.prank(CUSTOMER1_ADDRESS);
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Refusal));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Refusal));
         Proposal memory proposal = s_ballot.getProposal(PROPOSAL1_ID);
         assert(proposal.votingResult == VotingResult.Pending);
         assertEq(proposal.refusals[0], CUSTOMER1_ADDRESS);
@@ -698,7 +737,7 @@ contract CondoGmManagerTest is Test {
         vm.prank(msg.sender);
         s_ballot.setProposalVotingOpenStatus();
         vm.prank(CUSTOMER1_ADDRESS);
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Blank));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Blank));
         Proposal memory proposal = s_ballot.getProposal(PROPOSAL1_ID);
         assert(proposal.votingResult == VotingResult.Pending);
         assertEq(proposal.blankVotes[0], CUSTOMER1_ADDRESS);
@@ -708,21 +747,21 @@ contract CondoGmManagerTest is Test {
     function test_revert_vote_unauthorized() public {
         vm.prank(NOT_REGISTERED);
         vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__OnlyCustomerAuthorized.selector, NOT_REGISTERED));
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Refusal));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Refusal));
     }
 
-    function test_revert_vote_ProposalIdNotFound() public proposal1BeingDiscussed {
-        vm.prank(msg.sender);
-        s_ballot.setProposalVotingOpenStatus();
-        vm.prank(CUSTOMER1_ADDRESS);
-        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__ProposalIdNotFound.selector, 22));
-        s_ballot.vote(22, uint256(VoteType.Refusal));
-    }
+    // function test_revert_vote_ProposalIdNotFound() public proposal1BeingDiscussed {
+    //     vm.prank(msg.sender);
+    //     s_ballot.setProposalVotingOpenStatus();
+    //     vm.prank(CUSTOMER1_ADDRESS);
+    //     vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__ProposalIdNotFound.selector, 22));
+    //     s_ballot.voteForCurrentProposal(22, uint256(VoteType.Refusal));
+    // }
 
     function test_revert_vote_invalidPeriod() public proposal1BeingDiscussed {
         vm.prank(CUSTOMER1_ADDRESS);
         vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__InvalidPeriod.selector));
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Refusal));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Refusal));
     }
 
     function test_revert_vote_InexistentVoteType() public proposal1BeingDiscussed {
@@ -730,38 +769,38 @@ contract CondoGmManagerTest is Test {
         s_ballot.setProposalVotingOpenStatus();
         vm.prank(CUSTOMER1_ADDRESS);
         vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__InexistentVoteType.selector));
-        s_ballot.vote(PROPOSAL1_ID, 3);
+        s_ballot.voteForCurrentProposal(3);
     }
 
     function test_revert_vote_AlreadyVotedForThisProposal() public proposal1BeingDiscussed {
         vm.prank(msg.sender);
         s_ballot.setProposalVotingOpenStatus();
         vm.prank(CUSTOMER1_ADDRESS);
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Refusal));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Refusal));
         vm.expectRevert(
             abi.encodeWithSelector(
                 GMBallot.GMBallot__AlreadyVotedForThisProposal.selector, PROPOSAL1_ID, CUSTOMER1_ADDRESS
             )
         );
         vm.prank(CUSTOMER1_ADDRESS);
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Approval));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Approval));
     }
 
-    function test_revert_vote_VotingForWrongProposalId() public proposal1BeingDiscussed {
-        vm.prank(msg.sender);
-        s_ballot.setProposalVotingOpenStatus();
-        vm.prank(CUSTOMER1_ADDRESS);
-        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__VotingForWrongProposalId.selector, PROPOSAL2_ID));
-        s_ballot.vote(PROPOSAL2_ID, uint256(VoteType.Refusal));
-    }
+    // function test_revert_vote_VotingForWrongProposalId() public proposal1BeingDiscussed {
+    //     vm.prank(msg.sender);
+    //     s_ballot.setProposalVotingOpenStatus();
+    //     vm.prank(CUSTOMER1_ADDRESS);
+    //     vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__VotingForWrongProposalId.selector, PROPOSAL2_ID));
+    //     s_ballot.voteForCurrentProposal(PROPOSAL2_ID, uint256(VoteType.Refusal));
+    // }
 
     function test_succeeds_vote_twoVoters() public proposal1BeingDiscussed {
         vm.prank(msg.sender);
         s_ballot.setProposalVotingOpenStatus();
         vm.prank(CUSTOMER1_ADDRESS);
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Approval));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Approval));
         vm.prank(CUSTOMER2_ADDRESS);
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Approval));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Approval));
         Proposal memory proposal = s_ballot.getProposal(PROPOSAL1_ID);
         assert(proposal.votingResult == VotingResult.Pending);
         assertEq(proposal.approvals[0], CUSTOMER1_ADDRESS);
@@ -789,10 +828,10 @@ contract CondoGmManagerTest is Test {
         s_ballot.setProposalVotingOpenStatus();
         vm.prank(CUSTOMER1_ADDRESS);
         // customer 1 shares = 450
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Approval));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Approval));
         vm.prank(CUSTOMER2_ADDRESS);
         // customer 2 shares = 550
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Refusal));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Refusal));
         vm.prank(msg.sender);
         s_ballot.setCurrentProposalVotingCountReveal();
         Proposal memory proposal = s_ballot.getProposal(PROPOSAL1_ID);
@@ -809,10 +848,10 @@ contract CondoGmManagerTest is Test {
         s_ballot.setProposalVotingOpenStatus();
         vm.prank(CUSTOMER1_ADDRESS);
         // customer 1 shares = 450
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Refusal));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Refusal));
         vm.prank(CUSTOMER2_ADDRESS);
         // customer 2 shares = 550
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Approval));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Approval));
         vm.prank(msg.sender);
         s_ballot.setCurrentProposalVotingCountReveal();
         Proposal memory proposal = s_ballot.getProposal(PROPOSAL1_ID);
@@ -829,7 +868,7 @@ contract CondoGmManagerTest is Test {
         s_ballot.setProposalVotingOpenStatus();
         vm.prank(CUSTOMER1_ADDRESS);
         // customer 1 shares = 450
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Blank));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Blank));
         vm.prank(msg.sender);
         s_ballot.setCurrentProposalVotingCountReveal();
         Proposal memory proposal = s_ballot.getProposal(PROPOSAL1_ID);
@@ -844,10 +883,10 @@ contract CondoGmManagerTest is Test {
         s_ballot.setProposalVotingOpenStatus();
         vm.prank(CUSTOMER1_ADDRESS);
         // customer 1 shares = 500
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Refusal));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Refusal));
         vm.prank(CUSTOMER2_ADDRESS);
         // customer 2 shares = 500
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Approval));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Approval));
         vm.prank(msg.sender);
         s_ballot.setCurrentProposalVotingCountReveal();
         Proposal memory proposal = s_ballot.getProposal(PROPOSAL1_ID);
@@ -869,7 +908,7 @@ contract CondoGmManagerTest is Test {
         vm.prank(msg.sender);
         s_ballot.setProposalVotingOpenStatus();
         vm.prank(CUSTOMER1_ADDRESS);
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Blank));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Blank));
         vm.startPrank(msg.sender);
         s_ballot.setCurrentProposalVotingCountReveal();
         s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
@@ -886,7 +925,7 @@ contract CondoGmManagerTest is Test {
         vm.prank(msg.sender);
         s_ballot.setProposalVotingOpenStatus();
         vm.prank(CUSTOMER1_ADDRESS);
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Blank));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Blank));
         vm.startPrank(msg.sender);
         s_ballot.setCurrentProposalVotingCountReveal();
         // proposal 2 being treated
@@ -894,7 +933,7 @@ contract CondoGmManagerTest is Test {
         s_ballot.setProposalVotingOpenStatus();
         vm.stopPrank();
         vm.prank(CUSTOMER1_ADDRESS);
-        s_ballot.vote(PROPOSAL2_ID, uint256(VoteType.Blank));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Blank));
         vm.startPrank(msg.sender);
         s_ballot.setCurrentProposalVotingCountReveal();
         // end all votes
@@ -924,14 +963,14 @@ contract CondoGmManagerTest is Test {
         vm.prank(msg.sender);
         s_ballot.setProposalVotingOpenStatus();
         vm.prank(CUSTOMER1_ADDRESS);
-        s_ballot.vote(PROPOSAL1_ID, uint256(VoteType.Blank));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Blank));
         vm.startPrank(msg.sender);
         s_ballot.setCurrentProposalVotingCountReveal();
         s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
         s_ballot.setProposalVotingOpenStatus();
         vm.stopPrank();
         vm.prank(CUSTOMER1_ADDRESS);
-        s_ballot.vote(PROPOSAL2_ID, uint256(VoteType.Blank));
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Blank));
         vm.startPrank(msg.sender);
         s_ballot.setCurrentProposalVotingCountReveal();
         // end all votes
