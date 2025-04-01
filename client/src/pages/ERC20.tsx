@@ -6,7 +6,7 @@ import { OWNER_ROLE, CUSTOMER_ROLE } from "../models/roles";
 import { isZeroAddress } from "../models/utils";
 import VerifyInitialMinting from "../components/shared/ERC20/VerifyInitialMinting";
 import { triggerGetBalance, useReadTokenQueries } from "../hooks/useReadTokenQueries";
-import { CONTRACT_LOCK_KEY, INITIAL_MINTING_KEY, TOKEN_STATUS_INSTRUCTIONS, TRANSFERING_SHARES_KEY } from "../models/ERC20";
+import { CONTRACT_LOCK_KEY, INITIAL_MINTING_KEY, TRANSFERING_SHARES_KEY } from "../models/ERC20";
 import {
   useValidateMinting, useTranferShares
 } from "../hooks/useWriteTokenActions..ts";
@@ -48,16 +48,13 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
   const { data: fetchedLotsData, refetch: refetchLots } = useFetchedLots;
 
 
-
   const {
-    hash: validateMintingHash,
     error: validateMintingError,
     isConfirmed: validateMintingIsConfirmed,
     validateMintingWrite
   } = useValidateMinting();
 
   const {
-    hash: transferSharesHash,
     error: transferSharesError,
     isConfirmed: transferSharesIsConfirmed,
     transferSharesWrite
@@ -134,6 +131,14 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
 
   }, [transferSharesIsConfirmed]);
 
+  useEffect(() => {
+    if (transferSharesError || validateMintingError) {
+      setIsLoading(false);
+      setError("Transaction failed");
+    }
+  }, [validateMintingError, transferSharesError]);
+
+
   if (!isConnected) {
     return <h1>Please connect your wallet first</h1>;
   }
@@ -183,11 +188,13 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
             }
           })
           setIsLoading(false);
-        }).catch((e) => {
+        }).catch((_) => {
           setError('fetch baklance of owner failed');
         })
     }
   }
+  // error in tx / open error modal
+
 
   let mainContent;
   if (globalCtx.erc20Status === INITIAL_MINTING_KEY && totalSupply && ownersBalance) {

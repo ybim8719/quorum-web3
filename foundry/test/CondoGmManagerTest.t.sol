@@ -108,7 +108,7 @@ contract CondoGmManagerTest is Test {
         s_manager.convertLotSharesToToken(LOT1_ID);
         s_manager.convertLotSharesToToken(LOT2_ID);
         s_manager.loadSharesAndCustomersToBallot();
-        s_ballot.setProposalsSubmittingOpen();
+        // s_ballot.setProposalsSubmittingOpen();
         vm.stopPrank();
         _;
     }
@@ -126,7 +126,7 @@ contract CondoGmManagerTest is Test {
         s_manager.convertLotSharesToToken(LOT1_ID);
         s_manager.convertLotSharesToToken(LOT2_ID);
         s_manager.loadSharesAndCustomersToBallot();
-        s_ballot.setProposalsSubmittingOpen();
+        // s_ballot.setProposalsSubmittingOpen();
         vm.stopPrank();
         vm.startPrank(CUSTOMER1_ADDRESS);
         s_ballot.submitProposal(PROPOSAL1);
@@ -152,7 +152,7 @@ contract CondoGmManagerTest is Test {
         s_manager.convertLotSharesToToken(LOT1_ID);
         s_manager.convertLotSharesToToken(LOT2_ID);
         s_manager.loadSharesAndCustomersToBallot();
-        s_ballot.setProposalsSubmittingOpen();
+        // s_ballot.setProposalsSubmittingOpen();
         vm.stopPrank();
         vm.startPrank(CUSTOMER1_ADDRESS);
         s_ballot.submitProposal(PROPOSAL1);
@@ -178,7 +178,7 @@ contract CondoGmManagerTest is Test {
         s_manager.convertLotSharesToToken(LOT1_ID);
         s_manager.convertLotSharesToToken(LOT2_ID);
         s_manager.loadSharesAndCustomersToBallot();
-        s_ballot.setProposalsSubmittingOpen();
+        // s_ballot.setProposalsSubmittingOpen();
         vm.stopPrank();
         vm.startPrank(CUSTOMER1_ADDRESS);
         s_ballot.submitProposal(PROPOSAL1);
@@ -537,6 +537,7 @@ contract CondoGmManagerTest is Test {
         assertEq(s_ballot.getVoter(CUSTOMER1_ADDRESS).shares, LOT1_SHARES);
         assertEq(s_ballot.getVoter(CUSTOMER2_ADDRESS).tokenVerified, true);
         assertEq(s_ballot.getVoter(CUSTOMER2_ADDRESS).shares, LOT2_SHARES);
+        assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ProposalsSubmittingOpen);
     }
 
     function test_revert_loadSharesAndCustomersToBallot_functionLocked() public tokenLocked {
@@ -550,39 +551,38 @@ contract CondoGmManagerTest is Test {
     /*//////////////////////////////////////////////////////////////
                          setProposalsSubmittingOpen
     //////////////////////////////////////////////////////////////*/
-    function test_succeeds_setProposalsSubmittingOpen() public tokenLocked {
-        vm.startPrank(msg.sender);
-        s_manager.loadSharesAndCustomersToBallot();
-        s_ballot.setProposalsSubmittingOpen();
-        assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ProposalsSubmittingOpen);
-        vm.stopPrank();
-    }
+    // function test_succeeds_setProposalsSubmittingOpen() public tokenLocked {
+    //     vm.startPrank(msg.sender);
+    //     s_manager.loadSharesAndCustomersToBallot();
+    //     s_ballot.setProposalsSubmittingOpen();
+    //     assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ProposalsSubmittingOpen);
+    //     vm.stopPrank();
+    // }
 
-    function test_revert_setProposalsSubmittingOpen_ifInvalidPeriod() public tokenLocked {
-        vm.startPrank(msg.sender);
-        s_manager.loadSharesAndCustomersToBallot();
-        s_ballot.setProposalsSubmittingOpen();
-        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__InvalidPeriod.selector));
-        s_ballot.setProposalsSubmittingOpen();
-        vm.stopPrank();
-    }
+    // function test_revert_setProposalsSubmittingOpen_ifInvalidPeriod() public tokenLocked {
+    //     vm.startPrank(msg.sender);
+    //     s_manager.loadSharesAndCustomersToBallot();
+    //     s_ballot.setProposalsSubmittingOpen();
+    //     vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__InvalidPeriod.selector));
+    //     s_ballot.setProposalsSubmittingOpen();
+    //     vm.stopPrank();
+    // }
 
-    function test_revert_setProposalsSubmittingOpen_RegisterVotersFirst() public tokenLocked {
-        vm.startPrank(msg.sender);
-        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__RegisterVotersFirst.selector));
-        s_ballot.setProposalsSubmittingOpen();
-        vm.stopPrank();
-    }
+    // function test_revert_setProposalsSubmittingOpen_RegisterVotersFirst() public tokenLocked {
+    //     vm.startPrank(msg.sender);
+    //     vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__RegisterVotersFirst.selector));
+    //     s_ballot.setProposalsSubmittingOpen();
+    //     vm.stopPrank();
+    // }
 
-    function test_revert_setProposalsSubmittingOpen_ballotLocked() public ballotLocked {
-        vm.prank(msg.sender);
-        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__ContractLocked.selector));
-        s_ballot.setProposalsSubmittingOpen();
-    }
+    // function test_revert_setProposalsSubmittingOpen_ballotLocked() public ballotLocked {
+    //     vm.prank(msg.sender);
+    //     vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__ContractLocked.selector));
+    //     s_ballot.setProposalsSubmittingOpen();
+    // }
     /*//////////////////////////////////////////////////////////////
                         SUBMIT PROPOSAL
     //////////////////////////////////////////////////////////////*/
-
     function test_succeeds_submitProposal() public proposalSubmittingIsOpen {
         vm.prank(CUSTOMER1_ADDRESS);
         s_ballot.submitProposal(PROPOSAL1);
@@ -596,14 +596,6 @@ contract CondoGmManagerTest is Test {
     function test_revert_submitProposal_unauthorized() public proposalSubmittingIsOpen {
         vm.prank(NOT_REGISTERED);
         vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__OnlyCustomerAuthorized.selector, NOT_REGISTERED));
-        s_ballot.submitProposal(PROPOSAL1);
-    }
-
-    function test_revert_submitProposal_InvalidPeriod() public tokenLocked {
-        vm.prank(msg.sender);
-        s_manager.loadSharesAndCustomersToBallot();
-        vm.prank(CUSTOMER1_ADDRESS);
-        vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__InvalidPeriod.selector));
         s_ballot.submitProposal(PROPOSAL1);
     }
 
@@ -987,20 +979,20 @@ contract CondoGmManagerTest is Test {
     }
 
     function test_truc() public ballotLocked {
-        console.log(s_ballot.getProposals()[0].id);
-        console.log(s_ballot.getProposals()[0].description);
-        console.log(s_ballot.getProposals()[1].id);
-        console.log(s_ballot.getProposals()[1].description);
-        console.log(uint256(s_ballot.getProposals()[0].votingResult));
-        console.log(uint256(s_ballot.getProposal(PROPOSAL1_ID).votingResult));
-        console.log(uint256(s_ballot.getProposals()[0].approvals.length));
-        console.log(uint256(s_ballot.getProposals()[0].refusals.length));
-        console.log(uint256(s_ballot.getProposals()[0].refusalShares));
-        console.log(uint256(s_ballot.getProposals()[0].approvalShares));
-        console.log(uint256(s_ballot.getProposals()[0].blankVotes.length));
-        console.log(s_ballot.getProposals()[0].blankVotes[0].firstName);
-        console.log(s_ballot.getProposals()[0].blankVotes[0].lastName);
-        console.log(s_ballot.getProposals()[0].blankVotes[0].shares);
-        console.log(s_ballot.getProposals()[0].blankVotes[0].lotOfficialNumber);
+        assertEq(s_ballot.getProposals()[0].id, 1);
+        // console.log(s_ballot.getProposals()[0].description);
+        // console.log(s_ballot.getProposals()[1].id);
+        // console.log(s_ballot.getProposals()[1].description);
+        // console.log(uint256(s_ballot.getProposals()[0].votingResult));
+        // console.log(uint256(s_ballot.getProposal(PROPOSAL1_ID).votingResult));
+        // console.log(uint256(s_ballot.getProposals()[0].approvals.length));
+        // console.log(uint256(s_ballot.getProposals()[0].refusals.length));
+        // console.log(uint256(s_ballot.getProposals()[0].refusalShares));
+        // console.log(uint256(s_ballot.getProposals()[0].approvalShares));
+        // console.log(uint256(s_ballot.getProposals()[0].blankVotes.length));
+        // console.log(s_ballot.getProposals()[0].blankVotes[0].firstName);
+        // console.log(s_ballot.getProposals()[0].blankVotes[0].lastName);
+        // console.log(s_ballot.getProposals()[0].blankVotes[0].shares);
+        // console.log(s_ballot.getProposals()[0].blankVotes[0].lotOfficialNumber);
     }
 }

@@ -5,13 +5,14 @@ import { useAccount } from "wagmi";
 import { GlobalContext } from "./context/globalContext";
 import { useReadManagerQueries } from "./hooks/useReadManagerQueries";
 import { useReadTokenQueries } from "./hooks/useReadTokenQueries";
-
+import { useReadBallotQueries } from "./hooks/useReadBallotQueries";
 import { OWNER_ROLE, CUSTOMER_ROLE } from "./models/roles";
 import { isZeroAddress } from "./models/utils";
 import ERC20 from "./pages/ERC20";
 import Home from "./pages/Home";
 import Layout from "./components/UI/Layout";
 import { TOKEN_STATUS_INSTRUCTIONS } from "./models/ERC20";
+import Ballot from "./pages/Ballot";
 
 
 function App() {
@@ -23,13 +24,14 @@ function App() {
     useFetchedCustomersAddresses,
     useFetchedERC20Address,
   } = useReadManagerQueries(globalCtx.deployedManagerAddress);
-  const { useFetchedCurrentStatus } = useReadTokenQueries(globalCtx.erc20Address);
+  const { useFetchedERC20CurrentStatus } = useReadTokenQueries(globalCtx.erc20Address);
+  const { useFetchedBallotStatus } = useReadBallotQueries(globalCtx.deployedBallotAddress);
 
   const { data: fetchedOwnerData } = useFetchedOwner;
   const { data: fetchedCustomersAddressesData } = useFetchedCustomersAddresses;
   const { data: fetchedERC20Data } = useFetchedERC20Address;
-
-  const { data: fetchERC20CurrentStatusData, refetch: refetchERC20CurrentStatus } = useFetchedCurrentStatus;
+  const { data: fetchERC20CurrentStatusData, refetch: refetchERC20CurrentStatus } = useFetchedERC20CurrentStatus;
+  const { data: fetchBallotCurrentStatusData, refetch: refetchBallotCurrentStatus } = useFetchedBallotStatus;
 
   // fetch customers /owner addresses to apply authentication 
   useEffect(() => {
@@ -76,13 +78,22 @@ function App() {
       }
     }
 
+    if (useFetchedBallotStatus !== undefined) {
+      const currentStatusKey = Object.keys(TOKEN_STATUS_INSTRUCTIONS).find((key) => {
+        return TOKEN_STATUS_INSTRUCTIONS[key].statusId === fetchERC20CurrentStatusData;
+      });
+      if (currentStatusKey) {
+        globalCtx.setErc20Status(currentStatusKey);
+      }
+    }
+
   }, [fetchERC20CurrentStatusData]);
 
   const routes = (
     <>
       <Route path="/" element={<Home />} />
       <Route path="/erc20" element={<ERC20 onRefetchStatus={refetchERC20CurrentStatus} />} />
-      {/* and so on....   */}
+      <Route path="/ballot" element={<Ballot onRefetchStatus={refetchBallotCurrentStatus} />} />
     </>
   );
 

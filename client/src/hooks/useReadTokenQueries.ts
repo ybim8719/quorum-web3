@@ -14,7 +14,7 @@ export const useReadTokenQueries = (deployedTokenAddress: string) => {
         account: address,
     });
 
-    const useFetchedCurrentStatus = useReadContract({
+    const useFetchedERC20CurrentStatus = useReadContract({
         address: deployedTokenAddress as `0x${string}`,
         abi: token_abi,
         functionName: "getCurrentStatus",
@@ -22,7 +22,7 @@ export const useReadTokenQueries = (deployedTokenAddress: string) => {
     });
 
     return {
-        useFetchedCurrentStatus,
+        useFetchedERC20CurrentStatus,
         useFetchedTotalSupply
     };
 };

@@ -40,6 +40,7 @@ contract GMBallot is Ownable {
     uint256 s_currentProposalBeingVoted;
     uint256 s_nbOfProposals;
     uint256 s_nextProposalId;
+    uint256 s_currentTotalShares;
     address s_ERC20Address;
     // list of customers become voters
     BallotWorkflowStatus s_currentStatus;
@@ -119,24 +120,16 @@ contract GMBallot is Ownable {
             voter.shares = _shares;
             voter.lotOfficialNumber = _lotOfficialNumber;
             ++s_nbOfVoters;
+            s_currentTotalShares += _shares;
+            if (s_currentTotalShares == 1000) {
+                s_currentStatus = BallotWorkflowStatus.ProposalsSubmittingOpen;
+            }
         }
     }
 
     /*//////////////////////////////////////////////////////////////
                     WRITE func -> proposals
     //////////////////////////////////////////////////////////////*/
-    function setProposalsSubmittingOpen() external onlyOwner isContractLocked {
-        if (s_currentStatus != BallotWorkflowStatus.WaitingForGmData) {
-            revert GMBallot__InvalidPeriod();
-        }
-
-        if (s_nbOfVoters == 0) {
-            revert GMBallot__RegisterVotersFirst();
-        }
-
-        s_currentStatus = BallotWorkflowStatus.ProposalsSubmittingOpen;
-    }
-
     /// @param _description is the body of the description
     /// @notice any voter address can add description and a proposalId (starting from 1) will be granted to the proposal
     function submitProposal(string calldata _description) external customerOnly isContractLocked {

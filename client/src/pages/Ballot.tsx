@@ -4,23 +4,26 @@ import { Modal, NonClosableModal } from "../components/UI/Modal";
 import { useAccount } from "wagmi";
 import { OWNER_ROLE, CUSTOMER_ROLE } from "../models/roles";
 import { isZeroAddress } from "../models/utils";
-import { triggerGetBalance, useReadTokenQueries } from "../hooks/useReadTokenQueries";
-import { CONTRACT_LOCK_KEY, INITIAL_MINTING_KEY, TOKEN_STATUS_INSTRUCTIONS, TRANSFERING_SHARES_KEY } from "../models/ERC20";
 import {
-    useValidateMinting, useTranferShares
-} from "../hooks/useWriteTokenActions..ts";
+    useSubmitProposal,
+    useSetProposalsSubmittingClosed,
+    useSetProposalBeingDiscussedStatusOrEndBallot,
+    useSetProposalVotingOpenStatus,
+    useVoteForCurrentProposal, useSetCurrentProposalVotingCountReveal,
+    useLockContract
+    ,
+} from "../hooks/useWriteBallotActions";
 import LoadingIndicator from "../components/UI/LoadingIndicator.tsx";
 import ErrorBlock from "../components/UI/ErrorBlock.tsx";
-import { Lot } from "../models/lots.ts";
-import { useReadManagerQueries } from "../hooks/useReadManagerQueries.ts";
-
+import { useReadBallotQueries } from "../hooks/useReadBallotQueries.ts";
+import StatusInstructions from "../components/shared/Ballot/StatusInstructions.tsx";
 
 
 interface IBallotProps {
     onRefetchStatus: () => void;
 }
 
-function ERC20({ onRefetchStatus }: IBallotProps) {
+function Ballot({ onRefetchStatus }: IBallotProps) {
     const { address: connectedAccount, isConnected } = useAccount();
     const globalCtx = useContext(GlobalContext);
     const [modalInfoText, setModalInfoText] = useState<string | null>(null);
@@ -85,7 +88,6 @@ function ERC20({ onRefetchStatus }: IBallotProps) {
 
     // const onVerifyShares = (lot: Lot) => {
     //     setIsLoading(true);
-
     //     const getBalance = async (addressToConsult: string) => {
     //         return triggerGetBalance(globalCtx.erc20Address, addressToConsult);
     //     }
@@ -134,13 +136,15 @@ function ERC20({ onRefetchStatus }: IBallotProps) {
     //     );
     // }
 
+
     return (
         <div>
             <h1>General meeting ! (Ballot)</h1>
-            <p>Current Status: {globalCtx.ballotStatus}</p>
+            <StatusInstructions status={globalCtx.ballotStatus} role={globalCtx.role} />
+
             {/* {modals} */}
         </div>
     );
 }
 
-export default ERC20;
+export default Ballot;

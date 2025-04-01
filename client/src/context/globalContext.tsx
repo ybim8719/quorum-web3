@@ -16,7 +16,6 @@ type GlobalContextType = {
   setCustomersAddresses: React.Dispatch<React.SetStateAction<string[]>>;
   setErc20Address: React.Dispatch<React.SetStateAction<string>>;
   setErc20Status: React.Dispatch<React.SetStateAction<string | null>>;
-  setBallotAddress: React.Dispatch<React.SetStateAction<string>>;
   setBallotStatus: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
@@ -34,7 +33,7 @@ export const GlobalContextProvider = ({ children }: ContextProviderProps) => {
   const [owner, setOwner] = useState<string>("");
   const [customersAddresses, setCustomersAddresses] = useState<string[]>([]);
   const deployedManagerAddress = network.anvil.manager;
-  const deployedBallotAddress = network.anvil.manager;
+  const deployedBallotAddress = network.anvil.ballot;
   const [erc20Status, setErc20Status] = useState<string | null>(null);
   const [ballotStatus, setBallotStatus] = useState<string | null>(null);
 

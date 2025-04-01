@@ -96,3 +96,24 @@ export const useCreateERC20 = () => {
   return { hash, error, isConfirming, isConfirmed, createERC20Write };
 };
 
+export const useloadSharesAndCustomersToBallot = () => {
+  const { data: hash, error, writeContract } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({ hash });
+
+  const loadSharesAndCustomersToBallotWrite = (account: string | undefined, deployedManagerAddress: string) => {
+    if (account) {
+      writeContract({
+        address: deployedManagerAddress as `0x${string}`,
+        abi: manager_abi,
+        functionName: "loadSharesAndCustomersToBallot",
+        account: account as `0x${string}`,
+      });
+    }
+  };
+
+  return { hash, error, isConfirming, isConfirmed, loadSharesAndCustomersToBallotWrite };
+};
+
+
+

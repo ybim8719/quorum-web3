@@ -249,7 +249,7 @@ contract CondoGmManager is Ownable {
             TokenWorkflowStatus status = GMSharesToken(s_deployedERC20).getCurrentStatus();
             if (status == TokenWorkflowStatus.ContractLocked) {
                 s_ERC20isLocked = true;
-                // when erc20 lock, information is given to ballot
+                // when erc20 is locked, information address is given to ballot
                 GMBallot(s_deployedBallot).setERC20Address(s_deployedERC20);
             }
         }
