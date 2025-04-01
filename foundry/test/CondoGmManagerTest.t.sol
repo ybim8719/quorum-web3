@@ -833,6 +833,8 @@ contract CondoGmManagerTest is Test {
         // customer 2 shares = 550
         s_ballot.voteForCurrentProposal(uint256(VoteType.Refusal));
         vm.prank(msg.sender);
+        vm.expectEmit(true, false, false, true, address(s_ballot));
+        emit GMBallot.ProposalVoteCountBeingRevealed(PROPOSAL1_ID);
         s_ballot.setCurrentProposalVotingCountReveal();
         Proposal memory proposal = s_ballot.getProposal(PROPOSAL1_ID);
         assert(proposal.votingResult == VotingResult.Refused);
@@ -937,6 +939,8 @@ contract CondoGmManagerTest is Test {
         vm.startPrank(msg.sender);
         s_ballot.setCurrentProposalVotingCountReveal();
         // end all votes
+        vm.expectEmit(false, false, false, true, address(s_ballot));
+        emit GMBallot.MeetingEnded();
         s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
         vm.stopPrank();
         assert(s_ballot.getProposal(PROPOSAL1_ID).votingResult == VotingResult.Draw);
@@ -975,6 +979,8 @@ contract CondoGmManagerTest is Test {
         s_ballot.setCurrentProposalVotingCountReveal();
         // end all votes
         s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        vm.expectEmit(false, false, false, true, address(s_ballot));
+        emit GMBallot.ContractWasLocked();
         s_ballot.lockContract();
         vm.stopPrank();
         assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ContractLocked);

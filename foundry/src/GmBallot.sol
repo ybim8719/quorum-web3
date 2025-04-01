@@ -1,7 +1,9 @@
 pragma solidity 0.8.28;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {BallotWorkflowStatus, Voter, Proposal, VoteType, VotingResult} from "./structs/Ballot.sol";
+import {
+    BallotWorkflowStatus, Voter, Proposal, VoteType, VotingResult, ProposalView, MinVoter
+} from "./structs/Ballot.sol";
 import {GMSharesToken} from "./GmSharesToken.sol";
 import {console} from "forge-std/Test.sol";
 
@@ -74,6 +76,9 @@ contract GMBallot is Ownable {
     //////////////////////////////////////////////////////////////*/
     event ProposalRegistered();
     event ProposalVotingOpen(uint256 proposalId);
+    event ProposalVoteCountBeingRevealed(uint256 proposalId);
+    event MeetingEnded();
+    event ContractWasLocked();
 
     constructor(string memory _description, address _managerAddress) Ownable(_msgSender()) {
         i_description = _description;
@@ -181,6 +186,7 @@ contract GMBallot is Ownable {
             if (s_currentStatus == BallotWorkflowStatus.ProposalVotingCountRevealed) {
                 /// last proposal was revealed, ballot is achieved
                 s_currentStatus = BallotWorkflowStatus.MeetingEnded;
+                emit MeetingEnded();
             } else {
                 revert GMBallot__LastProposalStillBeingHandled();
             }
@@ -263,6 +269,8 @@ contract GMBallot is Ownable {
         } else {
             proposal.votingResult = VotingResult.Draw;
         }
+
+        emit ProposalVoteCountBeingRevealed(s_currentProposalBeingVoted);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -274,6 +282,7 @@ contract GMBallot is Ownable {
             revert GMBallot__InvalidPeriod();
         }
         s_currentStatus = BallotWorkflowStatus.ContractLocked;
+        emit ContractWasLocked();
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -302,6 +311,75 @@ contract GMBallot is Ownable {
     // TODO PROTECT THIS SHIT while given proposal is maybe being voted
     function getProposal(uint256 _proposalId) external view returns (Proposal memory) {
         return s_proposals[_proposalId];
+    }
+
+    function getProposals() external view returns (ProposalView[] memory) {
+        ProposalView[] memory toReturn = new ProposalView[](s_nbOfProposals);
+        // prpoposal id start at 1
+        if (s_nbOfProposals > 0) {
+            for (uint256 id = 1; id < s_nbOfProposals + 1; ++id) {
+                // enrich customers who approved
+                MinVoter[] memory tempMinVoterApprovers = new MinVoter[](s_proposals[id].approvals.length);
+                if (s_proposals[id].approvals.length > 0) {
+                    for (uint256 j = 0; j < s_proposals[id].approvals.length; j++) {
+                        address voterAddress = s_proposals[id].approvals[j];
+                        Voter memory tempVoter = s_voters[voterAddress];
+                        MinVoter memory tempMinVoter = MinVoter({
+                            firstName: tempVoter.firstName,
+                            lastName: tempVoter.lastName,
+                            shares: tempVoter.shares,
+                            lotOfficialNumber: tempVoter.lotOfficialNumber
+                        });
+                        tempMinVoterApprovers[j] = tempMinVoter;
+                    }
+                }
+
+                MinVoter[] memory tempMinVoterRefused = new MinVoter[](s_proposals[id].refusals.length);
+                if (s_proposals[id].refusals.length > 0) {
+                    for (uint256 j = 0; j < s_proposals[id].refusals.length; j++) {
+                        address voterAddress = s_proposals[id].refusals[j];
+                        Voter memory tempVoter = s_voters[voterAddress];
+                        MinVoter memory tempMinVoter = MinVoter({
+                            firstName: tempVoter.firstName,
+                            lastName: tempVoter.lastName,
+                            shares: tempVoter.shares,
+                            lotOfficialNumber: tempVoter.lotOfficialNumber
+                        });
+                        tempMinVoterRefused[j] = tempMinVoter;
+                    }
+                }
+
+                MinVoter[] memory tempMinVoterBlank = new MinVoter[](s_proposals[id].blankVotes.length);
+                if (s_proposals[id].blankVotes.length > 0) {
+                    for (uint256 j = 0; j < s_proposals[id].blankVotes.length; j++) {
+                        address voterAddress = s_proposals[id].blankVotes[j];
+                        Voter memory tempVoter = s_voters[voterAddress];
+                        MinVoter memory tempMinVoter = MinVoter({
+                            firstName: tempVoter.firstName,
+                            lastName: tempVoter.lastName,
+                            shares: tempVoter.shares,
+                            lotOfficialNumber: tempVoter.lotOfficialNumber
+                        });
+                        tempMinVoterBlank[j] = tempMinVoter;
+                    }
+                }
+
+                ProposalView memory tmpProposalView = ProposalView({
+                    id: id,
+                    description: s_proposals[id].description,
+                    votingResult: s_proposals[id].votingResult,
+                    approvals: tempMinVoterApprovers,
+                    approvalShares: s_proposals[id].approvalShares,
+                    refusals: tempMinVoterRefused,
+                    refusalShares: s_proposals[id].refusalShares,
+                    blankVotes: tempMinVoterBlank,
+                    blankVotesShares: s_proposals[id].blankVotesShares
+                });
+                toReturn[id - 1] = tmpProposalView;
+            }
+        }
+
+        return toReturn;
     }
 
     function getNbOfPrpposals() external view returns (uint256) {

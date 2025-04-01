@@ -34,6 +34,13 @@ struct Voter {
     uint256[] votedProposalIds;
 }
 
+struct MinVoter {
+    string firstName;
+    string lastName;
+    uint256 shares;
+    string lotOfficialNumber;
+}
+
 struct Proposal {
     bool isRegistered;
     string description;
@@ -43,5 +50,17 @@ struct Proposal {
     address[] refusals;
     uint256 refusalShares;
     address[] blankVotes;
+    uint256 blankVotesShares;
+}
+
+struct ProposalView {
+    uint256 id;
+    string description;
+    VotingResult votingResult;
+    MinVoter[] approvals;
+    uint256 approvalShares;
+    MinVoter[] refusals;
+    uint256 refusalShares;
+    MinVoter[] blankVotes;
     uint256 blankVotesShares;
 }
