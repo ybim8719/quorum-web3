@@ -985,4 +985,22 @@ contract CondoGmManagerTest is Test {
         vm.stopPrank();
         assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ContractLocked);
     }
+
+    function test_truc() public ballotLocked {
+        console.log(s_ballot.getProposals()[0].id);
+        console.log(s_ballot.getProposals()[0].description);
+        console.log(s_ballot.getProposals()[1].id);
+        console.log(s_ballot.getProposals()[1].description);
+        console.log(uint256(s_ballot.getProposals()[0].votingResult));
+        console.log(uint256(s_ballot.getProposal(PROPOSAL1_ID).votingResult));
+        console.log(uint256(s_ballot.getProposals()[0].approvals.length));
+        console.log(uint256(s_ballot.getProposals()[0].refusals.length));
+        console.log(uint256(s_ballot.getProposals()[0].refusalShares));
+        console.log(uint256(s_ballot.getProposals()[0].approvalShares));
+        console.log(uint256(s_ballot.getProposals()[0].blankVotes.length));
+        console.log(s_ballot.getProposals()[0].blankVotes[0].firstName);
+        console.log(s_ballot.getProposals()[0].blankVotes[0].lastName);
+        console.log(s_ballot.getProposals()[0].blankVotes[0].shares);
+        console.log(s_ballot.getProposals()[0].blankVotes[0].lotOfficialNumber);
+    }
 }

@@ -382,7 +382,7 @@ contract GMBallot is Ownable {
         return toReturn;
     }
 
-    function getNbOfPrpposals() external view returns (uint256) {
+    function getNbOfPropposals() external view returns (uint256) {
         return s_nbOfProposals;
     }
 }

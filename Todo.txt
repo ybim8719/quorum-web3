@@ -1,24 +1,12 @@
 FIX NOW : 
 
-- back: ERC20 : lock transferFrom && approval 
-
-- back : contract locked du ballot, j'en fais quoi ? conditions et tests ? 
-
-- back :transforme vote en voteForCurrentProposalBeingHandled (virer des erreurs et adapter les tests)
-
-- rajouter des events + tests
-
-- back: si vote en cours, rendre impossible la lecture des votes d'un proposal non clos. (get Proposal et getProposals) => modifs tests
 
 
 FIX UN JOUR : 
 
 - Front : Events listener to check status changes 
-
+- back: ERC20 : lock transferFrom && approval 
 - Front : camemberts et charts de scrutins
-
-
-
 
 
 FAILLES : 
@@ -26,3 +14,4 @@ FAILLES :
 - back: loadSharesAndCustomersToBallot pue car ça loope sur un array qui peut causer un gas limit 
 - rules de dépouillement pas ouf 
 - pas de quorum ! 
+- back: si vote en cours, rendre impossible la lecture des votes d'un proposal non clos. (get Proposal et getProposals) => modifs tests

@@ -17,8 +17,10 @@ L'objectif est de simuler ce que pourrait être une version minimale du projet i
 
 ## Cycle functionnel de la DAPP: 
 
+Dans l'ordre chronologique, l'appli permet : 
 - XX
 - ddddddd
+
 
 
 ## Technos 
@@ -32,7 +34,7 @@ L'objectif est de simuler ce que pourrait être une version minimale du projet i
 ![screenshot](screenshots/vercel.png)
 
 
-### Application de l'Optimization et bonnes pratiques solidity : 
+### Application des bonnes pratiques solidity : 
 - NatSpec
 - State packing
 - Limitation de la taille des uint
@@ -43,26 +45,29 @@ L'objectif est de simuler ce que pourrait être une version minimale du projet i
 
 ### Sécurité soliidty appliquée: 
 
-- Prévention du reentrancy 
-- Ajout d'un fallback adéquat
+- Prévention du reentrancy avec des flags avant les call externes
+- Ajout d'un fallback et receive
 
 ## Failles Solidity du projet: 
-CondoGMFactory : constructor 0 for maxAdminNb ?
+- pas de max 
 
 
 
 ## Déploiements effectués : 
 
-- Contrat déployé sur sepolia (mais pas réussi à le vérifier malgré mon etherscan api key): XXXXXXX TODO put address
-- Front end déployé sur vercel: XXXXXXX TODO put address
+- Contrats déployés sur sepolia (vérifié ??): XXXXXXX et XXXXXX TODO put address
+- Front end déployé sur vercel: XXXXXXX TODO put address (ppinte vers les contrats sépolia)
 
 
 ## Tests et CI
 
+- Couverture de test : XXXX %
+
+TODO METTRE screenshots : 
+
 - Qui bénéficient de tests unitaires et de Fuzz tests
 - Implémentation d'un Github actions qui trigger les T.U Foundry à chaque push sur main
 
-- Couverture de test : XXXX %
 
 
 ## Features restants à implémenter
@@ -87,7 +92,7 @@ CondoGMFactory : constructor 0 for maxAdminNb ?
 
 
 
-## Lancer les tests : 
+## Lancer les tests avec forge : 
 
 1. Installer forge [https://github.com/foundry-rs/foundry](https://github.com/foundry-rs/foundry).
 
@@ -228,6 +233,7 @@ Vérifiez sur etherscan:
 forge verify-contract <address-du-contrat-deployé>  ./src/VotingOpti.sol:VotingOpti --rpc-url $SEPOLIA_RPC_URL --watch
 ```
 
+## Todo
 Changez la valeur de l'adresse sepolia dans :
 
 ```
