@@ -15,7 +15,6 @@ import { TOKEN_STATUS_INSTRUCTIONS } from "./models/ERC20";
 import Ballot from "./pages/Ballot";
 import { BALLOT_STATUS_INSTRUCTIONS } from "./models/ballot";
 
-
 function App() {
   const { address: connectedAccount } = useAccount();
   const globalCtx = useContext(GlobalContext);
@@ -45,16 +44,17 @@ function App() {
       // owner and customers addresses are mandatory to set the role
       globalCtx.setCustomersAddresses(fetchedCustomersAddressesData as string[]);
       globalCtx.setOwner(fetchedOwnerData.toString());
+
       if (connectedAccount === fetchedOwnerData.toString()) {
         globalCtx.setRole(OWNER_ROLE);
       } else if (
-        globalCtx.customersAddresses.includes(connectedAccount as string)
+        (fetchedCustomersAddressesData as string[]).includes(connectedAccount as string)
       ) {
+        console.log('went 56')
         globalCtx.setRole(CUSTOMER_ROLE);
       }
     }
   }, [connectedAccount, fetchedOwnerData, fetchedCustomersAddressesData]);
-
 
   // fetch ERC20 contract is exist to handle access to token Page
   useEffect(() => {

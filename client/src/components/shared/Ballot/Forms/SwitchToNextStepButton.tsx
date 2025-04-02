@@ -7,7 +7,7 @@ interface ISwitchToNextStepButton {
 
 const SwitchToNextStepButton = ({ btnDescription, onValidate }: ISwitchToNextStepButton) => {
   return (
-    <div className="section">
+    <div>
       <p>{btnDescription}</p>
       <button className="nes-btn is-primary" onClick={onValidate}>
         OK

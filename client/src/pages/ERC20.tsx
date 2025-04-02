@@ -249,6 +249,7 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
   return (
     <div>
       <h1>Shares Referential (ERC20)</h1>
+      <p>Welcome, dear {globalCtx.role} !</p>
       <p>Current Status: {globalCtx.erc20Status}</p>
       {globalCtx.erc20Status === CONTRACT_LOCK_KEY && <p className="notification">TOKEN IS LOCKED ! Check general meeting / Ballot page !</p>}
       {mainContent}

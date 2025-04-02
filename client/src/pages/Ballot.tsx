@@ -14,7 +14,7 @@ import {
     useLockContract
     ,
 } from "../hooks/useWriteBallotActions";
-import { useReadBallotQueries, triggerGetCompleteProposalById, triggerGetMinimalProposalById, triggerGetVotersOfProposalId } from "../hooks/useReadBallotQueries.ts";
+import { useReadBallotQueries } from "../hooks/useReadBallotQueries.ts";
 
 import LoadingIndicator from "../components/UI/LoadingIndicator.tsx";
 import ErrorBlock from "../components/UI/ErrorBlock.tsx";
@@ -37,17 +37,26 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
     const [error, setError] = useState<string | null>(null);
 
     const [minProposals, setMinProposals] = useState<string[]>([]);
+    const [votedOnCurrentProposal, setVotedOnCurrentProposal] = useState<string[]>([]);
     const [currentProposalWithResult, setCurrentProposalWithResult] = useState<{
         id: number;
         description: string;
         votingResult: BallotCountResults,
     } | null>(null);
-    const [allProposalResults, setAllProposalResults] = useState<CompleteBallotCountResults[] | null>([]);
+    const [allProposalResults, setAllProposalResults] = useState<CompleteBallotCountResults[]>([]);
 
     // Read hooks
-    const { useFetchedCompleteProposals, useFetchedMinProposals } = useReadBallotQueries(globalCtx.deployedBallotAddress);
+    const { useFetchedCompleteProposals, useFetchedMinProposals, useFetchedCurrentMinimalProposal, useFetchedVotersOfCurrentProposal, useFetchedCurrentProposalComplete } = useReadBallotQueries(globalCtx.deployedBallotAddress);
     const { data: fetchedMinProposalsData, refetch: refetchMinProposals } = useFetchedMinProposals;
     const { data: fetchedCompleteProposalsData, refetch: refetchCompleteProposals } = useFetchedCompleteProposals;
+    const { data: fetchedCurrentMinimalProposalData, refetch: refetchCurrentMinimalProposalData } = useFetchedCurrentMinimalProposal;
+    const { data: fetchedVotersOfCurrentProposalData, refetch: refetchVotersOfCurrentProposal } = useFetchedVotersOfCurrentProposal;
+    const { data: fetchedCurrentProposalCompleteData, refetch: refetchCurrentProposalComplete } = useFetchedCurrentProposalComplete;
+
+    console.log(fetchedCurrentMinimalProposalData, "fetchedCurrentMinimalProposalData");
+    console.log(fetchedVotersOfCurrentProposalData, "fetchedVotersOfCurrentProposalData");
+    console.log(fetchedCurrentProposalCompleteData, "fetchedCurrentProposalCompleteData");
+
 
     // Write hooks
     // => OWNER: proposals submitting are OPEN
@@ -105,9 +114,6 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
         isConfirmed: lockContractIsConfirmed,
         lockContractWrite
     } = useLockContract();
-
-
-    // Todo useeffect fetched for states
 
     // WATCH ERROR FROM TX
     useEffect(() => {
@@ -173,6 +179,15 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
         }
     }, [setProposalBeingDiscussedStatusIsConfirmed]);
 
+    useEffect(() => {
+        if (fetchedMinProposalsData) {
+            const proposals = (fetchedMinProposalsData as { description: string }[]).map((el) => {
+                return el.description;
+            })
+            setMinProposals(proposals);
+        }
+    }, [fetchedMinProposalsData])
+
 
     const loadSharesAndCustomersToBallotHandler = () => {
         loadSharesAndCustomersToBallotWrite(connectedAccount, globalCtx.deployedManagerAddress);
@@ -206,7 +221,6 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
         lockContractWrite(connectedAccount, globalCtx.deployedBallotAddress);
     }
 
-
     if (!isConnected) {
         return <h1>Please connect your wallet first</h1>;
     }
@@ -218,26 +232,6 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
     if (isZeroAddress(globalCtx.deployedBallotAddress) || globalCtx.deployedBallotAddress === undefined) {
         return <p>NO GM Ballot deployed yet</p>;
     }
-
-    // const onVerifyShares = (lot: Lot) => {
-    //     setIsLoading(true);
-    //     const getBalance = async (addressToConsult: string) => {
-    //         return triggerGetBalance(globalCtx.erc20Address, addressToConsult);
-    //     }
-    //     if (globalCtx.erc20Address && lot?.customer?.address) {
-    //         const response = getBalance(lot.customer.address);
-    //         response
-    //             .then((balance: any) => {
-    //                 setLotBeingVerified((prev: IlotBeingVerified) => {
-    //                     return {
-    //                         ...prev,
-    //                         balanceOf: balance
-    //                     }
-    //                 })
-    //                 setIsLoading(false);
-    //             })
-    //     }
-    // }
 
     // Array of modals
     let modals = [];
@@ -265,16 +259,28 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
         );
     }
 
+    let hasProposal = false;
+    if (minProposals && minProposals.length > 0) {
+        hasProposal = true;
+    }
+
+    let userVoted = false;
+    if (votedOnCurrentProposal.length > 0) {
+        if (votedOnCurrentProposal.includes(connectedAccount as string)) {
+            userVoted = true;
+        };
+    }
 
     return (
         <div>
             <h1>General meeting ! (Ballot)</h1>
+            <p>Welcome, dear {globalCtx.role} !</p>
             <StatusInstructions status={globalCtx.ballotStatus} role={globalCtx.role} />
             <DisplayInfos minProposals={minProposals} currentProposal={currentProposalWithResult} completeVotingResults={allProposalResults} />
             <Actions
-                userVoted={false}
-                hasProposal={false}
-                ballotHasVotes={false}
+                userVoted={userVoted}
+                hasProposal={hasProposal}
+                ballotHasVotes={votedOnCurrentProposal.length > 0}
                 onLoadSharesAndCustomersToBallot={loadSharesAndCustomersToBallotHandler}
                 onSubmittedProposal={submittedProposalHandler}
                 onCloseSubmittingProposals={closeSubmittingProposalsHandler}

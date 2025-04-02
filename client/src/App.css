@@ -10,15 +10,17 @@
   border: 2px solid rgb(223, 105, 166);
   margin: 1em;
   min-width: 400px;
-  min-height: 400px;
+  min-height: 200px;
   border-radius: 5px;
 }
 
 header {
   padding: 10px;
-  background-color: aquamarine;
+  background-color: #e4942f;
   width: 100%;
   top: 0;
+  margin-bottom: 30px;
+  border: 5px solid #983c07;
 }
 
 .flex-wrapper {
@@ -61,6 +63,10 @@ input {
 
 li {
   text-decoration: none;
+}
+
+nav {
+  margin-top: 20px;
 }
 
 .navItem {

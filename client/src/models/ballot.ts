@@ -36,15 +36,6 @@ export type CompleteBallotCountResults = {
   proposalDescription: string;
 }
 
-// struct MinVoter {
-//     string firstName;
-//     string lastName;
-//     uint256 shares;
-//     string lotOfficialNumber;
-// }
-
-
-
 export const BALLOT_STATUS_INSTRUCTIONS: Record<
   string,
   {
@@ -57,35 +48,35 @@ export const BALLOT_STATUS_INSTRUCTIONS: Record<
 > = {
   [WAITING_FOR_GM_DATA_KEY]: {
     statusId: 0,
-    title: "WaitingForGmData",
-    description: "General meeting is now set !",
-    ownerInstruction: "Feel free to open proposals submitting period",
+    title: "General Meeting initialized",
+    description: "The evnt will soon be launched",
+    ownerInstruction: "Feel free to open proposals submission period for voters",
     customerInstruction:
-      "proposals submitting will open soon.",
+      "Date will provided soon",
   },
   [PROPOSALS_SUBMITTING_OPEN_KEY]: {
     statusId: 1,
-    title: "ProposalsSubmittingOpen",
+    title: "Proposals Submission Open",
     description:
       "Voters can send their proposal for vote",
     ownerInstruction:
-      "Half of total customers must confirm before closing this period.",
-    customerInstruction: "Please send ypur proposal",
+      "At least, one proposal must be submitted before closing the registration period.",
+    customerInstruction: "Please send your proposal for ballot at the GM",
   },
   [PROPOSAL_SUBMITTING_CLOSED_KEY]: {
     statusId: 2,
-    title: "ProposalsSubmittingClosed",
+    title: "Proposals Submission is Closed",
     description:
-      "Proposals list is now finalized in this chart below ",
+      "Proposals list is now finalized in this chart below:",
     ownerInstruction:
       "Switch to the period of Proposal Voting Discussion when your attendees are all ok. ",
-    customerInstruction: "Wait ",
+    customerInstruction: "Presentation and votes of the proposals will be delivered soon...",
   },
   [PROPOSAL_BEING_DISCUSSED_KEY]: {
     statusId: 3,
-    title: "Proposal Being discussed",
+    title: "A Proposal is currently discussed",
     description:
-      "Current proposal is now being submitted and discussed.",
+      "Please debate, attendees",
     ownerInstruction:
       "Switch to ballot opening when talks are done.",
     customerInstruction: "Ballot will open when talks are done.",
@@ -119,13 +110,3 @@ export const BALLOT_STATUS_INSTRUCTIONS: Record<
     customerInstruction: "Please consult finalized list of ballots results below:",
   },
 };
-
-export function getNextStatusIdToRequest(statusKey: keyof typeof BALLOT_STATUS_INSTRUCTIONS) {
-  if (
-    Object.keys(BALLOT_STATUS_INSTRUCTIONS).includes(statusKey) &&
-    statusKey !== CONTRACT_LOCKED_KEY
-  ) {
-    return BALLOT_STATUS_INSTRUCTIONS[statusKey].statusId + 1;
-  }
-  return null;
-}

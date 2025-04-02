@@ -20,7 +20,7 @@ import CompleteVotingResults from "./children/CompleteVotingResults";
 
 
 interface IActions {
-    minProposals: string[];
+    minProposals: string[] | null;
     currentProposal: {
         id: number;
         description: string;
@@ -39,7 +39,7 @@ const DisplayInfos = ({
 
     if (
         globalCtx.ballotStatus !== null &&
-        Object.keys(BALLOT_STATUS_INSTRUCTIONS).includes(globalCtx.ballotStatus) === false
+        Object.keys(BALLOT_STATUS_INSTRUCTIONS).includes(globalCtx.ballotStatus)
     ) {
         switch (globalCtx.ballotStatus) {
             case PROPOSALS_SUBMITTING_OPEN_KEY:

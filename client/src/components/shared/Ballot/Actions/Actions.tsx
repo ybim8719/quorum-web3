@@ -13,7 +13,7 @@ import {
 
 import SwitchToNextStepButton from "../Forms/SwitchToNextStepButton";
 import VoteInput from "../Forms/VoteInput";
-import { ADMIN_ROLE } from "../../../../models/roles";
+import { OWNER_ROLE } from "../../../../models/roles";
 import { useContext } from "react";
 import { GlobalContext } from "../../../../context/globalContext";
 import SubmitProposalInput from "../Forms/SubmitProposalInput";
@@ -53,7 +53,7 @@ const Actions = ({
   ) {
     actionToDisplay = <p>Status not found</p>;
   } else {
-    if (globalCtx.role === ADMIN_ROLE) {
+    if (globalCtx.role === OWNER_ROLE) {
       switch (globalCtx.ballotStatus) {
         case WAITING_FOR_GM_DATA_KEY:
           actionToDisplay = <SwitchToNextStepButton onValidate={onLoadSharesAndCustomersToBallot} btnDescription="Transfer voters and open subMITTING PROPOSALS" />;
@@ -105,7 +105,7 @@ const Actions = ({
   }
 
   return (
-    <div className={classes.Actions}>
+    <div className="section">
       <h3>
         <u>ACTIONS:</u> <i className="snes-jp-logo"></i>
       </h3 >

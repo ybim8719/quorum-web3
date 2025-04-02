@@ -323,8 +323,8 @@ contract GMBallot is Ownable {
         return toReturn;
     }
 
-    function getProposalCompleteById(uint256 _proposalId) external view returns (ProposalView memory) {
-        return _buildCompleteProposal(_proposalId);
+    function getCurrentProposalComplete() external view returns (ProposalView memory) {
+        return _buildCompleteProposal(s_currentProposalBeingVoted);
     }
 
     function _buildCompleteProposal(uint256 _proposalId) private view returns (ProposalView memory) {
@@ -408,13 +408,16 @@ contract GMBallot is Ownable {
     }
 
     // COVER WITH TEST
-    function getMinimalProposal(uint256 _proposalId) external view returns (MinimalProposalView memory) {
-        return MinimalProposalView({id: _proposalId, description: s_proposals[_proposalId].description});
+    function getCurrentMinimalProposal() external view returns (MinimalProposalView memory) {
+        return MinimalProposalView({
+            id: s_currentProposalBeingVoted,
+            description: s_proposals[s_currentProposalBeingVoted].description
+        });
     }
 
     // COVER WITH TEST
-    function getVotersOfProposals(uint256 _proposalId) external view returns (address[] memory) {
-        Proposal memory proposal = s_proposals[_proposalId];
+    function getVotersOfCurrentProposal() external view returns (address[] memory) {
+        Proposal memory proposal = s_proposals[s_currentProposalBeingVoted];
         address[] memory toReturn =
             new address[](proposal.approvals.length + proposal.refusals.length + proposal.blankVotes.length);
         uint256 arrayIndex;

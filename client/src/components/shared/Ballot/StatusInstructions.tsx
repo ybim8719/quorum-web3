@@ -22,7 +22,7 @@ const StatusInstructions = ({ status, role }: StatusProps) => {
         <u>
           <b>
             Status: {BALLOT_STATUS_INSTRUCTIONS[status].title} (
-            {BALLOT_STATUS_INSTRUCTIONS[status].statusId + 1} / 8)
+            {BALLOT_STATUS_INSTRUCTIONS[status].statusId + 1}/8)
           </b>
         </u>
       </h2>
