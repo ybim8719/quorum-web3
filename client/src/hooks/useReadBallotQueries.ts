@@ -7,10 +7,10 @@ import { anvil } from '@wagmi/core/chains'
 export const useReadBallotQueries = (deployedBallotAddress: string) => {
     const { address } = useAccount();
 
-    const useFetchedProposals = useReadContract({
+    const useFetchedCompleteProposals = useReadContract({
         address: deployedBallotAddress as `0x${string}`,
         abi: ballot_abi,
-        functionName: "getProposals",
+        functionName: "getProposalsComplete",
         account: address,
     });
 
@@ -18,7 +18,7 @@ export const useReadBallotQueries = (deployedBallotAddress: string) => {
     const useFetchedMinProposals = useReadContract({
         address: deployedBallotAddress as `0x${string}`,
         abi: ballot_abi,
-        functionName: "getMinProposals",
+        functionName: "getMinimalProposals",
         account: address,
     });
 
@@ -31,7 +31,7 @@ export const useReadBallotQueries = (deployedBallotAddress: string) => {
 
     return {
         useFetchedBallotStatus,
-        useFetchedProposals,
+        useFetchedCompleteProposals,
         useFetchedMinProposals
     };
 };
@@ -43,11 +43,31 @@ export const config = createConfig({
     },
 })
 
-export const triggerGetBalance = async (contractAddres: string, proposalId: number) => {
+export const triggerGetMinimalProposalById = async (deployedBallotAddress: string, proposalId: number) => {
     return await readContract(config, {
         abi: ballot_abi,
-        address: contractAddres as `0x${string}`,
-        functionName: 'getProposal',
+        address: deployedBallotAddress as `0x${string}`,
+        functionName: 'getMinimalProposal',
         args: [proposalId]
     })
 }
+
+export const triggerGetCompleteProposalById = async (deployedBallotAddress: string, proposalId: number) => {
+    return await readContract(config, {
+        abi: ballot_abi,
+        address: deployedBallotAddress as `0x${string}`,
+        functionName: 'getProposalCompleteById',
+        args: [proposalId]
+    })
+}
+
+
+export const triggerGetVotersOfProposalId = async (deployedBallotAddress: string, proposalId: number) => {
+    return await readContract(config, {
+        abi: ballot_abi,
+        address: deployedBallotAddress as `0x${string}`,
+        functionName: 'getVotersOfProposal',
+        args: [proposalId]
+    })
+}
+

@@ -190,6 +190,8 @@ contract CondoGmManagerTest is Test {
         vm.stopPrank();
         vm.prank(CUSTOMER1_ADDRESS);
         s_ballot.voteForCurrentProposal(uint256(VoteType.Blank));
+        vm.prank(CUSTOMER2_ADDRESS);
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Refusal));
         vm.startPrank(msg.sender);
         s_ballot.setCurrentProposalVotingCountReveal();
         s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
@@ -197,6 +199,8 @@ contract CondoGmManagerTest is Test {
         vm.stopPrank();
         vm.prank(CUSTOMER1_ADDRESS);
         s_ballot.voteForCurrentProposal(uint256(VoteType.Blank));
+        vm.prank(CUSTOMER2_ADDRESS);
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Approval));
         vm.startPrank(msg.sender);
         s_ballot.setCurrentProposalVotingCountReveal();
         // end all votes
@@ -945,21 +949,35 @@ contract CondoGmManagerTest is Test {
         assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ContractLocked);
     }
 
+    //TODO A LA FIN POUR TESTER LES GETTERS
     function test_truc() public ballotLocked {
-        assertEq(s_ballot.getProposals()[0].id, 1);
-        // console.log(s_ballot.getProposals()[0].description);
-        // console.log(s_ballot.getProposals()[1].id);
-        // console.log(s_ballot.getProposals()[1].description);
-        // console.log(uint256(s_ballot.getProposals()[0].votingResult));
-        // console.log(uint256(s_ballot.getProposal(PROPOSAL1_ID).votingResult));
-        // console.log(uint256(s_ballot.getProposals()[0].approvals.length));
-        // console.log(uint256(s_ballot.getProposals()[0].refusals.length));
-        // console.log(uint256(s_ballot.getProposals()[0].refusalShares));
-        // console.log(uint256(s_ballot.getProposals()[0].approvalShares));
-        // console.log(uint256(s_ballot.getProposals()[0].blankVotes.length));
-        // console.log(s_ballot.getProposals()[0].blankVotes[0].firstName);
-        // console.log(s_ballot.getProposals()[0].blankVotes[0].lastName);
-        // console.log(s_ballot.getProposals()[0].blankVotes[0].shares);
-        // console.log(s_ballot.getProposals()[0].blankVotes[0].lotOfficialNumber);
+        assertEq(s_ballot.getProposalsComplete()[0].id, 1);
+        console.log(s_ballot.getProposalsComplete()[0].description);
+        console.log(s_ballot.getProposalsComplete()[1].id);
+        console.log(s_ballot.getProposalsComplete()[1].description);
+        console.log(uint256(s_ballot.getProposalsComplete()[0].votingResult));
+        console.log(uint256(s_ballot.getProposalsComplete()[0].approvals.length), "approval lebgth");
+        console.log(uint256(s_ballot.getProposalsComplete()[0].refusals.length), "refusals lebgth");
+        console.log(uint256(s_ballot.getProposalsComplete()[0].refusalShares));
+        console.log(uint256(s_ballot.getProposalsComplete()[0].approvalShares));
+        console.log(uint256(s_ballot.getProposalsComplete()[0].blankVotes.length));
+        console.log(s_ballot.getProposalsComplete()[0].blankVotes[0].firstName);
+        console.log(s_ballot.getProposalsComplete()[0].blankVotes[0].lastName);
+        console.log(s_ballot.getProposalsComplete()[0].blankVotes[0].shares);
+        console.log(s_ballot.getProposalsComplete()[0].blankVotes[0].lotOfficialNumber);
+        // console.log(s_ballot.getMinimalProposals()[0].id);
+        // console.log(s_ballot.getMinimalProposals()[0].description);
+        // console.log(s_ballot.getMinimalProposals()[1].id);
+        // console.log(s_ballot.getMinimalProposals()[1].description);
+
+        // console.log(s_ballot.getMinimalProposal(1).id);
+        // console.log(s_ballot.getMinimalProposal(1).description);
+        // console.log(s_ballot.getMinimalProposal(2).id);
+        // console.log(s_ballot.getMinimalProposal(2).description);
+
+        // console.log(s_ballot.getVotersOfProposals(1)[0]);
+        // console.log(s_ballot.getVotersOfProposals(1)[1]);
+        // console.log(s_ballot.getVotersOfProposals(2)[0]);
+        // console.log(s_ballot.getVotersOfProposals(2)[1]);
     }
 }

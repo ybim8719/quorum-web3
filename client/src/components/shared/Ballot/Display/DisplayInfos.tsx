@@ -25,10 +25,9 @@ interface IActions {
         id: number;
         description: string;
         votingResult: BallotCountResults,
-    }
+    } | null
     completeVotingResults: CompleteBallotCountResults[];
 }
-
 
 const DisplayInfos = ({
     minProposals,
@@ -50,13 +49,19 @@ const DisplayInfos = ({
                 display = <ProposalsList proposalsList={minProposals} />;
                 break;
             case PROPOSAL_BEING_DISCUSSED_KEY:
-                display = <ProposalBeingVoted id={currentProposal.id} description={currentProposal.description} />
+                if (currentProposal) {
+                    display = <ProposalBeingVoted id={currentProposal.id} description={currentProposal.description} />
+                }
                 break;
             case PROPOSAL_VOTING_OPEN_KEY:
-                display = <ProposalBeingVoted id={currentProposal.id} description={currentProposal.description} />
+                if (currentProposal) {
+                    display = <ProposalBeingVoted id={currentProposal.id} description={currentProposal.description} />
+                }
                 break;
             case PROPOSAL_VOTING_COUNT_REVEALED_KEY:
-                display = <ProposalVotingResult id={currentProposal.id} description={currentProposal.description} votingResult={currentProposal.votingResult} />;
+                if (currentProposal) {
+                    display = <ProposalVotingResult id={currentProposal.id} description={currentProposal.description} votingResult={currentProposal.votingResult} />;
+                }
                 break;
             case MEETING_ENDED_KEY:
                 display = <CompleteVotingResults completeVotingResults={completeVotingResults} />;
@@ -66,7 +71,6 @@ const DisplayInfos = ({
                 break;
         }
     }
-
 
     return (
         <div>

@@ -2,7 +2,14 @@ pragma solidity 0.8.28;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {
-    BallotWorkflowStatus, Voter, Proposal, VoteType, VotingResult, ProposalView, MinVoter
+    BallotWorkflowStatus,
+    Voter,
+    Proposal,
+    VoteType,
+    VotingResult,
+    ProposalView,
+    MinVoter,
+    MinimalProposalView
 } from "./structs/Ballot.sol";
 import {GMSharesToken} from "./GmSharesToken.sol";
 import {console} from "forge-std/Test.sol";
@@ -281,9 +288,6 @@ contract GMBallot is Ownable {
     /*//////////////////////////////////////////////////////////////
                             VIEW func
     //////////////////////////////////////////////////////////////*/
-    function getERC20Address() external view returns (address) {
-        return s_ERC20Address;
-    }
 
     function getCurrentStatus() external view returns (BallotWorkflowStatus) {
         return s_currentStatus;
@@ -301,73 +305,17 @@ contract GMBallot is Ownable {
         return s_voters[_voter];
     }
 
-    // TODO PROTECT THIS SHIT while given proposal is maybe being voted
     function getProposal(uint256 _proposalId) external view returns (Proposal memory) {
         return s_proposals[_proposalId];
     }
 
-    function getProposals() external view returns (ProposalView[] memory) {
+    function getProposalsComplete() external view returns (ProposalView[] memory) {
         ProposalView[] memory toReturn = new ProposalView[](s_nbOfProposals);
         // prpoposal id start at 1
         if (s_nbOfProposals > 0) {
             for (uint256 id = 1; id < s_nbOfProposals + 1; ++id) {
                 // enrich customers who approved
-                MinVoter[] memory tempMinVoterApprovers = new MinVoter[](s_proposals[id].approvals.length);
-                if (s_proposals[id].approvals.length > 0) {
-                    for (uint256 j = 0; j < s_proposals[id].approvals.length; j++) {
-                        address voterAddress = s_proposals[id].approvals[j];
-                        Voter memory tempVoter = s_voters[voterAddress];
-                        MinVoter memory tempMinVoter = MinVoter({
-                            firstName: tempVoter.firstName,
-                            lastName: tempVoter.lastName,
-                            shares: tempVoter.shares,
-                            lotOfficialNumber: tempVoter.lotOfficialNumber
-                        });
-                        tempMinVoterApprovers[j] = tempMinVoter;
-                    }
-                }
-
-                MinVoter[] memory tempMinVoterRefused = new MinVoter[](s_proposals[id].refusals.length);
-                if (s_proposals[id].refusals.length > 0) {
-                    for (uint256 j = 0; j < s_proposals[id].refusals.length; j++) {
-                        address voterAddress = s_proposals[id].refusals[j];
-                        Voter memory tempVoter = s_voters[voterAddress];
-                        MinVoter memory tempMinVoter = MinVoter({
-                            firstName: tempVoter.firstName,
-                            lastName: tempVoter.lastName,
-                            shares: tempVoter.shares,
-                            lotOfficialNumber: tempVoter.lotOfficialNumber
-                        });
-                        tempMinVoterRefused[j] = tempMinVoter;
-                    }
-                }
-
-                MinVoter[] memory tempMinVoterBlank = new MinVoter[](s_proposals[id].blankVotes.length);
-                if (s_proposals[id].blankVotes.length > 0) {
-                    for (uint256 j = 0; j < s_proposals[id].blankVotes.length; j++) {
-                        address voterAddress = s_proposals[id].blankVotes[j];
-                        Voter memory tempVoter = s_voters[voterAddress];
-                        MinVoter memory tempMinVoter = MinVoter({
-                            firstName: tempVoter.firstName,
-                            lastName: tempVoter.lastName,
-                            shares: tempVoter.shares,
-                            lotOfficialNumber: tempVoter.lotOfficialNumber
-                        });
-                        tempMinVoterBlank[j] = tempMinVoter;
-                    }
-                }
-
-                ProposalView memory tmpProposalView = ProposalView({
-                    id: id,
-                    description: s_proposals[id].description,
-                    votingResult: s_proposals[id].votingResult,
-                    approvals: tempMinVoterApprovers,
-                    approvalShares: s_proposals[id].approvalShares,
-                    refusals: tempMinVoterRefused,
-                    refusalShares: s_proposals[id].refusalShares,
-                    blankVotes: tempMinVoterBlank,
-                    blankVotesShares: s_proposals[id].blankVotesShares
-                });
+                ProposalView memory tmpProposalView = _buildCompleteProposal(id);
                 toReturn[id - 1] = tmpProposalView;
             }
         }
@@ -375,7 +323,121 @@ contract GMBallot is Ownable {
         return toReturn;
     }
 
-    function getNbOfPropposals() external view returns (uint256) {
+    function getProposalCompleteById(uint256 _proposalId) external view returns (ProposalView memory) {
+        return _buildCompleteProposal(_proposalId);
+    }
+
+    function _buildCompleteProposal(uint256 _proposalId) private view returns (ProposalView memory) {
+        MinVoter[] memory tempMinVoterApprovers = new MinVoter[](s_proposals[_proposalId].approvals.length);
+        if (s_proposals[_proposalId].approvals.length > 0) {
+            for (uint256 j = 0; j < s_proposals[_proposalId].approvals.length; j++) {
+                address voterAddress = s_proposals[_proposalId].approvals[j];
+                Voter memory tempVoter = s_voters[voterAddress];
+                MinVoter memory tempMinVoter = MinVoter({
+                    firstName: tempVoter.firstName,
+                    lastName: tempVoter.lastName,
+                    shares: tempVoter.shares,
+                    lotOfficialNumber: tempVoter.lotOfficialNumber
+                });
+                tempMinVoterApprovers[j] = tempMinVoter;
+            }
+        }
+
+        MinVoter[] memory tempMinVoterRefused = new MinVoter[](s_proposals[_proposalId].refusals.length);
+        if (s_proposals[_proposalId].refusals.length > 0) {
+            for (uint256 j = 0; j < s_proposals[_proposalId].refusals.length; j++) {
+                address voterAddress = s_proposals[_proposalId].refusals[j];
+                Voter memory tempVoter = s_voters[voterAddress];
+                MinVoter memory tempMinVoter = MinVoter({
+                    firstName: tempVoter.firstName,
+                    lastName: tempVoter.lastName,
+                    shares: tempVoter.shares,
+                    lotOfficialNumber: tempVoter.lotOfficialNumber
+                });
+                tempMinVoterRefused[j] = tempMinVoter;
+            }
+        }
+
+        MinVoter[] memory tempMinVoterBlank = new MinVoter[](s_proposals[_proposalId].blankVotes.length);
+        if (s_proposals[_proposalId].blankVotes.length > 0) {
+            for (uint256 j = 0; j < s_proposals[_proposalId].blankVotes.length; j++) {
+                address voterAddress = s_proposals[_proposalId].blankVotes[j];
+                Voter memory tempVoter = s_voters[voterAddress];
+                MinVoter memory tempMinVoter = MinVoter({
+                    firstName: tempVoter.firstName,
+                    lastName: tempVoter.lastName,
+                    shares: tempVoter.shares,
+                    lotOfficialNumber: tempVoter.lotOfficialNumber
+                });
+                tempMinVoterBlank[j] = tempMinVoter;
+            }
+        }
+
+        ProposalView memory tmpProposalView = ProposalView({
+            id: _proposalId,
+            description: s_proposals[_proposalId].description,
+            votingResult: s_proposals[_proposalId].votingResult,
+            approvals: tempMinVoterApprovers,
+            approvalShares: s_proposals[_proposalId].approvalShares,
+            refusals: tempMinVoterRefused,
+            refusalShares: s_proposals[_proposalId].refusalShares,
+            blankVotes: tempMinVoterBlank,
+            blankVotesShares: s_proposals[_proposalId].blankVotesShares
+        });
+
+        return tmpProposalView;
+    }
+
+    function getNbOfProposals() external view returns (uint256) {
         return s_nbOfProposals;
+    }
+
+    // COVER WITH TEST
+    function getMinimalProposals() external view returns (MinimalProposalView[] memory) {
+        MinimalProposalView[] memory toReturn = new MinimalProposalView[](s_nbOfProposals);
+        // prpoposal id start at 1
+        if (s_nbOfProposals > 0) {
+            for (uint256 id = 1; id < s_nbOfProposals + 1; ++id) {
+                MinimalProposalView memory tmpProposalView =
+                    MinimalProposalView({id: id, description: s_proposals[id].description});
+                toReturn[id - 1] = tmpProposalView;
+            }
+        }
+
+        return toReturn;
+    }
+
+    // COVER WITH TEST
+    function getMinimalProposal(uint256 _proposalId) external view returns (MinimalProposalView memory) {
+        return MinimalProposalView({id: _proposalId, description: s_proposals[_proposalId].description});
+    }
+
+    // COVER WITH TEST
+    function getVotersOfProposals(uint256 _proposalId) external view returns (address[] memory) {
+        Proposal memory proposal = s_proposals[_proposalId];
+        address[] memory toReturn =
+            new address[](proposal.approvals.length + proposal.refusals.length + proposal.blankVotes.length);
+        uint256 arrayIndex;
+
+        if (proposal.approvals.length > 0) {
+            for (uint256 index = 0; index < proposal.approvals.length; index++) {
+                toReturn[arrayIndex] = proposal.approvals[index];
+                arrayIndex++;
+            }
+        }
+        if (proposal.refusals.length > 0) {
+            for (uint256 index = 0; index < proposal.refusals.length; index++) {
+                toReturn[arrayIndex] = proposal.refusals[index];
+                arrayIndex++;
+            }
+        }
+        if (proposal.blankVotes.length > 0) {
+            for (uint256 index = 0; index < proposal.blankVotes.length; index++) {
+                toReturn[arrayIndex] = proposal.blankVotes[index];
+                arrayIndex++;
+            }
+        }
+
+        return toReturn;
     }
 }

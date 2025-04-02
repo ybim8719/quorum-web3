@@ -14,7 +14,7 @@ import {
     useLockContract
     ,
 } from "../hooks/useWriteBallotActions";
-import { useReadBallotQueries } from "../hooks/useReadBallotQueries.ts";
+import { useReadBallotQueries, triggerGetCompleteProposalById, triggerGetMinimalProposalById, triggerGetVotersOfProposalId } from "../hooks/useReadBallotQueries.ts";
 
 import LoadingIndicator from "../components/UI/LoadingIndicator.tsx";
 import ErrorBlock from "../components/UI/ErrorBlock.tsx";
@@ -22,6 +22,7 @@ import StatusInstructions from "../components/shared/Ballot/StatusInstructions.t
 import Actions from "../components/shared/Ballot/Actions/Actions.tsx";
 import DisplayInfos from "../components/shared/Ballot/Display/DisplayInfos.tsx";
 import { useloadSharesAndCustomersToBallot } from "../hooks/useWriteManagerActions.ts";
+import { BallotCountResults, CompleteBallotCountResults } from "../models/ballot.ts";
 
 
 interface IBallotProps {
@@ -34,12 +35,19 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
     const [modalInfoText, setModalInfoText] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
     const [minProposals, setMinProposals] = useState<string[]>([]);
-    const [allProposalResults, setAllProposalResults] = useState<string[]>([]);
+    const [currentProposalWithResult, setCurrentProposalWithResult] = useState<{
+        id: number;
+        description: string;
+        votingResult: BallotCountResults,
+    } | null>(null);
+    const [allProposalResults, setAllProposalResults] = useState<CompleteBallotCountResults[] | null>([]);
 
     // Read hooks
-    const { useFetchedProposals, useFetchedMinProposals } = useReadBallotQueries(globalCtx.deployedBallotAddress);
+    const { useFetchedCompleteProposals, useFetchedMinProposals } = useReadBallotQueries(globalCtx.deployedBallotAddress);
     const { data: fetchedMinProposalsData, refetch: refetchMinProposals } = useFetchedMinProposals;
+    const { data: fetchedCompleteProposalsData, refetch: refetchCompleteProposals } = useFetchedCompleteProposals;
 
     // Write hooks
     // => OWNER: proposals submitting are OPEN
@@ -59,7 +67,7 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
     // => OWNER: proposals submitting are CLOSED
     const {
         error: setProposalsSubmittingCloseError,
-        isConfirmed: setProposalsSubmittingCloseIsClosed,
+        isConfirmed: setProposalsSubmittingCloseIsConfirmed,
         setProposalsSubmittingClosedWrite
     } = useSetProposalsSubmittingClosed();
 
@@ -98,7 +106,10 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
         lockContractWrite
     } = useLockContract();
 
-    // watch errors of transactions
+
+    // Todo useeffect fetched for states
+
+    // WATCH ERROR FROM TX
     useEffect(() => {
         if (lockContractError ||
             setCurrentProposalVotingCountRevealError ||
@@ -114,21 +125,21 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
         }
     }, [loadSharesAndCustomersToBallotError, lockContractError, setCurrentProposalVotingCountRevealError, voteForCurrentProposalError, setProposalVotingOpenStatusError, setProposalBeingDiscussedStatusError, setProposalsSubmittingCloseError, submitProposalError]);
 
+    // WATCH TX LEADING TO REFETCH STATUS
     useEffect(() => {
         if (
             loadSharesAndCustomersToBallotIsConfirmed ||
-            setProposalsSubmittingCloseIsClosed ||
+            setProposalsSubmittingCloseIsConfirmed ||
             setProposalVotingOpenStatusIsConfirmed ||
             lockContractIsConfirmed
         ) {
             setIsLoading(false);
             setModalInfoText("Transaction confirmed");
             onRefetchStatus();
-            // refetch minProposals
         }
-    }, [loadSharesAndCustomersToBallotIsConfirmed, setProposalsSubmittingCloseIsClosed, setProposalVotingOpenStatusIsConfirmed, lockContractIsConfirmed]);
+    }, [loadSharesAndCustomersToBallotIsConfirmed, setProposalsSubmittingCloseIsConfirmed, setProposalVotingOpenStatusIsConfirmed, lockContractIsConfirmed]);
 
-
+    // WATCH TX LEADING TO REFETCH LIST OF VOTERS OF CURRENT PROPOSALS
     useEffect(() => {
         if (voteForCurrentProposalIsConfirmed) {
             setIsLoading(false);
@@ -137,7 +148,7 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
         }
     }, [voteForCurrentProposalIsConfirmed]);
 
-
+    // WATCH TX LEADING TO REFETCH LIST OF PROPOSALS BEING CREATED
     useEffect(() => {
         if (submitProposalIsConfirmed) {
             setIsLoading(false);
@@ -161,15 +172,6 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
             // TODO REFETCH CURRENT PROPOSAL DESC TO DISPLAY
         }
     }, [setProposalBeingDiscussedStatusIsConfirmed]);
-
-    //     const getBalance = async (addressToConsult: string) => {
-    //         return triggerGetBalance(globalCtx.erc20Address, addressToConsult);
-    //     }
-    //     if (globalCtx.erc20Address) {
-    //         const response = getBalance(globalCtx.deployedManagerAddress);
-    //         response
-    //             .then((truc: any) => {
-    //                 setOwnersBalance(Number(truc));
 
 
     const loadSharesAndCustomersToBallotHandler = () => {
@@ -268,7 +270,7 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
         <div>
             <h1>General meeting ! (Ballot)</h1>
             <StatusInstructions status={globalCtx.ballotStatus} role={globalCtx.role} />
-            <DisplayInfos minProposals={minProposals} currentProposal={ } completeVotingResults={ } />
+            <DisplayInfos minProposals={minProposals} currentProposal={currentProposalWithResult} completeVotingResults={allProposalResults} />
             <Actions
                 userVoted={false}
                 hasProposal={false}
@@ -282,7 +284,7 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
                 onCloseVoting={closeVotingHandler}
                 onLockContract={lockContractHandler}
             />
-            {/* {modals} */}
+            {modals}
         </div>
     );
 }

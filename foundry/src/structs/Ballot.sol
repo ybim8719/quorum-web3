@@ -64,3 +64,8 @@ struct ProposalView {
     MinVoter[] blankVotes;
     uint256 blankVotesShares;
 }
+
+struct MinimalProposalView {
+    uint256 id;
+    string description;
+}
