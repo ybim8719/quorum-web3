@@ -17,7 +17,7 @@ const StatusInstructions = ({ status, role }: StatusProps) => {
   }
 
   return (
-    <div className="">
+    <div className="section">
       <h2>
         <u>
           <b>

@@ -1,35 +1,16 @@
 import { JSX } from "react";
 import ProposalVotingResult from "./ProposalVotingResult";
-
-interface ProposalVotingResult {
-    votingResult: {
-        approvals: number;
-        refusals: number;
-        blank: number;
-        winner: string;
-        details: {
-            customerAddress: string;
-            firstName: string;
-            lastName: string;
-            lotOfficialNumber: number;
-            shares: number;
-            vote: string;
-        }[]
-    };
-    proposalId: number;
-    proposalDescription: string;
-}
-
+import { CompleteBallotCountResults } from "../../../../../models/ballot";
 
 interface ICompleteVotingResults {
-    completeVotingResults: ProposalVotingResult[];
+    completeVotingResults: CompleteBallotCountResults[];
 }
 
 const CompleteVotingResults = ({ completeVotingResults }: ICompleteVotingResults) => {
     let content: JSX.Element[] = [];
     if (completeVotingResults.length > 0) {
         content = completeVotingResults.map((result) => {
-            return <ProposalVotingResult votingResult={result.votingResult} proposalId={result.proposalId} proposalDescription={result.proposalDescription} />
+            return <ProposalVotingResult votingResult={result.votingResult} id={result.proposalId} description={result.proposalDescription} />
         })
     }
     return (

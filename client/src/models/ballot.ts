@@ -15,6 +15,27 @@ export enum VotingResult {
 }
 
 
+export type BallotCountResults = {
+  approvals: number;
+  refusals: number;
+  blank: number;
+  winner: string;
+  details: {
+    customerAddress: string;
+    firstName: string;
+    lastName: string;
+    lotOfficialNumber: number;
+    shares: number;
+    vote: string;
+  }[]
+}
+
+export type CompleteBallotCountResults = {
+  votingResult: BallotCountResults;
+  proposalId: number;
+  proposalDescription: string;
+}
+
 // struct MinVoter {
 //     string firstName;
 //     string lastName;
@@ -22,17 +43,7 @@ export enum VotingResult {
 //     string lotOfficialNumber;
 // }
 
-// struct ProposalView {
-//     uint256 id;
-//     string description;
-//     VotingResult votingResult;
-//   MinVoter[] approvals;
-//     uint256 approvalShares;
-//   MinVoter[] refusals;
-//     uint256 refusalShares;
-//   MinVoter[] blankVotes;
-//     uint256 blankVotesShares;
-// }
+
 
 export const BALLOT_STATUS_INSTRUCTIONS: Record<
   string,

@@ -29,7 +29,7 @@ const LinkCustomerToLotInput = ({
   }
 
   return (
-    <div>
+    <div className="section">
       <h2>LOT N°{lot.lotOfficialNumber}</h2>
       <p> ({lot.shares} tantièmes)</p>
       <form method="post" onSubmit={handleSubmit}>

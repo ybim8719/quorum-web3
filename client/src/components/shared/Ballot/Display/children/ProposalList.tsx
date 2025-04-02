@@ -9,7 +9,8 @@ const ProposalsList = ({ proposalsList }: IProposalsList) => {
     }
 
     return (
-        <div>
+        <div className="section">
+            <h2>Proposals registered</h2>
             <ul>
                 {proposalsList.map((el) => {
                     return <li>{el}</li>

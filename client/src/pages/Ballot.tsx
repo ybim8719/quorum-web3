@@ -9,15 +9,19 @@ import {
     useSetProposalsSubmittingClosed,
     useSetProposalBeingDiscussedStatusOrEndBallot,
     useSetProposalVotingOpenStatus,
-    useVoteForCurrentProposal, useSetCurrentProposalVotingCountReveal,
+    useVoteForCurrentProposal,
+    useSetCurrentProposalVotingCountReveal,
     useLockContract
     ,
 } from "../hooks/useWriteBallotActions";
+import { useReadBallotQueries } from "../hooks/useReadBallotQueries.ts";
+
 import LoadingIndicator from "../components/UI/LoadingIndicator.tsx";
 import ErrorBlock from "../components/UI/ErrorBlock.tsx";
-import { useReadBallotQueries } from "../hooks/useReadBallotQueries.ts";
 import StatusInstructions from "../components/shared/Ballot/StatusInstructions.tsx";
 import Actions from "../components/shared/Ballot/Actions/Actions.tsx";
+import DisplayInfos from "../components/shared/Ballot/Display/DisplayInfos.tsx";
+import { useloadSharesAndCustomersToBallot } from "../hooks/useWriteManagerActions.ts";
 
 
 interface IBallotProps {
@@ -30,26 +34,134 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
     const [modalInfoText, setModalInfoText] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [minProposals, setMinProposals] = useState<string[]>([]);
+    const [allProposalResults, setAllProposalResults] = useState<string[]>([]);
 
-    // read hooks
-    // const { useFetchedTotalSupply } = useReadTokenQueries(globalCtx.erc20Address);
-    // const { useFetchedLots } = useReadManagerQueries(globalCtx.deployedManagerAddress);
+    // Read hooks
+    const { useFetchedProposals, useFetchedMinProposals } = useReadBallotQueries(globalCtx.deployedBallotAddress);
+    const { data: fetchedMinProposalsData, refetch: refetchMinProposals } = useFetchedMinProposals;
 
-    // const {
-    //     hash: validateMintingHash,
-    //     error: validateMintingError,
-    //     isConfirmed: validateMintingIsConfirmed,
-    //     validateMintingWrite
-    // } = useValidateMinting();
+    // Write hooks
+    // => OWNER: proposals submitting are OPEN
+    const {
+        error: loadSharesAndCustomersToBallotError,
+        isConfirmed: loadSharesAndCustomersToBallotIsConfirmed,
+        loadSharesAndCustomersToBallotWrite
+    } = useloadSharesAndCustomersToBallot();
 
-    // const {
-    //     hash: transferSharesHash,
-    //     error: transferSharesError,
-    //     isConfirmed: transferSharesIsConfirmed,
-    //     transferSharesWrite
-    // } = useTranferShares();
+    // => VOTER : my proposal was registered
+    const {
+        error: submitProposalError,
+        isConfirmed: submitProposalIsConfirmed,
+        submitProposalWrite
+    } = useSubmitProposal();
 
-    // useEffect(() => {
+    // => OWNER: proposals submitting are CLOSED
+    const {
+        error: setProposalsSubmittingCloseError,
+        isConfirmed: setProposalsSubmittingCloseIsClosed,
+        setProposalsSubmittingClosedWrite
+    } = useSetProposalsSubmittingClosed();
+
+    // => OWNER: current proposal is DISCUSSED / OR GM Ended
+    const {
+        error: setProposalBeingDiscussedStatusError,
+        isConfirmed: setProposalBeingDiscussedStatusIsConfirmed,
+        setProposalBeingDiscussedStatusWrite
+    } = useSetProposalBeingDiscussedStatusOrEndBallot();
+
+    // => OWNER: current proposal is VOTE OPEN
+    const {
+        error: setProposalVotingOpenStatusError,
+        isConfirmed: setProposalVotingOpenStatusIsConfirmed,
+        setProposalVotingOpenStatusWrite
+    } = useSetProposalVotingOpenStatus();
+
+    // => VOTER : my VOTE was registered
+    const {
+        error: voteForCurrentProposalError,
+        isConfirmed: voteForCurrentProposalIsConfirmed,
+        voteForCurrentProposalWrite
+    } = useVoteForCurrentProposal();
+
+    // => OWNER: current proposal is VOTE REVEAL
+    const {
+        error: setCurrentProposalVotingCountRevealError,
+        isConfirmed: setCurrentProposalVotingCountRevealIsConfirmed,
+        setCurrentProposalVotingCountRevealWrite
+    } = useSetCurrentProposalVotingCountReveal();
+
+    // => OWNER: LOCK CONTRACT
+    const {
+        error: lockContractError,
+        isConfirmed: lockContractIsConfirmed,
+        lockContractWrite
+    } = useLockContract();
+
+    // watch errors of transactions
+    useEffect(() => {
+        if (lockContractError ||
+            setCurrentProposalVotingCountRevealError ||
+            voteForCurrentProposalError ||
+            setProposalVotingOpenStatusError ||
+            setProposalBeingDiscussedStatusError ||
+            setProposalsSubmittingCloseError ||
+            submitProposalError ||
+            loadSharesAndCustomersToBallotError
+        ) {
+            setIsLoading(false);
+            setError("Transaction failed");
+        }
+    }, [loadSharesAndCustomersToBallotError, lockContractError, setCurrentProposalVotingCountRevealError, voteForCurrentProposalError, setProposalVotingOpenStatusError, setProposalBeingDiscussedStatusError, setProposalsSubmittingCloseError, submitProposalError]);
+
+    useEffect(() => {
+        if (
+            loadSharesAndCustomersToBallotIsConfirmed ||
+            setProposalsSubmittingCloseIsClosed ||
+            setProposalVotingOpenStatusIsConfirmed ||
+            lockContractIsConfirmed
+        ) {
+            setIsLoading(false);
+            setModalInfoText("Transaction confirmed");
+            onRefetchStatus();
+            // refetch minProposals
+        }
+    }, [loadSharesAndCustomersToBallotIsConfirmed, setProposalsSubmittingCloseIsClosed, setProposalVotingOpenStatusIsConfirmed, lockContractIsConfirmed]);
+
+
+    useEffect(() => {
+        if (voteForCurrentProposalIsConfirmed) {
+            setIsLoading(false);
+            setModalInfoText("Transaction confirmed");
+            // refetch list of voters of current proposal => compute hasVotedForThis proposal
+        }
+    }, [voteForCurrentProposalIsConfirmed]);
+
+
+    useEffect(() => {
+        if (submitProposalIsConfirmed) {
+            setIsLoading(false);
+            setModalInfoText("Transaction confirmed");
+            refetchMinProposals();
+        }
+    }, [submitProposalIsConfirmed]);
+
+    useEffect(() => {
+        if (setCurrentProposalVotingCountRevealIsConfirmed) {
+            setIsLoading(false);
+            setModalInfoText("Transaction confirmed");
+            // TODO REFETCH CURRENT PROPOSAL => RESULTS 
+        }
+    }, [setCurrentProposalVotingCountRevealIsConfirmed]);
+
+    useEffect(() => {
+        if (setCurrentProposalVotingCountRevealIsConfirmed) {
+            setIsLoading(false);
+            setModalInfoText("Transaction confirmed");
+            // TODO REFETCH CURRENT PROPOSAL DESC TO DISPLAY
+        }
+    }, [setProposalBeingDiscussedStatusIsConfirmed]);
+
     //     const getBalance = async (addressToConsult: string) => {
     //         return triggerGetBalance(globalCtx.erc20Address, addressToConsult);
     //     }
@@ -58,34 +170,41 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
     //         response
     //             .then((truc: any) => {
     //                 setOwnersBalance(Number(truc));
-    //             }).catch((e) => {
-    //                 console.log(e)
-    //             })
-    //     }
-    // }, [globalCtx.erc20Address]);
 
 
-    // useEffect(() => {
-    //     if (validateMintingIsConfirmed) {
-    //         setIsLoading(false);
-    //         setModalInfoText("Transaction confirmed");
-    //         // set current status passed to "transfering shares and reload page
-    //         onRefetchStatus();
-    //     }
-    // }, [validateMintingIsConfirmed]);
+    const loadSharesAndCustomersToBallotHandler = () => {
+        loadSharesAndCustomersToBallotWrite(connectedAccount, globalCtx.deployedManagerAddress);
+    }
+
+    const submittedProposalHandler = (description: string) => {
+        submitProposalWrite(description, connectedAccount, globalCtx.deployedBallotAddress);
+    }
+
+    const closeSubmittingProposalsHandler = () => {
+        setProposalsSubmittingClosedWrite(connectedAccount, globalCtx.deployedBallotAddress)
+    }
+
+    const openProposalForDiscussingOrEndGmHandler = () => {
+        setProposalBeingDiscussedStatusWrite(connectedAccount, globalCtx.deployedBallotAddress)
+    }
+
+    const openProposalForVotingHandler = () => {
+        setProposalVotingOpenStatusWrite(connectedAccount, globalCtx.deployedBallotAddress)
+    }
+
+    const votedHandler = (voteType: number) => {
+        voteForCurrentProposalWrite(connectedAccount, globalCtx.deployedBallotAddress, voteType);
+    }
+
+    const closeVotingHandler = () => {
+        setCurrentProposalVotingCountRevealWrite(connectedAccount, globalCtx.deployedBallotAddress);
+    }
+
+    const lockContractHandler = () => {
+        lockContractWrite(connectedAccount, globalCtx.deployedBallotAddress);
+    }
 
 
-    // TODO HANDLERS here : 
-
-    // onOpenSubmittingProposals={ }
-    // onSubmittedProposal={ }
-    // onCloseSubmittingProposals={ }
-    // onOpenProposalForDiscussing={ }
-    // onOpenProposalForVoting={ }
-    // onVoted={ }
-    // onCloseVoting={ }
-    // onNextProposal={ }
-    // onLockContract={ }
     if (!isConnected) {
         return <h1>Please connect your wallet first</h1>;
     }
@@ -114,60 +233,54 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
     //                     }
     //                 })
     //                 setIsLoading(false);
-    //             }).catch((e) => {
-    //                 setError('fetch baklance of owner failed');
     //             })
     //     }
     // }
 
-
     // Array of modals
-    // let modals = [];
-    // if (error) {
-    //     modals.push(
-    //         <Modal onClose={() => setError(null)}>
-    //             <ErrorBlock title="OUPS" message={error} />
-    //         </Modal>,
-    //     );
-    // }
-    // if (modalInfoText) {
-    //     modals.push(
-    //         <Modal onClose={() => setModalInfoText(null)}>{modalInfoText}</Modal>,
-    //     );
-    // }
+    let modals = [];
+    if (error) {
+        modals.push(
+            <Modal onClose={() => setError(null)}>
+                <ErrorBlock title="OUPS" message={error} />
+            </Modal>,
+        );
+    }
+    if (modalInfoText) {
+        modals.push(
+            <Modal onClose={() => setModalInfoText(null)}>{modalInfoText}</Modal>,
+        );
+    }
 
-    // if (isLoading) {
-    //     modals.push(
-    //         <NonClosableModal>
-    //             <>
-    //                 <h2>Transaction being processed</h2>
-    //                 <LoadingIndicator />
-    //                 {/* <p>Tx Hash: {currentHash}</p> */}
-    //             </>
-    //         </NonClosableModal>,
-    //     );
-    // }
+    if (isLoading) {
+        modals.push(
+            <NonClosableModal>
+                <>
+                    <h2>Transaction being processed</h2>
+                    <LoadingIndicator />
+                </>
+            </NonClosableModal>,
+        );
+    }
 
 
     return (
         <div>
             <h1>General meeting ! (Ballot)</h1>
             <StatusInstructions status={globalCtx.ballotStatus} role={globalCtx.role} />
-            {/* {modals} */}
-
+            <DisplayInfos minProposals={minProposals} currentProposal={ } completeVotingResults={ } />
             <Actions
                 userVoted={false}
                 hasProposal={false}
                 ballotHasVotes={false}
-                onOpenSubmittingProposals={ }
-                onSubmittedProposal={ }
-                onCloseSubmittingProposals={ }
-                onOpenProposalForDiscussing={ }
-                onOpenProposalForVoting={ }
-                onVoted={ }
-                onCloseVoting={ }
-                onNextProposal={ }
-                onLockContract={ }
+                onLoadSharesAndCustomersToBallot={loadSharesAndCustomersToBallotHandler}
+                onSubmittedProposal={submittedProposalHandler}
+                onCloseSubmittingProposals={closeSubmittingProposalsHandler}
+                onOpenProposalForDiscussingOrEndGm={openProposalForDiscussingOrEndGmHandler}
+                onOpenProposalForVoting={openProposalForVotingHandler}
+                onVoted={votedHandler}
+                onCloseVoting={closeVotingHandler}
+                onLockContract={lockContractHandler}
             />
             {/* {modals} */}
         </div>

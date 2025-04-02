@@ -47,7 +47,7 @@ const TokenizedLots = ({ lots, role, balanceOfOwner, onVerify, onTokenize }: ITo
   }
 
   return (
-    <div className="">
+    <div className="section">
       {balanceOfOwner === 0 && <p>All shares went transfered to customers !</p>}
       <p><u>Desc: </u>{TOKEN_STATUS_INSTRUCTIONS[TRANSFERING_SHARES_KEY].description}</p>
       {role === OWNER_ROLE &&

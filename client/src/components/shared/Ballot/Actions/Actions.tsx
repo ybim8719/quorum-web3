@@ -22,14 +22,13 @@ interface IActions {
   userVoted: boolean;
   hasProposal: boolean;
   ballotHasVotes: boolean;
-  onOpenSubmittingProposals: () => void;
+  onLoadSharesAndCustomersToBallot: () => void;
   onSubmittedProposal: (description: string) => void;
   onCloseSubmittingProposals: () => void;
-  onOpenProposalForDiscussing: () => void;
+  onOpenProposalForDiscussingOrEndGm: () => void;
   onOpenProposalForVoting: () => void;
   onVoted: (proposalId: number) => void;
   onCloseVoting: () => void;
-  onNextProposal: () => void;
   onLockContract: () => void;
 }
 
@@ -37,21 +36,17 @@ const Actions = ({
   userVoted,
   hasProposal,
   ballotHasVotes,
-  onOpenSubmittingProposals,
+  onLoadSharesAndCustomersToBallot,
   onSubmittedProposal,
   onCloseSubmittingProposals,
-  onOpenProposalForDiscussing,
+  onOpenProposalForDiscussingOrEndGm,
   onOpenProposalForVoting,
   onVoted,
   onCloseVoting,
-  onNextProposal,
   onLockContract
 }: IActions) => {
   const globalCtx = useContext(GlobalContext);
   let actionToDisplay;
-
-  // ballot closed, no actions
-
   if (
     globalCtx.ballotStatus === null ||
     Object.keys(BALLOT_STATUS_INSTRUCTIONS).includes(globalCtx.ballotStatus) === false
@@ -61,7 +56,7 @@ const Actions = ({
     if (globalCtx.role === ADMIN_ROLE) {
       switch (globalCtx.ballotStatus) {
         case WAITING_FOR_GM_DATA_KEY:
-          actionToDisplay = <SwitchToNextStepButton onValidate={onOpenSubmittingProposals} btnDescription="OPEN SUBMITTING PROPOSALS" />;
+          actionToDisplay = <SwitchToNextStepButton onValidate={onLoadSharesAndCustomersToBallot} btnDescription="Transfer voters and open subMITTING PROPOSALS" />;
           break;
         case PROPOSALS_SUBMITTING_OPEN_KEY:
           if (hasProposal) {
@@ -71,7 +66,7 @@ const Actions = ({
           }
           break;
         case PROPOSAL_SUBMITTING_CLOSED_KEY:
-          actionToDisplay = <SwitchToNextStepButton onValidate={onOpenProposalForDiscussing} btnDescription="Open 1st proposal for discussing" />;
+          actionToDisplay = <SwitchToNextStepButton onValidate={onOpenProposalForDiscussingOrEndGm} btnDescription="Open 1st proposal for discussing" />;
           break;
         case PROPOSAL_BEING_DISCUSSED_KEY:
           actionToDisplay = <SwitchToNextStepButton onValidate={onOpenProposalForVoting} btnDescription="Open Voting" />;
@@ -84,7 +79,7 @@ const Actions = ({
           }
           break;
         case PROPOSAL_VOTING_COUNT_REVEALED_KEY:
-          actionToDisplay = <SwitchToNextStepButton onValidate={onNextProposal} btnDescription="Handle Next Proposal" />;
+          actionToDisplay = <SwitchToNextStepButton onValidate={onOpenProposalForDiscussingOrEndGm} btnDescription="Handle Next Proposal (or end all)" />;
           break;
         case MEETING_ENDED_KEY:
           actionToDisplay = <SwitchToNextStepButton onValidate={onLockContract} btnDescription="Confirm Locking of contract" />;

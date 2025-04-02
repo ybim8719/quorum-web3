@@ -5,9 +5,9 @@
   text-align: center;
 }
 
-.circled {
+.section {
   padding: 2em;
-  border: 2px solid red;
+  border: 2px solid rgb(223, 105, 166);
   margin: 1em;
   min-width: 400px;
   min-height: 400px;

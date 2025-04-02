@@ -23,7 +23,7 @@ const VoteInput = ({ onValidate }: IVoteInput) => {
   }
 
   return (
-    <div>
+    <div className="section">
       <form method="post" onSubmit={handleSubmit}>
         <label>
           Vote for your best proposal:

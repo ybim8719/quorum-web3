@@ -14,11 +14,11 @@ interface IProposalVotingResult {
             vote: string;
         }[]
     };
-    proposalId: number;
-    proposalDescription: string;
+    id: number;
+    description: string;
 }
 
-const ProposalVotingResult = ({ votingResult, proposalId, proposalDescription }: IProposalVotingResult) => {
+const ProposalVotingResult = ({ id, description, votingResult }: IProposalVotingResult) => {
     let tableBody;
     if (votingResult && votingResult.details.length > 0) {
         tableBody = votingResult.details.map((d, i) => {
@@ -43,8 +43,8 @@ const ProposalVotingResult = ({ votingResult, proposalId, proposalDescription }:
     return (
         <div className="section">
             <i className="nes-ash"></i>
-            <h3>Voting result for proposal {proposalId}</h3>
-            <div>Description: {proposalDescription}</div>
+            <h3>Voting result for proposal {id}</h3>
+            <div>Description: {description}</div>
             <div>
                 Results:
                 <ul>

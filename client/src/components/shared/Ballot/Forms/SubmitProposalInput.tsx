@@ -19,7 +19,7 @@ const SubmitProposalInput = ({ onValidate }: ISubmitProposalInput) => {
   }
 
   return (
-    <form onSubmit={submitHandler}>
+    <form className="section" onSubmit={submitHandler}>
       <label htmlFor="inline_field">
         Add a Proposal:
         <textarea

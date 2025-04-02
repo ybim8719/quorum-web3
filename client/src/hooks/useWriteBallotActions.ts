@@ -50,7 +50,7 @@ export const useSetProposalBeingDiscussedStatusOrEndBallot = () => {
   const { data: hash, error, writeContract } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
-  const setProposalBeingDiscussedStatusOrEndBallotWrite = (
+  const setProposalBeingDiscussedStatusWrite = (
     account: string | undefined,
     ballotAddress: string
   ) => {
@@ -64,7 +64,7 @@ export const useSetProposalBeingDiscussedStatusOrEndBallot = () => {
     }
   };
 
-  return { hash, error, isConfirming, isConfirmed, setProposalBeingDiscussedStatusOrEndBallotWrite };
+  return { hash, error, isConfirming, isConfirmed, setProposalBeingDiscussedStatusWrite };
 };
 
 export const useSetProposalVotingOpenStatus = () => {

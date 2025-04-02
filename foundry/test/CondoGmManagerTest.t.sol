@@ -126,7 +126,6 @@ contract CondoGmManagerTest is Test {
         s_manager.convertLotSharesToToken(LOT1_ID);
         s_manager.convertLotSharesToToken(LOT2_ID);
         s_manager.loadSharesAndCustomersToBallot();
-        // s_ballot.setProposalsSubmittingOpen();
         vm.stopPrank();
         vm.startPrank(CUSTOMER1_ADDRESS);
         s_ballot.submitProposal(PROPOSAL1);
@@ -548,38 +547,6 @@ contract CondoGmManagerTest is Test {
         vm.stopPrank();
     }
 
-    /*//////////////////////////////////////////////////////////////
-                         setProposalsSubmittingOpen
-    //////////////////////////////////////////////////////////////*/
-    // function test_succeeds_setProposalsSubmittingOpen() public tokenLocked {
-    //     vm.startPrank(msg.sender);
-    //     s_manager.loadSharesAndCustomersToBallot();
-    //     s_ballot.setProposalsSubmittingOpen();
-    //     assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ProposalsSubmittingOpen);
-    //     vm.stopPrank();
-    // }
-
-    // function test_revert_setProposalsSubmittingOpen_ifInvalidPeriod() public tokenLocked {
-    //     vm.startPrank(msg.sender);
-    //     s_manager.loadSharesAndCustomersToBallot();
-    //     s_ballot.setProposalsSubmittingOpen();
-    //     vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__InvalidPeriod.selector));
-    //     s_ballot.setProposalsSubmittingOpen();
-    //     vm.stopPrank();
-    // }
-
-    // function test_revert_setProposalsSubmittingOpen_RegisterVotersFirst() public tokenLocked {
-    //     vm.startPrank(msg.sender);
-    //     vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__RegisterVotersFirst.selector));
-    //     s_ballot.setProposalsSubmittingOpen();
-    //     vm.stopPrank();
-    // }
-
-    // function test_revert_setProposalsSubmittingOpen_ballotLocked() public ballotLocked {
-    //     vm.prank(msg.sender);
-    //     vm.expectRevert(abi.encodeWithSelector(GMBallot.GMBallot__ContractLocked.selector));
-    //     s_ballot.setProposalsSubmittingOpen();
-    // }
     /*//////////////////////////////////////////////////////////////
                         SUBMIT PROPOSAL
     //////////////////////////////////////////////////////////////*/

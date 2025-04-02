@@ -29,7 +29,7 @@ const AddLotInput = ({
   }
 
   return (
-    <>
+    <div className="section">
       <h3>ADD LOT</h3>
       <form onSubmit={submitHandler}>
         <label htmlFor="inline_field">
@@ -59,7 +59,7 @@ const AddLotInput = ({
 
         <input type="submit" value="Send Tx" className="nes-btn is-success" />
       </form>
-    </>
+    </div>
   );
 };
 

@@ -9,6 +9,8 @@ import {
     MEETING_ENDED_KEY,
     CONTRACT_LOCKED_KEY,
     BALLOT_STATUS_INSTRUCTIONS,
+    BallotCountResults,
+    CompleteBallotCountResults,
 } from "../../../../models/ballot";
 
 import ProposalsList from "./children/ProposalList";
@@ -17,59 +19,20 @@ import ProposalVotingResult from "./children/ProposalVotingResult";
 import CompleteVotingResults from "./children/CompleteVotingResults";
 
 
-interface VotingResult {
-    approvals: number;
-    refusals: number;
-    blank: number;
-    winner: string;
-    details: {
-        customerAddress: string;
-        firstName: string;
-        lastName: string;
-        lotOfficialNumber: number;
-        shares: number;
-        vote: string;
-    }[]
-};
-
-interface CompleteVotingResults {
-    votingResult: {
-        approvals: number;
-        refusals: number;
-        blank: number;
-        winner: string;
-        details: {
-            customerAddress: string;
-            firstName: string;
-            lastName: string;
-            lotOfficialNumber: number;
-            shares: number;
-            vote: string;
-        }[]
-    };
-    proposalId: number;
-    proposalDescription: string;
-}
-
 interface IActions {
-    proposalsList: string[];
-    proposalBeingVoted: {
+    minProposals: string[];
+    currentProposal: {
         id: number;
-        description: string
-    };
-    currentVotingResult: VotingResult;
-    currentProposalId: number;
-    currentProposalDescription: string;
-    completeVotingResults: CompleteVotingResults[];
+        description: string;
+        votingResult: BallotCountResults,
+    }
+    completeVotingResults: CompleteBallotCountResults[];
 }
 
 
-const Actions = ({
-    proposalsList,
-    proposalBeingVoted,
-    currentVotingResult,
-    currentProposalId,
-    currentProposalDescription,
+const DisplayInfos = ({
+    minProposals,
+    currentProposal,
     completeVotingResults
 }: IActions) => {
     const globalCtx = useContext(GlobalContext);
@@ -81,19 +44,19 @@ const Actions = ({
     ) {
         switch (globalCtx.ballotStatus) {
             case PROPOSALS_SUBMITTING_OPEN_KEY:
-                display = <ProposalsList proposalsList={proposalsList} />;
+                display = <ProposalsList proposalsList={minProposals} />;
                 break;
             case PROPOSAL_SUBMITTING_CLOSED_KEY:
-                display = <ProposalsList proposalsList={proposalsList} />;
+                display = <ProposalsList proposalsList={minProposals} />;
                 break;
             case PROPOSAL_BEING_DISCUSSED_KEY:
-                display = <ProposalBeingVoted proposal={proposalBeingVoted} />
+                display = <ProposalBeingVoted id={currentProposal.id} description={currentProposal.description} />
                 break;
             case PROPOSAL_VOTING_OPEN_KEY:
-                display = <ProposalBeingVoted proposal={proposalBeingVoted} />
+                display = <ProposalBeingVoted id={currentProposal.id} description={currentProposal.description} />
                 break;
             case PROPOSAL_VOTING_COUNT_REVEALED_KEY:
-                display = <ProposalVotingResult votingResult={currentVotingResult} proposalId={currentProposalId} proposalDescription={currentProposalDescription} />;
+                display = <ProposalVotingResult id={currentProposal.id} description={currentProposal.description} votingResult={currentProposal.votingResult} />;
                 break;
             case MEETING_ENDED_KEY:
                 display = <CompleteVotingResults completeVotingResults={completeVotingResults} />;
@@ -112,4 +75,4 @@ const Actions = ({
     );
 }
 
-export default Actions;
+export default DisplayInfos;
