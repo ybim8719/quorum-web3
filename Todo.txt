@@ -1,17 +1,15 @@
-FIX NOW : 
+- Derniers TU pour les nouveaux getters => 80 %
+- Encore un test end to end
+- GHActions => forge test
+- deploy sur vercel 
+
+- faire le natspec
+- review la liste des sécu appliquées au projet 
+- mettre des unchecked ++i
 
 
+- tester is export const config = createConfig({ ne casse pas tout 
 
-FIX UN JOUR : 
+- faire une vidéo de demo 
 
-- Front : Events listener to check status changes 
-- back: ERC20 : lock transferFrom && approval 
-- Front : camemberts et charts de scrutins
-
-
-FAILLES : 
-
-- back: loadSharesAndCustomersToBallot pue car ça loope sur un array qui peut causer un gas limit 
-- rules de dépouillement pas ouf 
-- pas de quorum ! 
-- back: si vote en cours, rendre impossible la lecture des votes d'un proposal non clos. (get Proposal et getProposals) => modifs tests
+<i class="nes-icon is-large heart"></i>

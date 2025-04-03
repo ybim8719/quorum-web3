@@ -3,7 +3,6 @@ export type FetchedCurrentMinimalProposalRawData = {
     description: string
 }
 
-
 type VoterInfoView = {
     firstName: string,
     lastName: string,
@@ -22,5 +21,3 @@ export type FetchedCurrentProposalCompleteRawData = {
     refusals: VoterInfoView[]
     votingResult: number
 }
-
-

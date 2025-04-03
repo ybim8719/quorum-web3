@@ -34,7 +34,7 @@ const ProposalVotingResult = ({ currentProposal }: IProposalVotingResult) => {
 
     return (
         <div className="section">
-            <i class="nes-icon trophy is-large"></i>
+            <i className="nes-icon trophy is-large"></i>
             <h3>Voting result for proposal {currentProposal.id}</h3>
             <div><u>Description</u>: {currentProposal.description}</div>
             <div>

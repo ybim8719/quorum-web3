@@ -2,7 +2,7 @@ import { readContract } from "@wagmi/core";
 import { token_abi } from "../../constants/deployed";
 import { useReadContract, useAccount } from "wagmi";
 import { http, createConfig } from '@wagmi/core'
-import { anvil } from '@wagmi/core/chains'
+import { anvil, sepolia } from '@wagmi/core/chains'
 
 export const useReadTokenQueries = (deployedTokenAddress: string) => {
     const { address } = useAccount();
@@ -28,9 +28,10 @@ export const useReadTokenQueries = (deployedTokenAddress: string) => {
 };
 
 export const config = createConfig({
-    chains: [anvil],
+    chains: [anvil, sepolia],
     transports: {
         [anvil.id]: http(),
+        [sepolia.id]: http(),
     },
 })
 

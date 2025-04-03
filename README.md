@@ -7,56 +7,65 @@ Projet final de passage d'examen pour le titre de développeur blockchain (soute
 
 ## A propos du sujet: 
 
-Quorum est une dApp destiné à la gestion au stockage de données relatives aux ... lors des Assemblées générales ordinaires ayant lieu tous les ans. Au cours de ... , sont votés. .....
+Quorum est une dApp destiné à la gestion au stockage de données relatives aux Assemblées générales ordinaires dans les copropriétés (AGO). Le but de cette dapp est de gérer les étapes du cycle de vie
+de ce type de réunions. Donc la préparation, l'exécution et les reportings des discussions et des votes décidés en séance. 
 
-L'objectif est de simuler ce que pourrait être une version minimale du projet imaginé avec le groupe constitués de stagiaires de la promo consulting Blockchain. 
+L'objectif de ce POC est de simuler ce que pourrait être une version minimale du projet imaginé avec le groupe constitués de stagiaires de la promo consulting Blockchain. 
 
 
 ## Features et rôles des contrats
 
+En utiisant le script forge associé, 2 contrats sont déployés : le GM XXX et le Ballot. 
+### TODO
+GM XXX est une sorte de contrat admin qui permet à un syndic de : 
 
-## Cycle functionnel de la DAPP: 
+- d'ajouter des lots de copropriété
+- d'ajouter des clients (qui sont les propriétaires des lots)
+- de créer un ERC20 nommé et de minter un montant initial de 1000 (nombre de parts dans une copro)
+- de transferer les parts (appelées tantièmes) en équivalent token aux propriétaires concernés et rattachés via leur address wallet
+- de verouiiller le contrat ERC20 
 
-Dans l'ordre chronologique, l'appli permet : 
-- XX
-- ddddddd
+le Ballot est un contract qui va stocker les propositions qui seront discutées en séances, et les votes de chacun associés. 
 
 
 
 ## Technos 
 
-- Capable de se connecter via un wallet de browser et de communiquer avec VotingOpti.sol. 
-- Offre toute l'interface pour qu'un owner ou un voter puisse mener le processus de vote à son terme
-- Ecoute des event et affichage de chaque message reçu
-- L'IHM s'adapte à chaque role 
-- Application herbergée sur vercel (push sur main)
+- React + RainbowKit + Wagmi + ethers (connexion wallet de browser)
+- Solidity + Foundry (tests et script) + open zeppelin (ERC20 + Ownable)
+- Application déployée sur vercel
+
+### TODO
 
 ![screenshot](screenshots/vercel.png)
 
 
 ### Application des bonnes pratiques solidity : 
 - NatSpec
-- State packing
-- Limitation de la taille des uint
 - Uitlisation du unchecked dans les boucles 
 - Utilisation de mapping plutôt que des arrays 
 - Elimination des contrôles superflus
 
+### Non-Application des bonnes pratiques solidity : 
+- State packing
+- Limitation de la taille des uint
 
 ### Sécurité soliidty appliquée: 
-
 - Prévention du reentrancy avec des flags avant les call externes
 - Ajout d'un fallback et receive
 
-## Failles Solidity du projet: 
+## Failles du projet: 
 - pas de max 
-
+- y a des fonctions qui font trop de transactions successives
+- et des getters qui coutent bcp
+- transfer mint sont locked mais pas approve et transferFrom 
+- back: si vote en cours, rendre impossible la lecture des votes d'un proposal non clos. (get Proposal et getProposals) => modifs tests
 
 
 ## Déploiements effectués : 
 
 - Contrats déployés sur sepolia (vérifié ??): XXXXXXX et XXXXXX TODO put address
-- Front end déployé sur vercel: XXXXXXX TODO put address (ppinte vers les contrats sépolia)
+- Front end déployé sur vercel: XXXXXXX TODO put address (ppinte vers les contrats sépolia) (push sur main)
 
 
 ## Tests et CI
@@ -77,8 +86,8 @@ TODO METTRE screenshots :
 - token : modification possible quand on tokenize les tantièmes
 - vote par anticipation 
 - gestion du quorum
-- gestion documentaire
-- UI à revoir totalement 
+- gestion documentaire sur un serveur dédié
+- UX/UI à revoir totalement 
 - intégration CSS ad hoc 
 
 ## Améliorations tech restantes à implémenter
@@ -89,7 +98,12 @@ TODO METTRE screenshots :
 - Une GH actions mieux mieux qui lance un linter + prettier côté front 
 - Un système de precommit 
 - + de fuzz tests et d'invariants  
-
+- Front : Events listener to check status changes 
+- back: ERC20 : lock transferFrom && approval 
+- Front : camemberts et charts de scrutins
+- back: loadSharesAndCustomersToBallot pue car ça loope sur un array qui peut causer un gas limit 
+- rules de dépouillement pas ouf 
+- code react dégueu pas opti
 
 
 ## Lancer les tests avec forge : 
@@ -168,7 +182,7 @@ Voici quelques addresses publiques mises à dispo par Anvil pour vos tests :
 - (4) 0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a
 ```
 
-et les PK associées (pour import dans metamask et pour switcher d'un compte à l'autre): 
+et les PK associées (pour import dans metamask et pour switcher d'un compte à l'autre) => à importer dans metamask
 
 ```
 - (1) 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d

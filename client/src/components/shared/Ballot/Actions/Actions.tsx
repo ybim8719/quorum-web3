@@ -59,7 +59,7 @@ const Actions = ({
           break;
         case PROPOSALS_SUBMITTING_OPEN_KEY:
           if (hasProposal) {
-            actionToDisplay = <SwitchToNextStepButton onValidate={onCloseSubmittingProposals} instructions="CLOSE SUBMITTING PROPOSALS" />;
+            actionToDisplay = <SwitchToNextStepButton onValidate={onCloseSubmittingProposals} instructions="CLOSE PROPOSALS SUBMISSION" />;
           } else {
             actionToDisplay = <p>Wait for at least one proposal</p>
           }
