@@ -15,9 +15,9 @@ L'objectif de ce POC est de simuler ce que pourrait être une version minimale d
 
 ## Features et rôles des contrats
 
-En utiisant le script forge associé, 2 contrats sont déployés : le GM XXX et le Ballot. 
-### TODO
-GM XXX est une sorte de contrat admin qui permet à un syndic de : 
+En utiisant le script forge associé, 2 contrats sont déployés : le CondoGmManager et le GmBallot. 
+
+CondoGmManager est une sorte de contrat admin qui permet à un syndic de : 
 
 - d'ajouter des lots de copropriété
 - d'ajouter des clients (qui sont les propriétaires des lots)
@@ -25,8 +25,7 @@ GM XXX est une sorte de contrat admin qui permet à un syndic de :
 - de transferer les parts (appelées tantièmes) en équivalent token aux propriétaires concernés et rattachés via leur address wallet
 - de verouiiller le contrat ERC20 
 
-le Ballot est un contract qui va stocker les propositions qui seront discutées en séances, et les votes de chacun associés. 
-
+le GmBallot est un contrat qui va stocker les propositions qui seront discutées en séances, et les votes de chacun associés. 
 
 
 ## Technos 

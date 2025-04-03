@@ -7,12 +7,11 @@ import {TokenWorkflowStatus, TokenGeneralInfo} from "./structs/Token.sol";
 import {console} from "forge-std/Test.sol";
 import {GMBallot} from "./GmBallot.sol";
 
-/// @notice ERC20 based token designed to store 1000 shares from a condo for a given generalMeeting
-/// Approvals are deactivated for now
-/// @dev is owner by manager CONTRACT which will have the only rights to write into this
+/// @notice This ERC20-based token is designed to store shares of a condo prior to a generalMeeting
+/// Approvals anf transferFrom must be deactivated
+/// @dev CondoGmManager is the owner of this contract
 contract GMSharesToken is ERC20, Ownable {
     // TODO overide and neutralized approvals
-    // WHAT ABOUT DECIMALS ?
     /*//////////////////////////////////////////////////////////////
                         STATES
     //////////////////////////////////////////////////////////////*/
@@ -52,7 +51,7 @@ contract GMSharesToken is ERC20, Ownable {
         i_condoTotalShares = _condoTotalShares;
     }
 
-    /// @notice initial minting can be applied once for the entire condo shares
+    /// @notice initial minting will mint the total shares of the condo (1000) to the owner which will be in charge of transferring the shares to the customers
     function initialMinting(uint256 amount) external onlyOwner {
         if (s_currentStatus == TokenWorkflowStatus.ContractLocked) {
             revert GMSharesToken__ContractLocked(msg.sender, amount);
@@ -68,7 +67,7 @@ contract GMSharesToken is ERC20, Ownable {
         _mint(msg.sender, amount);
     }
 
-    /// @notice owner must ensure that initial minintg of 1000 was applied before opening shares
+    /// @notice owner must ensure that initial minintg of 1000 was applied before authorizing transfer of shares
     function openTokenizingOfShares() external onlyOwner {
         if (s_nbOfTokenizedLots > 0 || s_sharesTokenized > 0) {
             revert GMSharesToken__TokenizedSharesMustBeNull();

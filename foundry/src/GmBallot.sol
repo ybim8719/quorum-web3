@@ -14,9 +14,9 @@ import {
 import {GMSharesToken} from "./GmSharesToken.sol";
 import {console} from "forge-std/Test.sol";
 
-/// @notice Will store results from general Meeting proposals votings made in session
+/// @author Pascal Thao
+/// @notice Will store proposals discussed and voted during the general meeting, including the result of each ballot
 /// @dev inherits OpenZep ownable / will be deployed with manager contract in a script
-
 contract GMBallot is Ownable {
     /*//////////////////////////////////////////////////////////////
                             ERRORS
@@ -97,6 +97,7 @@ contract GMBallot is Ownable {
     /*//////////////////////////////////////////////////////////////
                     WRITE func -> voteregisterVoterrs
     //////////////////////////////////////////////////////////////*/
+    /// @notice ERC20 is needed to verify that the breakdown of lots/customers shares are correct.
     function setERC20Address(address _tokenAddress) external onlyManager isContractLocked {
         if (s_ERC20Address != address(0)) {
             revert GMBallot__TokenAlreadyRegistered();
@@ -104,6 +105,7 @@ contract GMBallot is Ownable {
         s_ERC20Address = _tokenAddress;
     }
 
+    /// @notice registering voters and lots, as attendees of the GM
     function registerVoter(
         address _customerAddress,
         string memory _customerFirstName,
@@ -117,7 +119,7 @@ contract GMBallot is Ownable {
         if (_shares == 0) {
             revert GMBallot__SharesCantBeZero();
         }
-        // verify by asking ERC20 that the owner has the correct rights
+        // verify by asking ERC20 that the owner has the correct weight
         uint256 balance = GMSharesToken(s_ERC20Address).balanceOf(_customerAddress);
         if (balance == _shares) {
             Voter storage voter = s_voters[_customerAddress];
@@ -137,8 +139,9 @@ contract GMBallot is Ownable {
     /*//////////////////////////////////////////////////////////////
                     WRITE func -> proposals
     //////////////////////////////////////////////////////////////*/
-    /// @param _description is the body of the description
+    /// @param _description is the body of the proposal
     /// @notice any voter address can add description and a proposalId (starting from 1) will be granted to the proposal
+    /// this is an operation handled prior to the GM
     function submitProposal(string calldata _description) external customerOnly isContractLocked {
         if (s_currentStatus != BallotWorkflowStatus.ProposalsSubmittingOpen) {
             revert GMBallot__InvalidPeriod();
@@ -156,6 +159,7 @@ contract GMBallot is Ownable {
         ++s_nbOfProposals;
     }
 
+    /// @notice can't sublit proposals anymore
     function setProposalsSubmittingClosed() external onlyOwner isContractLocked {
         if (s_currentStatus != BallotWorkflowStatus.ProposalsSubmittingOpen) {
             revert GMBallot__InvalidPeriod();
@@ -171,7 +175,7 @@ contract GMBallot is Ownable {
     /*//////////////////////////////////////////////////////////////
                     WRITE func -> voting 
     //////////////////////////////////////////////////////////////*/
-    // this  is a cycle between status discuttings => openvoting => countVote
+    /// @notice open talks period for next proposal / if all proposals were already voted, the GM would automatically end
     function setProposalBeingDiscussedStatusOrEndBallot() external onlyOwner isContractLocked {
         // if it's the first proposal to be discussed, then current Status must be ProposalsSubmittingClosed
         if (s_currentProposalBeingVoted == 0 && s_currentStatus != BallotWorkflowStatus.ProposalsSubmittingClosed) {
@@ -197,6 +201,7 @@ contract GMBallot is Ownable {
         }
     }
 
+    /// @notice open voting period for current proposal
     function setProposalVotingOpenStatus() external onlyOwner isContractLocked {
         // prior step must definitively be ProposalBeingDiscussed
         if (s_currentStatus != BallotWorkflowStatus.ProposalBeingDiscussed) {
@@ -206,6 +211,7 @@ contract GMBallot is Ownable {
         s_currentStatus = BallotWorkflowStatus.ProposalVotingOpen;
     }
 
+    /// @param _voteEnum is an enum 0 -> approve 1-> refuse 2-> blankVote
     function voteForCurrentProposal(uint256 _voteEnum) external customerOnly isContractLocked {
         if (s_currentStatus != BallotWorkflowStatus.ProposalVotingOpen) {
             revert GMBallot__InvalidPeriod();
@@ -233,6 +239,7 @@ contract GMBallot is Ownable {
         s_voters[msg.sender].votedProposalIds.push(s_currentProposalBeingVoted);
     }
 
+    /// @notice can't vote twice for same proposal
     function _checkIfHasAlreadyVoted(uint256 _proposalId, address _customerAddress) internal view returns (bool) {
         uint256 nfOfVotes = s_voters[_customerAddress].votedProposalIds.length;
         if (s_voters[_customerAddress].votedProposalIds.length == 0) {
@@ -248,6 +255,7 @@ contract GMBallot is Ownable {
         return hasAlreadyVoted;
     }
 
+    /// @notice open voting Count reveal for current proposal
     function setCurrentProposalVotingCountReveal() external onlyOwner isContractLocked {
         // prior step must definitively be ProposalBeingDiscussed
         if (s_currentStatus != BallotWorkflowStatus.ProposalVotingOpen) {
@@ -276,6 +284,7 @@ contract GMBallot is Ownable {
     /*//////////////////////////////////////////////////////////////
                     WRITE func -> voting 
     //////////////////////////////////////////////////////////////*/
+    /// @notice this function will definitively disable all write functions of this contract
     function lockContract() external onlyOwner {
         // must be MeetingEnded
         if (s_currentProposalBeingVoted == 0 && s_currentStatus != BallotWorkflowStatus.MeetingEnded) {
@@ -308,6 +317,8 @@ contract GMBallot is Ownable {
         return s_proposals[_proposalId];
     }
 
+    // TODO COVER WITH TEST
+    /// @notice returns all ballot results in a format adapted to client
     function getProposalsComplete() external view returns (ProposalView[] memory) {
         ProposalView[] memory toReturn = new ProposalView[](s_nbOfProposals);
         // prpoposal id start at 1
@@ -322,6 +333,7 @@ contract GMBallot is Ownable {
         return toReturn;
     }
 
+    // TODO COVER WITH TEST
     function getCurrentProposalComplete() external view returns (ProposalView memory) {
         return _buildCompleteProposal(s_currentProposalBeingVoted);
     }
@@ -391,7 +403,7 @@ contract GMBallot is Ownable {
         return s_nbOfProposals;
     }
 
-    // COVER WITH TEST
+    // TODO COVER WITH TEST
     function getMinimalProposals() external view returns (MinimalProposalView[] memory) {
         MinimalProposalView[] memory toReturn = new MinimalProposalView[](s_nbOfProposals);
         // prpoposal id start at 1
@@ -406,7 +418,7 @@ contract GMBallot is Ownable {
         return toReturn;
     }
 
-    // COVER WITH TEST
+    // TODO COVER WITH TEST
     function getCurrentMinimalProposal() external view returns (MinimalProposalView memory) {
         return MinimalProposalView({
             id: s_currentProposalBeingVoted,
@@ -414,7 +426,7 @@ contract GMBallot is Ownable {
         });
     }
 
-    // COVER WITH TEST
+    // TODO COVER WITH TEST
     function getVotersOfCurrentProposal() external view returns (address[] memory) {
         Proposal memory proposal = s_proposals[s_currentProposalBeingVoted];
         address[] memory toReturn =

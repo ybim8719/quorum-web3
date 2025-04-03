@@ -12,8 +12,9 @@ import {console} from "forge-std/Test.sol";
 /// @title CondoGmManager
 /// @author Pascal Thao
 /// @dev pass in constructor the main information of the targeted condominium
-/// @notice Contract designed to handle and managed states of a condo and deploy two child contracts TOKEN and BALLOT
-
+/// @notice Contract designed to handle and managed customers/owners and lots of a given condo
+/// will also manipulated and deploy GmSharesToken which is an ERC20 aimed to store the shares of each owner with an equivalent in token (total shares of a condo is 1000)
+/// GM means GeneralMeeting
 contract CondoGmManager is Ownable {
     /*//////////////////////////////////////////////////////////////
                             ERRORS
@@ -72,11 +73,13 @@ contract CondoGmManager is Ownable {
     event TotalSharesReachedMaxLimit();
     event ERC20DeployedIsPossible();
     event ERC20Deployed(address tokenAddress);
+    event LogDepositReceived(address sender);
 
     /*//////////////////////////////////////////////////////////////
                             MODIFIERS
     //////////////////////////////////////////////////////////////*/
-    /// @notice is owner or customer
+    /// @dev is owner or customer
+
     modifier hasAccess() {
         if (s_customersInfo[_msgSender()].isRegistered == false && _msgSender() != owner()) {
             revert CondoGmManager__Unauthorized(_msgSender());
@@ -84,6 +87,7 @@ contract CondoGmManager is Ownable {
         _;
     }
 
+    /// @dev args are just general info about the related condo
     constructor(string memory _name, string memory _description, string memory _postalAddress) Ownable(_msgSender()) {
         s_nextLotIndex = 1;
         i_postalAddress = _postalAddress;
@@ -91,19 +95,19 @@ contract CondoGmManager is Ownable {
         i_condoName = _name;
     }
 
-    // receive() external payable {
-    //     emit LogDepositReceived(msg.sender);
-    // }
+    receive() external payable {
+        emit LogDepositReceived(msg.sender);
+    }
 
-    // fallback() external payable {
-    //     require(msg.data.length == 0);
-    //     emit LogDepositReceived(msg.sender);
-    // }
+    fallback() external payable {
+        require(msg.data.length == 0);
+        emit LogDepositReceived(msg.sender);
+    }
 
     /*//////////////////////////////////////////////////////////////
                             WRITE FUNCTIONS
     //////////////////////////////////////////////////////////////*/
-    /// @notice register a new customer (owner) to be linked to a lot
+    /// @notice register a new customer (owner) which will be connected to a lot
     function registerCustomer(string calldata _firstName, string calldata _lastName, address _customerAddress)
         external
         onlyOwner
@@ -128,7 +132,7 @@ contract CondoGmManager is Ownable {
         emit CustomerCreated(_customerAddress, _firstName, _lastName);
     }
 
-    /// @notice : condominium lots are parts of a condominium / shares are the voting strength of a owner of a lot
+    /// @notice : condominium lots are parts of a condominium / shares are the voting weight of a owner for a ballot of GeneralMeeting
     function registerLot(string memory _lotOfficialNumber, uint256 _shares) external onlyOwner {
         if (s_addingLotIsLocked) {
             revert CondoGmManager__RegisteredLotIsLocked(_lotOfficialNumber);
@@ -163,6 +167,7 @@ contract CondoGmManager is Ownable {
     }
 
     /// @notice : a unique lot can only be attached a unique owner
+    /// @dev : lot and customer states will be enriched with the entity it is not connected to
     function linkCustomerToLot(address _customerAddress, uint256 _lotId) external onlyOwner {
         if (s_customersInfo[_customerAddress].isRegistered == false) {
             revert CondoGmManager__CustomerNotFound(_customerAddress);
@@ -183,7 +188,7 @@ contract CondoGmManager is Ownable {
         // set lot to customer
         s_customersInfo[_customerAddress].lotId = _lotId;
         emit CustomerOfLotSet(_lotId, _customerAddress);
-        // if all lots have found a customer and total shares of lots have reached 1000 / then token is now accessible for tokenizing of shares
+        // if all lots have connected a customer and total shares of lots have reached 1000 / then GmTokeNSahres contract can be deployed to handle "tokenizing" of shares
         if (_checkIfCanDeployERC20()) {
             s_deployERC20IsPossible = true;
         }
@@ -225,7 +230,7 @@ contract CondoGmManager is Ownable {
         deployed.initialMinting(SHARES_LIMIT);
     }
 
-    /// @dev is the same than in toekn contract since owner to use this contract to communicate wirte functions to TOKEN
+    /// @dev gives the order to ERC20 to authorize transfer of shares from owner to customers
     function openTokenizingOfShares() external onlyOwner {
         if (s_deployedERC20 == address(0)) {
             revert CondoGmManager__ERC20NotDeployedYet();
@@ -233,7 +238,7 @@ contract CondoGmManager is Ownable {
         GMSharesToken(s_deployedERC20).openTokenizingOfShares();
     }
 
-    /// @notice select a given lot and call ERC20 to transfer attached shares to linked customer balance
+    /// @notice select a given lot and call ERC20 to transfer attached shares from owner to related customer balance
     function convertLotSharesToToken(uint256 _lotId) external onlyOwner {
         if (s_deployedERC20 == address(0)) {
             revert CondoGmManager__ERC20NotDeployedYet();
@@ -258,6 +263,7 @@ contract CondoGmManager is Ownable {
     /*//////////////////////////////////////////////////////////////
                      WRITE FUNCTIONS -> BALLOT
     //////////////////////////////////////////////////////////////*/
+    /// @notice manager will transfer to Ballot the official list of lots + customers in order to start the process of GM
     function loadSharesAndCustomersToBallot() external onlyOwner {
         if (s_allVotersRegistered) {
             revert CondoGmManager__VotersAlreadyImported();
