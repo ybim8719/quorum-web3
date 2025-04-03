@@ -236,6 +236,7 @@ function Home() {
 
     // triger link customer to lot tx
     const createERC20Handler = async () => {
+        setCurrentHash(null);
         setTxBeingHandled(TRANSACTIONS.createERC20);
         setOpenCreateErc20Modal(false);
         setIsLoading(true);

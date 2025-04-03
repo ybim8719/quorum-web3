@@ -60,7 +60,6 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
     transferSharesWrite
   } = useTranferShares();
 
-
   useEffect(() => {
     const getBalance = async (addressToConsult: string) => {
       return triggerGetBalance(globalCtx.erc20Address, addressToConsult);
@@ -70,8 +69,6 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
       response
         .then((truc: any) => {
           setOwnersBalance(Number(truc));
-        }).catch((e) => {
-          console.log(e)
         })
     }
   }, [globalCtx.erc20Address]);
@@ -127,6 +124,16 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
       setModalInfoText("Transaction confirmed");
       onRefetchStatus();
       refetchLots();
+      const getBalance = async (addressToConsult: string) => {
+        return triggerGetBalance(globalCtx.erc20Address, addressToConsult);
+      }
+      if (globalCtx.erc20Address) {
+        const response = getBalance(globalCtx.deployedManagerAddress);
+        response
+          .then((truc: any) => {
+            setOwnersBalance(Number(truc));
+          })
+      }
     }
 
   }, [transferSharesIsConfirmed]);
@@ -195,12 +202,10 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
   }
   // error in tx / open error modal
 
-
   let mainContent;
   if (globalCtx.erc20Status === INITIAL_MINTING_KEY && totalSupply && ownersBalance) {
     mainContent = <VerifyInitialMinting balanceOfOwner={ownersBalance} totalSupply={totalSupply} onValidate={onValidateMintingHandler} role={globalCtx.role} currentStatus={globalCtx.erc20Status} />
   }
-
   if (globalCtx.erc20Status === TRANSFERING_SHARES_KEY || globalCtx.erc20Status === CONTRACT_LOCK_KEY) {
     mainContent = <TokenizedLots role={globalCtx.role} lots={lots} balanceOfOwner={ownersBalance} onVerify={onVerifyShares}
       onTokenize={onTransferSharesHandler} />
@@ -227,7 +232,6 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
         <>
           <h2>Transaction being processed</h2>
           <LoadingIndicator />
-          {/* <p>Tx Hash: {currentHash}</p> */}
         </>
       </NonClosableModal>,
     );
@@ -249,6 +253,7 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
   return (
     <div>
       <h1>Shares Referential (ERC20)</h1>
+      <i className="nes-icon coin is-large"></i>
       <p>Welcome, dear {globalCtx.role} !</p>
       <p>Current Status: {globalCtx.erc20Status}</p>
       {globalCtx.erc20Status === CONTRACT_LOCK_KEY && <p className="notification">TOKEN IS LOCKED ! Check general meeting / Ballot page !</p>}

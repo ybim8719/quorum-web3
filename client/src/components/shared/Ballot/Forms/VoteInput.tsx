@@ -17,7 +17,6 @@ const VoteInput = ({ onValidate }: IVoteInput) => {
 
   function handleSubmit(e: React.MouseEvent<HTMLFormElement>) {
     e.preventDefault();
-    console.log(selectedProposalId, "selectedProposalId sent to VOTE!!!")
     if (selectedProposalId) {
       onValidate(+selectedProposalId);
     }
@@ -26,6 +25,7 @@ const VoteInput = ({ onValidate }: IVoteInput) => {
 
   return (
     <div className="section">
+      <i className="nes-icon is-large heart"></i>
       <form method="post" onSubmit={handleSubmit}>
         <label>
           Vote for this proposal:

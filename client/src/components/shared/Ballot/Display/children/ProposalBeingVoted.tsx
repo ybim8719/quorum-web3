@@ -6,7 +6,7 @@ interface IProposalBeingVoted {
 const ProposalBeingVoted = ({ id, description }: IProposalBeingVoted) => {
     return (
         <div className="section">
-            <h2> PROPOSITION N° {id}</h2>
+            <h2> PROPOSITION N°{id} EN TRAITEMENT</h2>
             <h3>{description}</h3>
         </div>
     );

@@ -7,10 +7,6 @@
 - review la liste des sécu appliquées au projet 
 - mettre des unchecked ++i
 - deployer sur sepolia les 2 contrats + recup addresses
-
-
 - tester is export const config = createConfig({ ne casse pas tout 
-
 - faire une vidéo de demo 
 
-<i class="nes-icon is-large heart"></i>

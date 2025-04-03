@@ -6,7 +6,7 @@ import { GlobalContext } from "./context/globalContext";
 import { useReadManagerQueries } from "./hooks/useReadManagerQueries";
 import { useReadTokenQueries } from "./hooks/useReadTokenQueries";
 import { useReadBallotQueries } from "./hooks/useReadBallotQueries";
-import { OWNER_ROLE, CUSTOMER_ROLE } from "./models/roles";
+import { OWNER_ROLE, CUSTOMER_ROLE, UNAUTHORIZED_ROLE } from "./models/roles";
 import { isZeroAddress } from "./models/utils";
 import ERC20 from "./pages/ERC20";
 import Home from "./pages/Home";
@@ -36,21 +36,23 @@ function App() {
   useEffect(() => {
     if (
       fetchedOwnerData !== undefined &&
-      fetchedOwnerData !== null &&
+      fetchedOwnerData !== null && fetchedCustomersAddressesData !== undefined &&
+      fetchedCustomersAddressesData !== null &&
       connectedAccount
     ) {
       // owner and customers addresses are mandatory to set the role
       globalCtx.setOwner(fetchedOwnerData.toString());
+      globalCtx.setCustomersAddresses(fetchedCustomersAddressesData as string[]);
 
       if (connectedAccount === fetchedOwnerData.toString()) {
-        globalCtx.setRole(OWNER_ROLE);
-      }
+        console.log('dedede1')
 
-      if (fetchedCustomersAddressesData !== undefined &&
-        fetchedCustomersAddressesData !== null) {
-        globalCtx.setCustomersAddresses(fetchedCustomersAddressesData as string[]);
+        globalCtx.setRole(OWNER_ROLE);
+      } else {
         if ((fetchedCustomersAddressesData as string[]).includes(connectedAccount as string)) {
           globalCtx.setRole(CUSTOMER_ROLE);
+        } else {
+          globalCtx.setRole(UNAUTHORIZED_ROLE);
         }
       }
     }

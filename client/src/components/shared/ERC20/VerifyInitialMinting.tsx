@@ -14,6 +14,7 @@ const VerifyInitialMinting = ({ balanceOfOwner, totalSupply, onValidate, role, c
     // check the supply of erc20 totalSupply and balance of owner
     return (
         <div className="section">
+            <i className="nes-icon is-large star"></i>
             <p>{TOKEN_STATUS_INSTRUCTIONS[INITIAL_MINTING_KEY].description}</p>
             {role === OWNER_ROLE &&
                 <p>{TOKEN_STATUS_INSTRUCTIONS[INITIAL_MINTING_KEY].ownerInstruction}</p>}

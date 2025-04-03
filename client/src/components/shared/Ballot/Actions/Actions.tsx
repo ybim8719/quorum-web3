@@ -68,7 +68,7 @@ const Actions = ({
           actionToDisplay = <SwitchToNextStepButton onValidate={onOpenProposalForDiscussingOrEndGm} instructions="Open 1st proposal for discussing" />;
           break;
         case PROPOSAL_BEING_DISCUSSED_KEY:
-          actionToDisplay = <SwitchToNextStepButton onValidate={onOpenProposalForVoting} instructions="Open Voting when tals are achieved" />;
+          actionToDisplay = <SwitchToNextStepButton onValidate={onOpenProposalForVoting} instructions="Open Voting when talks are achieved" />;
           break;
         case PROPOSAL_VOTING_OPEN_KEY:
           if (votesRegistered > 0) {

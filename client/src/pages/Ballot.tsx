@@ -46,7 +46,6 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
     const { data: fetchedCurrentMinimalProposalData, refetch: refetchCurrentMinimalProposalData } = useFetchedCurrentMinimalProposal;
     const { data: fetchedVotersOfCurrentProposalData, refetch: refetchVotersOfCurrentProposal } = useFetchedVotersOfCurrentProposal;
     const { data: fetchedCurrentProposalCompleteData, refetch: refetchCurrentProposalComplete } = useFetchedCurrentProposalComplete;
-    console.log(fetchedCompleteProposalsData, "fetchedCompleteProposalsData")
 
     // Write hooks
     // => OWNER: proposals submitting are OPEN
@@ -126,30 +125,32 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
         if (
             loadSharesAndCustomersToBallotIsConfirmed ||
             setProposalsSubmittingCloseIsConfirmed ||
-            setProposalVotingOpenStatusIsConfirmed ||
             lockContractIsConfirmed
         ) {
             setIsLoading(false);
             setModalInfoText("Transaction confirmed");
             onRefetchStatus();
         }
-    }, [loadSharesAndCustomersToBallotIsConfirmed, setProposalsSubmittingCloseIsConfirmed, setProposalVotingOpenStatusIsConfirmed, lockContractIsConfirmed]);
+    }, [loadSharesAndCustomersToBallotIsConfirmed, setProposalsSubmittingCloseIsConfirmed, lockContractIsConfirmed]);
 
     // WATCH TX LEADING TO REFETCH STATUS
     useEffect(() => {
         if (
             setProposalVotingOpenStatusIsConfirmed
         ) {
+            console.log(setProposalVotingOpenStatusIsConfirmed, "setProposalVotingOpenStatusIsConfirmed")
+
             setIsLoading(false);
             setModalInfoText("Transaction confirmed");
-            onRefetchStatus();
             refetchVotersOfCurrentProposal();
+            onRefetchStatus();
         }
     }, [setProposalVotingOpenStatusIsConfirmed]);
 
     // WATCH TX LEADING TO REFETCH LIST OF VOTERS OF CURRENT PROPOSALS
     useEffect(() => {
         if (voteForCurrentProposalIsConfirmed) {
+            console.log(voteForCurrentProposalIsConfirmed, "voteForCurrentProposalIsConfirmed")
             setIsLoading(false);
             setModalInfoText("Transaction confirmed");
             refetchVotersOfCurrentProposal();
@@ -168,6 +169,7 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
 
     useEffect(() => {
         if (setCurrentProposalVotingCountRevealIsConfirmed) {
+            console.log(setCurrentProposalVotingCountRevealIsConfirmed, "setCurrentProposalVotingCountRevealIsConfirmed")
             setIsLoading(false);
             setModalInfoText("Transaction confirmed");
             onRefetchStatus();
@@ -177,6 +179,7 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
 
     useEffect(() => {
         if (setProposalBeingDiscussedStatusIsConfirmed) {
+            console.log(setProposalBeingDiscussedStatusIsConfirmed, "setProposalBeingDiscussedStatusIsConfirmed")
             setIsLoading(false);
             setModalInfoText("Transaction confirmed");
             onRefetchStatus();
@@ -188,6 +191,8 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
             }
         }
     }, [setProposalBeingDiscussedStatusIsConfirmed]);
+
+    console.log(votedOnCurrentProposal, "votedOnCurrentProposal");
 
     useEffect(() => {
         if (fetchedMinProposalsData) {
@@ -214,8 +219,7 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
 
     useEffect(() => {
         const data = fetchedVotersOfCurrentProposalData as string[];
-        if (data && data.length > 0) {
-            // backend always send an objet, if current proposal = 0, then NO proposal is currently handled 
+        if (data) {
             setVotedOnCurrentProposal(data);
         }
     }, [fetchedVotersOfCurrentProposalData])
@@ -348,6 +352,10 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
 
     if (isZeroAddress(globalCtx.deployedBallotAddress) || globalCtx.deployedBallotAddress === undefined) {
         return <p>NO GM Ballot deployed yet</p>;
+    }
+
+    if (isZeroAddress(globalCtx.erc20Address) || globalCtx.erc20Address === undefined || globalCtx.erc20Address === "") {
+        return <p>NO ERC20 Created, go to HOME</p>;
     }
 
     // Array of modals
