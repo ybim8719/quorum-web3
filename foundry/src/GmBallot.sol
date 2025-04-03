@@ -246,9 +246,12 @@ contract GMBallot is Ownable {
             return false;
         }
         bool hasAlreadyVoted = false;
-        for (uint256 i; i < nfOfVotes; i++) {
+        for (uint256 i; i < nfOfVotes;) {
             if (s_voters[_customerAddress].votedProposalIds[i] == _proposalId) {
                 hasAlreadyVoted = true;
+            }
+            unchecked {
+                ++i;
             }
         }
 
@@ -323,10 +326,13 @@ contract GMBallot is Ownable {
         ProposalView[] memory toReturn = new ProposalView[](s_nbOfProposals);
         // prpoposal id start at 1
         if (s_nbOfProposals > 0) {
-            for (uint256 id = 1; id < s_nbOfProposals + 1; ++id) {
+            for (uint256 id = 1; id < s_nbOfProposals + 1;) {
                 // enrich customers who approved
                 ProposalView memory tmpProposalView = _buildCompleteProposal(id);
                 toReturn[id - 1] = tmpProposalView;
+                unchecked {
+                    ++id;
+                }
             }
         }
 

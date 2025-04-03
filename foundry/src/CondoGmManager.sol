@@ -272,7 +272,7 @@ contract CondoGmManager is Ownable {
             // prevent from reentrancy
             s_allVotersRegistered = true;
             // lot ids start at 1, we'll register each customer as voter in ballot
-            for (uint256 id = 1; id < s_nextLotIndex; ++id) {
+            for (uint256 id = 1; id < s_nextLotIndex;) {
                 Customer memory tempCustomer = s_customersInfo[s_lotsList[id].customerAddress];
                 GMBallot(s_deployedBallot).registerVoter(
                     s_lotsList[id].customerAddress,
@@ -281,6 +281,9 @@ contract CondoGmManager is Ownable {
                     s_lotsList[id].lotOfficialNumber,
                     s_lotsList[id].shares
                 );
+                unchecked {
+                    ++id;
+                }
             }
         }
     }
@@ -303,7 +306,7 @@ contract CondoGmManager is Ownable {
         CustomerView[] memory customersToReturn = new CustomerView[](s_customers.length);
 
         if (s_customers.length > 0) {
-            for (uint256 i = 0; i < s_customers.length; ++i) {
+            for (uint256 i = 0; i < s_customers.length;) {
                 Customer memory c = s_customersInfo[s_customers[i]];
                 CustomerView memory customer = CustomerView({
                     isRegistered: c.isRegistered,
@@ -315,6 +318,9 @@ contract CondoGmManager is Ownable {
                 });
 
                 customersToReturn[i] = customer;
+                unchecked {
+                    ++i;
+                }
             }
         }
 
@@ -341,7 +347,7 @@ contract CondoGmManager is Ownable {
         LotView[] memory lotsToReturn = new LotView[](s_nextLotIndex - 1);
         if (s_nextLotIndex > 1) {
             // lot ids start at 1
-            for (uint256 id = 1; id < s_nextLotIndex; ++id) {
+            for (uint256 id = 1; id < s_nextLotIndex;) {
                 Customer memory tempCustomer = s_customersInfo[s_lotsList[id].customerAddress];
                 LotView memory tempLot = LotView({
                     id: id,
@@ -353,6 +359,9 @@ contract CondoGmManager is Ownable {
                     isTokenized: s_lotsList[id].isTokenized
                 });
                 lotsToReturn[id - 1] = tempLot;
+                unchecked {
+                    ++id;
+                }
             }
         }
 

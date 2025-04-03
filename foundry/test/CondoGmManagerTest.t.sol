@@ -217,62 +217,6 @@ contract CondoGmManagerTest is Test {
         _;
     }
 
-    modifier finalTest() {
-        vm.startPrank(msg.sender);
-        s_manager.registerLot(LOT1_OFFICIAL_CODE, 200);
-        s_manager.registerLot(LOT2_OFFICIAL_CODE, 350);
-        s_manager.registerLot(LOT3_OFFICIAL_CODE, 450);
-        s_manager.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
-        s_manager.registerCustomer(CUSTOMER2_FIRST_NAME, CUSTOMER2_LAST_NAME, CUSTOMER2_ADDRESS);
-        s_manager.registerCustomer(CUSTOMER3_FIRST_NAME, CUSTOMER3_LAST_NAME, CUSTOMER3_ADDRESS);
-
-        s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, LOT1_ID);
-        s_manager.linkCustomerToLot(CUSTOMER2_ADDRESS, LOT2_ID);
-        s_manager.linkCustomerToLot(CUSTOMER3_ADDRESS, LOT3_ID);
-
-        s_manager.createGMSharesToken();
-        s_manager.openTokenizingOfShares();
-        s_manager.convertLotSharesToToken(LOT1_ID);
-        s_manager.convertLotSharesToToken(LOT2_ID);
-        s_manager.convertLotSharesToToken(LOT3_ID);
-        s_manager.loadSharesAndCustomersToBallot();
-        // s_ballot.setProposalsSubmittingOpen();
-        vm.stopPrank();
-        vm.startPrank(CUSTOMER1_ADDRESS);
-        s_ballot.submitProposal(PROPOSAL1);
-        s_ballot.submitProposal(PROPOSAL2);
-        vm.stopPrank();
-        vm.startPrank(msg.sender);
-        s_ballot.setProposalsSubmittingClosed();
-        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
-        s_ballot.setProposalVotingOpenStatus();
-        vm.stopPrank();
-        vm.prank(CUSTOMER1_ADDRESS);
-        s_ballot.voteForCurrentProposal(uint256(VoteType.Blank));
-        vm.prank(CUSTOMER2_ADDRESS);
-        s_ballot.voteForCurrentProposal(uint256(VoteType.Refusal));
-        vm.prank(CUSTOMER3_ADDRESS);
-        s_ballot.voteForCurrentProposal(uint256(VoteType.Approval));
-        vm.startPrank(msg.sender);
-        s_ballot.setCurrentProposalVotingCountReveal();
-        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
-        s_ballot.setProposalVotingOpenStatus();
-        vm.stopPrank();
-        vm.prank(CUSTOMER1_ADDRESS);
-        s_ballot.voteForCurrentProposal(uint256(VoteType.Approval));
-        vm.prank(CUSTOMER2_ADDRESS);
-        s_ballot.voteForCurrentProposal(uint256(VoteType.Blank));
-        vm.prank(CUSTOMER3_ADDRESS);
-        s_ballot.voteForCurrentProposal(uint256(VoteType.Refusal));
-        vm.startPrank(msg.sender);
-        s_ballot.setCurrentProposalVotingCountReveal();
-        // end all votes
-        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
-        s_ballot.lockContract();
-        vm.stopPrank();
-        _;
-    }
-
     /*/////////////////////////////////////////////////////////////
                         REGISTERING CUSTOMER
     //////////////////////////////////////////////////////////////*/
@@ -1010,93 +954,21 @@ contract CondoGmManagerTest is Test {
         s_ballot.lockContract();
         vm.stopPrank();
         assert(s_ballot.getCurrentStatus() == BallotWorkflowStatus.ContractLocked);
+        assertEq(s_ballot.getVotersOfCurrentProposal().length, 1);
     }
 
     //TODO A LA FIN POUR TESTER LES GETTERS
-    function test_truc() public ballotLocked {
+    function test_suceeds_getProposalsComplete() public ballotLocked {
         assertEq(s_ballot.getProposalsComplete()[0].id, 1);
-        console.log(s_ballot.getProposalsComplete()[0].description);
-        console.log(s_ballot.getProposalsComplete()[1].id);
-        console.log(s_ballot.getProposalsComplete()[1].description);
-        console.log(uint256(s_ballot.getProposalsComplete()[0].votingResult));
-        console.log(uint256(s_ballot.getProposalsComplete()[0].approvals.length), "approval lebgth");
-        console.log(uint256(s_ballot.getProposalsComplete()[0].refusals.length), "refusals lebgth");
-        console.log(uint256(s_ballot.getProposalsComplete()[0].refusalShares));
-        console.log(uint256(s_ballot.getProposalsComplete()[0].approvalShares));
-        console.log(uint256(s_ballot.getProposalsComplete()[0].blankVotes.length));
-        console.log(s_ballot.getProposalsComplete()[0].blankVotes[0].firstName);
-        console.log(s_ballot.getProposalsComplete()[0].blankVotes[0].lastName);
-        console.log(s_ballot.getProposalsComplete()[0].blankVotes[0].shares);
-        console.log(s_ballot.getProposalsComplete()[0].blankVotes[0].lotOfficialNumber);
-        // console.log(s_ballot.getMinimalProposals()[0].id);
-        // console.log(s_ballot.getMinimalProposals()[0].description);
-        // console.log(s_ballot.getMinimalProposals()[1].id);
-        // console.log(s_ballot.getMinimalProposals()[1].description);
-
-        // console.log(s_ballot.getMinimalProposal(1).id);
-        // console.log(s_ballot.getMinimalProposal(1).description);
-        // console.log(s_ballot.getMinimalProposal(2).id);
-        // console.log(s_ballot.getMinimalProposal(2).description);
-
-        // console.log(s_ballot.getVotersOfProposals(1)[0]);
-        // console.log(s_ballot.getVotersOfProposals(1)[1]);
-        // console.log(s_ballot.getVotersOfProposals(2)[0]);
-        // console.log(s_ballot.getVotersOfProposals(2)[1]);
-    }
-
-    function test_final() public finalTest {
-        assertEq(s_ballot.getProposalsComplete()[0].id, 1);
-
-        // console.log(s_ballot.getProposalsComplete()[0].description, " desc proposition 1");
-        // console.log(s_ballot.getProposalsComplete()[0].id, " ID proposition 1");
-
-        // console.log(uint256(s_ballot.getProposalsComplete()[0].votingResult), " ID proposition 1 RESULT FINAL ");
-        // console.log(s_ballot.getProposalsComplete()[0].approvals.length, "ID proposition 1 / approval lebgth ");
-        // console.log(s_ballot.getProposalsComplete()[0].refusals.length, "ID proposition 1 / refusal lebgth ");
-        // console.log(s_ballot.getProposalsComplete()[0].blankVotes.length, "ID proposition 1 / blankVotes lebgth ");
-
-        // console.log(s_ballot.getProposalsComplete()[0].approvals[0].firstName, "ID proposition 1 / approval firstnma ");
-        // console.log(s_ballot.getProposalsComplete()[0].approvals[0].lastName, "ID proposition 1 / approval lastname ");
-        // console.log(s_ballot.getProposalsComplete()[0].approvals[0].shares, "ID proposition 1 / approval shares ");
-
-        // console.log(s_ballot.getProposalsComplete()[0].refusals[0].firstName, "ID proposition 1 / refusals firstnma ");
-        // console.log(s_ballot.getProposalsComplete()[0].refusals[0].lastName, "ID proposition 1 / refusals lastname ");
-        // console.log(s_ballot.getProposalsComplete()[0].refusals[0].shares, "ID proposition 1 / refusals shares ");
-
-        // console.log(
-        //     s_ballot.getProposalsComplete()[0].blankVotes[0].firstName, "ID proposition 1 / blankVotes firstnma "
-        // );
-        // console.log(
-        //     s_ballot.getProposalsComplete()[0].blankVotes[0].lastName, "ID proposition 1 / blankVotes lastname "
-        // );
-        // console.log(s_ballot.getProposalsComplete()[0].blankVotes[0].shares, "ID proposition 1 / blankVotes shares ");
-
-        console.log(s_ballot.getProposalsComplete()[1].description, " desc proposition 2");
-        console.log(s_ballot.getProposalsComplete()[1].id, " ID proposition 21");
-
-        console.log(uint256(s_ballot.getProposalsComplete()[1].votingResult), " ID proposition 2 RESULT FINAL ");
-        console.log(s_ballot.getProposalsComplete()[1].approvals.length, "ID proposition 2 / approval lebgth ");
-        console.log(s_ballot.getProposalsComplete()[1].refusals.length, "ID proposition 2 / refusal lebgth ");
-        console.log(s_ballot.getProposalsComplete()[1].blankVotes.length, "ID proposition 2 / blankVotes lebgth ");
-
-        console.log(s_ballot.getProposalsComplete()[1].approvals[0].firstName, "ID proposition 2 / approval firstnma ");
-        console.log(s_ballot.getProposalsComplete()[1].approvals[0].lastName, "ID proposition 2 / approval lastname ");
-        console.log(s_ballot.getProposalsComplete()[1].approvals[0].shares, "ID proposition 2 / approval shares ");
-
-        console.log(s_ballot.getProposalsComplete()[1].refusals[0].firstName, "ID 2 / refusals firstnma ");
-        console.log(s_ballot.getProposalsComplete()[1].refusals[0].lastName, "ID proposition 2 / refusals lastname ");
-        console.log(s_ballot.getProposalsComplete()[1].refusals[0].shares, "ID proposition 2 / refusals shares ");
-
-        console.log(
-            s_ballot.getProposalsComplete()[1].blankVotes[0].firstName, "ID proposition 2 / blankVotes firstnma "
-        );
-        console.log(
-            s_ballot.getProposalsComplete()[1].blankVotes[0].lastName, "ID proposition 2 / blankVotes lastname "
-        );
-        console.log(s_ballot.getProposalsComplete()[1].blankVotes[0].shares, "ID proposition 2 / blankVotes shares ");
-
-        // console.log(uint256(s_ballot.getProposalsComplete()[0].refusalShares));
-        // console.log(uint256(s_ballot.getProposalsComplete()[0].approvalShares));
-        // console.log(uint256(s_ballot.getProposalsComplete()[0].blankVotes.length));
+        assertEq(s_ballot.getProposalsComplete()[0].description, PROPOSAL1);
+        assertEq(s_ballot.getProposalsComplete()[0].approvals.length, 0);
+        assertEq(s_ballot.getProposalsComplete()[0].refusals.length, 1);
+        assertEq(s_ballot.getProposalsComplete()[0].refusalShares, 500);
+        assertEq(s_ballot.getProposalsComplete()[0].approvalShares, 0);
+        assertEq(s_ballot.getProposalsComplete()[0].blankVotes.length, 1);
+        assertEq(s_ballot.getProposalsComplete()[0].blankVotes[0].firstName, CUSTOMER1_FIRST_NAME);
+        assertEq(s_ballot.getProposalsComplete()[0].blankVotes[0].lastName, CUSTOMER1_LAST_NAME);
+        assertEq(s_ballot.getProposalsComplete()[0].blankVotes[0].shares, 500);
+        assertEq(s_ballot.getProposalsComplete()[0].blankVotes[0].lotOfficialNumber, LOT1_OFFICIAL_CODE);
     }
 }
