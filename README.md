@@ -116,7 +116,6 @@ forge coverage
 ```
 
 
-
 ## Deployer le projet (3 méthodes) 
 
 ## A. Lancer le contrat et l'IHM en local :
@@ -145,14 +144,8 @@ cd foundry
 ```
 
 ```shell
-forge create src/CondoGmManager.sol:CondoGmManager  --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://localhost:8545 --broadcast --constructor-args "My cOndo" "nice please to chill" "45000 LE LOT"
+forge create src/DeployCondoGmManagerAndBallot.s.sol  --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://localhost:8545 --broadcast 
 ```
-
-forge create src/CondoGmManager.sol:CondoGmManager  --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://localhost:8545 --constructor-args "My cOndo" "nice please to chilll" "45000 LE LOT" --broadcast
-
-
-TODO : should use forge create isntead cause cant pass args to constructor
-
 
 3) Installez et lancez React dans un nouveau terminal: 
 
@@ -220,11 +213,18 @@ ETHERSCAN_API_KEY=<pk-used-to-deploy>
 source . env 
 ```
 
-Déployez: 
+Déployez en dry run : 
 
 ```shell
 cd foundry
-forge script script/DeployVoting.s.sol --private-key $PRIVATE_KEY --rpc-url $SEPOLIA_RPC_URL --broadcast
+forge script script/DeployCondoGmManagerAndBallot.s.sol --private-key $PRIVATE_KEY --rpc-url $SEPOLIA_RPC_URL
+```
+
+Puis en réel : 
+
+```shell
+cd foundry
+forge script script/DeployCondoGmManagerAndBallot.s.sol --private-key $PRIVATE_KEY --rpc-url $SEPOLIA_RPC_URL --broadcast
 ```
 
 Vérifiez sur etherscan: 

@@ -37,21 +37,21 @@ function App() {
     if (
       fetchedOwnerData !== undefined &&
       fetchedOwnerData !== null &&
-      fetchedCustomersAddressesData !== undefined &&
-      fetchedCustomersAddressesData !== null &&
       connectedAccount
     ) {
       // owner and customers addresses are mandatory to set the role
-      globalCtx.setCustomersAddresses(fetchedCustomersAddressesData as string[]);
       globalCtx.setOwner(fetchedOwnerData.toString());
 
       if (connectedAccount === fetchedOwnerData.toString()) {
         globalCtx.setRole(OWNER_ROLE);
-      } else if (
-        (fetchedCustomersAddressesData as string[]).includes(connectedAccount as string)
-      ) {
-        console.log('went 56')
-        globalCtx.setRole(CUSTOMER_ROLE);
+      }
+
+      if (fetchedCustomersAddressesData !== undefined &&
+        fetchedCustomersAddressesData !== null) {
+        globalCtx.setCustomersAddresses(fetchedCustomersAddressesData as string[]);
+        if ((fetchedCustomersAddressesData as string[]).includes(connectedAccount as string)) {
+          globalCtx.setRole(CUSTOMER_ROLE);
+        }
       }
     }
   }, [connectedAccount, fetchedOwnerData, fetchedCustomersAddressesData]);

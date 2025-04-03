@@ -11,18 +11,17 @@ import {
     useSetProposalVotingOpenStatus,
     useVoteForCurrentProposal,
     useSetCurrentProposalVotingCountReveal,
-    useLockContract
-    ,
+    useLockContract,
 } from "../hooks/useWriteBallotActions";
 import { useReadBallotQueries } from "../hooks/useReadBallotQueries.ts";
-
 import LoadingIndicator from "../components/UI/LoadingIndicator.tsx";
 import ErrorBlock from "../components/UI/ErrorBlock.tsx";
 import StatusInstructions from "../components/shared/Ballot/StatusInstructions.tsx";
 import Actions from "../components/shared/Ballot/Actions/Actions.tsx";
 import DisplayInfos from "../components/shared/Ballot/Display/DisplayInfos.tsx";
 import { useloadSharesAndCustomersToBallot } from "../hooks/useWriteManagerActions.ts";
-import { BallotCountResults, CompleteBallotCountResults } from "../models/ballot.ts";
+import { ProposalCompleted, VoterInfo } from "../models/ballot.ts";
+import { FetchedCurrentProposalCompleteRawData, FetchedCurrentMinimalProposalRawData } from "../models/apiReturnType.ts";
 
 
 interface IBallotProps {
@@ -35,15 +34,10 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
     const [modalInfoText, setModalInfoText] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
     const [minProposals, setMinProposals] = useState<string[]>([]);
     const [votedOnCurrentProposal, setVotedOnCurrentProposal] = useState<string[]>([]);
-    const [currentProposalWithResult, setCurrentProposalWithResult] = useState<{
-        id: number;
-        description: string;
-        votingResult: BallotCountResults,
-    } | null>(null);
-    const [allProposalResults, setAllProposalResults] = useState<CompleteBallotCountResults[]>([]);
+    const [currentProposalWithResult, setCurrentProposalWithResult] = useState<ProposalCompleted>(null);
+    const [allProposalResults, setAllProposalResults] = useState<ProposalCompleted[]>([]);
 
     // Read hooks
     const { useFetchedCompleteProposals, useFetchedMinProposals, useFetchedCurrentMinimalProposal, useFetchedVotersOfCurrentProposal, useFetchedCurrentProposalComplete } = useReadBallotQueries(globalCtx.deployedBallotAddress);
@@ -52,11 +46,7 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
     const { data: fetchedCurrentMinimalProposalData, refetch: refetchCurrentMinimalProposalData } = useFetchedCurrentMinimalProposal;
     const { data: fetchedVotersOfCurrentProposalData, refetch: refetchVotersOfCurrentProposal } = useFetchedVotersOfCurrentProposal;
     const { data: fetchedCurrentProposalCompleteData, refetch: refetchCurrentProposalComplete } = useFetchedCurrentProposalComplete;
-
-    console.log(fetchedCurrentMinimalProposalData, "fetchedCurrentMinimalProposalData");
-    console.log(fetchedVotersOfCurrentProposalData, "fetchedVotersOfCurrentProposalData");
-    console.log(fetchedCurrentProposalCompleteData, "fetchedCurrentProposalCompleteData");
-
+    console.log(fetchedCompleteProposalsData, "fetchedCompleteProposalsData")
 
     // Write hooks
     // => OWNER: proposals submitting are OPEN
@@ -145,12 +135,25 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
         }
     }, [loadSharesAndCustomersToBallotIsConfirmed, setProposalsSubmittingCloseIsConfirmed, setProposalVotingOpenStatusIsConfirmed, lockContractIsConfirmed]);
 
+    // WATCH TX LEADING TO REFETCH STATUS
+    useEffect(() => {
+        if (
+            setProposalVotingOpenStatusIsConfirmed
+        ) {
+            setIsLoading(false);
+            setModalInfoText("Transaction confirmed");
+            onRefetchStatus();
+            refetchVotersOfCurrentProposal();
+        }
+    }, [setProposalVotingOpenStatusIsConfirmed]);
+
     // WATCH TX LEADING TO REFETCH LIST OF VOTERS OF CURRENT PROPOSALS
     useEffect(() => {
         if (voteForCurrentProposalIsConfirmed) {
             setIsLoading(false);
             setModalInfoText("Transaction confirmed");
-            // refetch list of voters of current proposal => compute hasVotedForThis proposal
+            refetchVotersOfCurrentProposal();
+            refetchCurrentProposalComplete();
         }
     }, [voteForCurrentProposalIsConfirmed]);
 
@@ -167,15 +170,22 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
         if (setCurrentProposalVotingCountRevealIsConfirmed) {
             setIsLoading(false);
             setModalInfoText("Transaction confirmed");
-            // TODO REFETCH CURRENT PROPOSAL => RESULTS 
+            onRefetchStatus();
+            refetchCurrentProposalComplete();
         }
     }, [setCurrentProposalVotingCountRevealIsConfirmed]);
 
     useEffect(() => {
-        if (setCurrentProposalVotingCountRevealIsConfirmed) {
+        if (setProposalBeingDiscussedStatusIsConfirmed) {
             setIsLoading(false);
             setModalInfoText("Transaction confirmed");
-            // TODO REFETCH CURRENT PROPOSAL DESC TO DISPLAY
+            onRefetchStatus();
+            refetchCurrentMinimalProposalData();
+            refetchVotersOfCurrentProposal();
+            // if current proposals being voted is the last, then show final recap of all results.
+            if (minProposals.length > 0 && currentProposalWithResult && (minProposals.length === currentProposalWithResult.id)) {
+                refetchCompleteProposals();
+            }
         }
     }, [setProposalBeingDiscussedStatusIsConfirmed]);
 
@@ -188,6 +198,113 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
         }
     }, [fetchedMinProposalsData])
 
+    useEffect(() => {
+        const data = fetchedCurrentMinimalProposalData as FetchedCurrentMinimalProposalRawData;
+        if (data) {
+            // backend always send an objet, if current proposal = 0, then NO proposal is currently handled 
+            if (Number(data.id) > 0) {
+                setCurrentProposalWithResult({
+                    id: Number(data.id),
+                    description: data.description,
+                    votingResult: null
+                })
+            }
+        }
+    }, [fetchedCurrentMinimalProposalData])
+
+    useEffect(() => {
+        const data = fetchedVotersOfCurrentProposalData as string[];
+        if (data && data.length > 0) {
+            // backend always send an objet, if current proposal = 0, then NO proposal is currently handled 
+            setVotedOnCurrentProposal(data);
+        }
+    }, [fetchedVotersOfCurrentProposalData])
+
+    useEffect(() => {
+        const data = fetchedCurrentProposalCompleteData as FetchedCurrentProposalCompleteRawData;
+        if (data) {
+            // backend always send an objet, if current proposal = 0, then NO proposal is currently handled 
+            if (Number(data.id) > 0) {
+                const votingResult = formatResults(data);
+                setCurrentProposalWithResult({
+                    id: Number(data.id),
+                    description: data.description,
+                    votingResult: votingResult
+                })
+            }
+        }
+    }, [fetchedCurrentProposalCompleteData])
+
+    useEffect(() => {
+        const data = fetchedCompleteProposalsData as FetchedCurrentProposalCompleteRawData[];
+        if (data && data.length > 0) {
+            const proposals: ProposalCompleted[] = [];
+            data.forEach((completeProposal) => {
+                if (Number(completeProposal.id) > 0) {
+                    const votingResult = formatResults(completeProposal);
+                    const formatedProposal = {
+                        id: Number(completeProposal.id),
+                        description: completeProposal.description,
+                        votingResult: votingResult
+                    }
+                    proposals.push(formatedProposal);
+                }
+            });
+            setAllProposalResults(proposals);
+        }
+    }, [fetchedCompleteProposalsData])
+
+    const formatResults = (data: FetchedCurrentProposalCompleteRawData) => {
+        const details: VoterInfo[] = [];
+        if (data.approvals.length > 0) {
+            data.approvals.forEach((el) => {
+                const voterInfo = {
+                    firstName: el.firstName,
+                    lastName: el.lastName,
+                    lotOfficialNumber: el.lotOfficialNumber,
+                    shares: Number(el.shares),
+                    vote: "approved",
+                }
+                details.push(voterInfo)
+            })
+        }
+
+        if (data.refusals.length > 0) {
+            data.refusals.forEach((el) => {
+                const voterInfo = {
+                    firstName: el.firstName,
+                    lastName: el.lastName,
+                    lotOfficialNumber: el.lotOfficialNumber,
+                    shares: Number(el.shares),
+                    vote: "refused",
+                }
+                details.push(voterInfo)
+            })
+        }
+
+        if (data.blankVotes.length > 0) {
+            data.blankVotes.forEach((el) => {
+                const voterInfo = {
+                    firstName: el.firstName,
+                    lastName: el.lastName,
+                    lotOfficialNumber: el.lotOfficialNumber,
+                    shares: Number(el.shares),
+                    vote: "blank vote",
+                }
+                details.push(voterInfo)
+            })
+        }
+
+        const votingResult = {
+            approvals: Number(data.approvalShares),
+            refusals: Number(data.refusalShares),
+            blank: Number(data.blankVotesShares),
+            winner: data.votingResult.toString(),
+            details: details
+        }
+
+        return votingResult;
+    }
 
     const loadSharesAndCustomersToBallotHandler = () => {
         loadSharesAndCustomersToBallotWrite(connectedAccount, globalCtx.deployedManagerAddress);
@@ -280,7 +397,7 @@ function Ballot({ onRefetchStatus }: IBallotProps) {
             <Actions
                 userVoted={userVoted}
                 hasProposal={hasProposal}
-                ballotHasVotes={votedOnCurrentProposal.length > 0}
+                votesRegistered={votedOnCurrentProposal.length}
                 onLoadSharesAndCustomersToBallot={loadSharesAndCustomersToBallotHandler}
                 onSubmittedProposal={submittedProposalHandler}
                 onCloseSubmittingProposals={closeSubmittingProposalsHandler}

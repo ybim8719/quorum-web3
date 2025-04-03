@@ -14,261 +14,84 @@ export const manager_abi = [
     "type": "constructor",
     "inputs": [
       {
+        "name": "_name",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
         "name": "_description",
         "type": "string",
         "internalType": "string"
       },
       {
-        "name": "_managerAddress",
-        "type": "address",
-        "internalType": "address"
+        "name": "_postalAddress",
+        "type": "string",
+        "internalType": "string"
       }
     ],
     "stateMutability": "nonpayable"
   },
   {
     "type": "function",
-    "name": "getCurrentMinimalProposal",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "tuple",
-        "internalType": "struct MinimalProposalView",
-        "components": [
-          {
-            "name": "id",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "description",
-            "type": "string",
-            "internalType": "string"
-          }
-        ]
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getCurrentProposalBeingVoted",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getCurrentProposalComplete",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "tuple",
-        "internalType": "struct ProposalView",
-        "components": [
-          {
-            "name": "id",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "description",
-            "type": "string",
-            "internalType": "string"
-          },
-          {
-            "name": "votingResult",
-            "type": "uint8",
-            "internalType": "enum VotingResult"
-          },
-          {
-            "name": "approvals",
-            "type": "tuple[]",
-            "internalType": "struct MinVoter[]",
-            "components": [
-              {
-                "name": "firstName",
-                "type": "string",
-                "internalType": "string"
-              },
-              {
-                "name": "lastName",
-                "type": "string",
-                "internalType": "string"
-              },
-              {
-                "name": "shares",
-                "type": "uint256",
-                "internalType": "uint256"
-              },
-              {
-                "name": "lotOfficialNumber",
-                "type": "string",
-                "internalType": "string"
-              }
-            ]
-          },
-          {
-            "name": "approvalShares",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "refusals",
-            "type": "tuple[]",
-            "internalType": "struct MinVoter[]",
-            "components": [
-              {
-                "name": "firstName",
-                "type": "string",
-                "internalType": "string"
-              },
-              {
-                "name": "lastName",
-                "type": "string",
-                "internalType": "string"
-              },
-              {
-                "name": "shares",
-                "type": "uint256",
-                "internalType": "uint256"
-              },
-              {
-                "name": "lotOfficialNumber",
-                "type": "string",
-                "internalType": "string"
-              }
-            ]
-          },
-          {
-            "name": "refusalShares",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "blankVotes",
-            "type": "tuple[]",
-            "internalType": "struct MinVoter[]",
-            "components": [
-              {
-                "name": "firstName",
-                "type": "string",
-                "internalType": "string"
-              },
-              {
-                "name": "lastName",
-                "type": "string",
-                "internalType": "string"
-              },
-              {
-                "name": "shares",
-                "type": "uint256",
-                "internalType": "uint256"
-              },
-              {
-                "name": "lotOfficialNumber",
-                "type": "string",
-                "internalType": "string"
-              }
-            ]
-          },
-          {
-            "name": "blankVotesShares",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getCurrentStatus",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint8",
-        "internalType": "enum BallotWorkflowStatus"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getMinimalProposals",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "tuple[]",
-        "internalType": "struct MinimalProposalView[]",
-        "components": [
-          {
-            "name": "id",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "description",
-            "type": "string",
-            "internalType": "string"
-          }
-        ]
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getNbOfProposals",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getNextProposalId",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getProposal",
+    "name": "convertLotSharesToToken",
     "inputs": [
       {
-        "name": "_proposalId",
+        "name": "_lotId",
         "type": "uint256",
         "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "createGMSharesToken",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "getAddingLotIsLocked",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getBallotAddress",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getCustomerDetail",
+    "inputs": [
+      {
+        "name": "_customerAddress",
+        "type": "address",
+        "internalType": "address"
       }
     ],
     "outputs": [
       {
         "name": "",
         "type": "tuple",
-        "internalType": "struct Proposal",
+        "internalType": "struct Customer",
         "components": [
           {
             "name": "isRegistered",
@@ -276,196 +99,9 @@ export const manager_abi = [
             "internalType": "bool"
           },
           {
-            "name": "description",
+            "name": "lastName",
             "type": "string",
             "internalType": "string"
-          },
-          {
-            "name": "votingResult",
-            "type": "uint8",
-            "internalType": "enum VotingResult"
-          },
-          {
-            "name": "approvals",
-            "type": "address[]",
-            "internalType": "address[]"
-          },
-          {
-            "name": "approvalShares",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "refusals",
-            "type": "address[]",
-            "internalType": "address[]"
-          },
-          {
-            "name": "refusalShares",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "blankVotes",
-            "type": "address[]",
-            "internalType": "address[]"
-          },
-          {
-            "name": "blankVotesShares",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getProposalsComplete",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "tuple[]",
-        "internalType": "struct ProposalView[]",
-        "components": [
-          {
-            "name": "id",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "description",
-            "type": "string",
-            "internalType": "string"
-          },
-          {
-            "name": "votingResult",
-            "type": "uint8",
-            "internalType": "enum VotingResult"
-          },
-          {
-            "name": "approvals",
-            "type": "tuple[]",
-            "internalType": "struct MinVoter[]",
-            "components": [
-              {
-                "name": "firstName",
-                "type": "string",
-                "internalType": "string"
-              },
-              {
-                "name": "lastName",
-                "type": "string",
-                "internalType": "string"
-              },
-              {
-                "name": "shares",
-                "type": "uint256",
-                "internalType": "uint256"
-              },
-              {
-                "name": "lotOfficialNumber",
-                "type": "string",
-                "internalType": "string"
-              }
-            ]
-          },
-          {
-            "name": "approvalShares",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "refusals",
-            "type": "tuple[]",
-            "internalType": "struct MinVoter[]",
-            "components": [
-              {
-                "name": "firstName",
-                "type": "string",
-                "internalType": "string"
-              },
-              {
-                "name": "lastName",
-                "type": "string",
-                "internalType": "string"
-              },
-              {
-                "name": "shares",
-                "type": "uint256",
-                "internalType": "uint256"
-              },
-              {
-                "name": "lotOfficialNumber",
-                "type": "string",
-                "internalType": "string"
-              }
-            ]
-          },
-          {
-            "name": "refusalShares",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "blankVotes",
-            "type": "tuple[]",
-            "internalType": "struct MinVoter[]",
-            "components": [
-              {
-                "name": "firstName",
-                "type": "string",
-                "internalType": "string"
-              },
-              {
-                "name": "lastName",
-                "type": "string",
-                "internalType": "string"
-              },
-              {
-                "name": "shares",
-                "type": "uint256",
-                "internalType": "uint256"
-              },
-              {
-                "name": "lotOfficialNumber",
-                "type": "string",
-                "internalType": "string"
-              }
-            ]
-          },
-          {
-            "name": "blankVotesShares",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getVoter",
-    "inputs": [
-      {
-        "name": "_voter",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "tuple",
-        "internalType": "struct Voter",
-        "components": [
-          {
-            "name": "tokenVerified",
-            "type": "bool",
-            "internalType": "bool"
           },
           {
             "name": "firstName",
@@ -473,12 +109,7 @@ export const manager_abi = [
             "internalType": "string"
           },
           {
-            "name": "lastName",
-            "type": "string",
-            "internalType": "string"
-          },
-          {
-            "name": "shares",
+            "name": "lotId",
             "type": "uint256",
             "internalType": "uint256"
           },
@@ -486,11 +117,6 @@ export const manager_abi = [
             "name": "lotOfficialNumber",
             "type": "string",
             "internalType": "string"
-          },
-          {
-            "name": "votedProposalIds",
-            "type": "uint256[]",
-            "internalType": "uint256[]"
           }
         ]
       }
@@ -499,7 +125,52 @@ export const manager_abi = [
   },
   {
     "type": "function",
-    "name": "getVotersOfCurrentProposal",
+    "name": "getCustomersInfos",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple[]",
+        "internalType": "struct CustomerView[]",
+        "components": [
+          {
+            "name": "isRegistered",
+            "type": "bool",
+            "internalType": "bool"
+          },
+          {
+            "name": "lastName",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "firstName",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "customerAddress",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "lotId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "lotOfficialNumber",
+            "type": "string",
+            "internalType": "string"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getCustomersList",
     "inputs": [],
     "outputs": [
       {
@@ -512,7 +183,218 @@ export const manager_abi = [
   },
   {
     "type": "function",
-    "name": "lockContract",
+    "name": "getERC20Address",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getERC20isLocked",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getGeneralInfos",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct CondoGeneralInfo",
+        "components": [
+          {
+            "name": "condoName",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "postalAddress",
+            "type": "string",
+            "internalType": "string"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getLotById",
+    "inputs": [
+      {
+        "name": "_lotId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct Lot",
+        "components": [
+          {
+            "name": "customerAddress",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "shares",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "lotOfficialNumber",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "isTokenized",
+            "type": "bool",
+            "internalType": "bool"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getLotsInfos",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple[]",
+        "internalType": "struct LotView[]",
+        "components": [
+          {
+            "name": "id",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "customerAddress",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "shares",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "lotOfficialNumber",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "lastName",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "firstName",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "isTokenized",
+            "type": "bool",
+            "internalType": "bool"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getNbOfCustomers",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getNbOfLots",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getsDeployERC20IsPossible",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "linkCustomerToLot",
+    "inputs": [
+      {
+        "name": "_customerAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "_lotId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "loadSharesAndCustomersToBallot",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "openTokenizingOfShares",
     "inputs": [],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -532,23 +414,31 @@ export const manager_abi = [
   },
   {
     "type": "function",
-    "name": "registerVoter",
+    "name": "registerCustomer",
     "inputs": [
+      {
+        "name": "_firstName",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "_lastName",
+        "type": "string",
+        "internalType": "string"
+      },
       {
         "name": "_customerAddress",
         "type": "address",
         "internalType": "address"
-      },
-      {
-        "name": "_customerFirstName",
-        "type": "string",
-        "internalType": "string"
-      },
-      {
-        "name": "_customerLastName",
-        "type": "string",
-        "internalType": "string"
-      },
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerLot",
+    "inputs": [
       {
         "name": "_lotOfficialNumber",
         "type": "string",
@@ -572,53 +462,12 @@ export const manager_abi = [
   },
   {
     "type": "function",
-    "name": "setCurrentProposalVotingCountReveal",
-    "inputs": [],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "setERC20Address",
+    "name": "setGMBallotAddress",
     "inputs": [
       {
-        "name": "_tokenAddress",
+        "name": "_ballotAddress",
         "type": "address",
         "internalType": "address"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "setProposalBeingDiscussedStatusOrEndBallot",
-    "inputs": [],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "setProposalVotingOpenStatus",
-    "inputs": [],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "setProposalsSubmittingClosed",
-    "inputs": [],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "submitProposal",
-    "inputs": [
-      {
-        "name": "_description",
-        "type": "string",
-        "internalType": "string"
       }
     ],
     "outputs": [],
@@ -638,28 +487,79 @@ export const manager_abi = [
     "stateMutability": "nonpayable"
   },
   {
-    "type": "function",
-    "name": "voteForCurrentProposal",
+    "type": "event",
+    "name": "CustomerCreated",
     "inputs": [
       {
-        "name": "_voteEnum",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "customerAddress",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "firstName",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
+      },
+      {
+        "name": "lastName",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
       }
     ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
+    "anonymous": false
   },
   {
     "type": "event",
-    "name": "ContractWasLocked",
+    "name": "CustomerOfLotSet",
+    "inputs": [
+      {
+        "name": "lotId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "customer",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ERC20Deployed",
+    "inputs": [
+      {
+        "name": "tokenAddress",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ERC20DeployedIsPossible",
     "inputs": [],
     "anonymous": false
   },
   {
     "type": "event",
-    "name": "MeetingEnded",
-    "inputs": [],
+    "name": "LotAdded",
+    "inputs": [
+      {
+        "name": "condoLotId",
+        "type": "string",
+        "indexed": true,
+        "internalType": "string"
+      }
+    ],
     "anonymous": false
   },
   {
@@ -683,47 +583,89 @@ export const manager_abi = [
   },
   {
     "type": "event",
-    "name": "ProposalRegistered",
+    "name": "TotalSharesReachedMaxLimit",
     "inputs": [],
     "anonymous": false
   },
   {
-    "type": "event",
-    "name": "ProposalVoteCountBeingRevealed",
-    "inputs": [
-      {
-        "name": "proposalId",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
-    "name": "ProposalVotingOpen",
-    "inputs": [
-      {
-        "name": "proposalId",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
-      }
-    ],
-    "anonymous": false
+    "type": "error",
+    "name": "CondoGmManager__AddressCantBeZero",
+    "inputs": []
   },
   {
     "type": "error",
-    "name": "GMBallot__AlreadyVotedForThisProposal",
+    "name": "CondoGmManager__CantDeployAnotherBallot",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CondoGmManager__CantDeployAnotherERC20",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CondoGmManager__CustomerAlreadyRegistered",
     "inputs": [
       {
-        "name": "proposalId",
+        "name": "customer",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "CondoGmManager__CustomerHasAlreadyLot",
+    "inputs": [
+      {
+        "name": "customer",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "CondoGmManager__CustomerNotFound",
+    "inputs": [
+      {
+        "name": "customerAddress",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "CondoGmManager__DeployBallotConditionsNotReached",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CondoGmManager__DeployERC20ConditionsNotReached",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CondoGmManager__ERC20NotDeployedYet",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CondoGmManager__EmptyString",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CondoGmManager__LotAlreadyHasOwner",
+    "inputs": [
+      {
+        "name": "lotId",
         "type": "uint256",
         "internalType": "uint256"
       },
       {
-        "name": "voter",
+        "name": "customerAddress",
         "type": "address",
         "internalType": "address"
       }
@@ -731,56 +673,21 @@ export const manager_abi = [
   },
   {
     "type": "error",
-    "name": "GMBallot__ContractLocked",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "GMBallot__DescriptionCantBeEmpty",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "GMBallot__InexistentVoteType",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "GMBallot__InvalidPeriod",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "GMBallot__LastProposalNotRevealedYet",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "GMBallot__LastProposalStillBeingHandled",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "GMBallot__OnlyCustomerAuthorized",
+    "name": "CondoGmManager__LotAlreadyRegistered",
     "inputs": [
       {
-        "name": "unauthorized",
-        "type": "address",
-        "internalType": "address"
+        "name": "lotOfficialNumber",
+        "type": "string",
+        "internalType": "string"
       }
     ]
   },
   {
     "type": "error",
-    "name": "GMBallot__OnlyManagerAuthorized",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "GMBallot__ProposalIdNotFound",
+    "name": "CondoGmManager__LotNotFound",
     "inputs": [
       {
-        "name": "proposalId",
+        "name": "lotId",
         "type": "uint256",
         "internalType": "uint256"
       }
@@ -788,27 +695,51 @@ export const manager_abi = [
   },
   {
     "type": "error",
-    "name": "GMBallot__ProposalsAreEmpty",
-    "inputs": []
+    "name": "CondoGmManager__LotSharesAlreadyTokenized",
+    "inputs": [
+      {
+        "name": "lotId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
   },
   {
     "type": "error",
-    "name": "GMBallot__RegisterVotersFirst",
-    "inputs": []
+    "name": "CondoGmManager__RegisteredLotIsLocked",
+    "inputs": [
+      {
+        "name": "lotOfficialNumber",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
   },
   {
     "type": "error",
-    "name": "GMBallot__SharesCantBeZero",
-    "inputs": []
+    "name": "CondoGmManager__SharesCantBeZero",
+    "inputs": [
+      {
+        "name": "lotOfficialNumber",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
   },
   {
     "type": "error",
-    "name": "GMBallot__TokenAlreadyRegistered",
-    "inputs": []
+    "name": "CondoGmManager__TotalSharesExceedsMaxLimit",
+    "inputs": [
+      {
+        "name": "lotOfficialNumber",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
   },
   {
     "type": "error",
-    "name": "GMBallot__Unauthorized",
+    "name": "CondoGmManager__Unauthorized",
     "inputs": [
       {
         "name": "unauthorizedVoter",
@@ -819,14 +750,8 @@ export const manager_abi = [
   },
   {
     "type": "error",
-    "name": "GMBallot__VotingForWrongProposalId",
-    "inputs": [
-      {
-        "name": "proposalId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ]
+    "name": "CondoGmManager__VotersAlreadyImported",
+    "inputs": []
   },
   {
     "type": "error",
@@ -1483,7 +1408,7 @@ export const token_abi = [
       }
     ]
   }
-]
+];
 
 export const ballot_abi = [
   {
@@ -1504,40 +1429,8 @@ export const ballot_abi = [
   },
   {
     "type": "function",
-    "name": "getCurrentProposalBeingVoted",
+    "name": "getCurrentMinimalProposal",
     "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getCurrentStatus",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint8",
-        "internalType": "enum BallotWorkflowStatus"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getMinimalProposal",
-    "inputs": [
-      {
-        "name": "_proposalId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
     "outputs": [
       {
         "name": "",
@@ -1561,32 +1454,7 @@ export const ballot_abi = [
   },
   {
     "type": "function",
-    "name": "getMinimalProposals",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "tuple[]",
-        "internalType": "struct MinimalProposalView[]",
-        "components": [
-          {
-            "name": "id",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "description",
-            "type": "string",
-            "internalType": "string"
-          }
-        ]
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getNbOfProposals",
+    "name": "getCurrentProposalBeingVoted",
     "inputs": [],
     "outputs": [
       {
@@ -1599,93 +1467,8 @@ export const ballot_abi = [
   },
   {
     "type": "function",
-    "name": "getNextProposalId",
+    "name": "getCurrentProposalComplete",
     "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getProposal",
-    "inputs": [
-      {
-        "name": "_proposalId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "tuple",
-        "internalType": "struct Proposal",
-        "components": [
-          {
-            "name": "isRegistered",
-            "type": "bool",
-            "internalType": "bool"
-          },
-          {
-            "name": "description",
-            "type": "string",
-            "internalType": "string"
-          },
-          {
-            "name": "votingResult",
-            "type": "uint8",
-            "internalType": "enum VotingResult"
-          },
-          {
-            "name": "approvals",
-            "type": "address[]",
-            "internalType": "address[]"
-          },
-          {
-            "name": "approvalShares",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "refusals",
-            "type": "address[]",
-            "internalType": "address[]"
-          },
-          {
-            "name": "refusalShares",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "blankVotes",
-            "type": "address[]",
-            "internalType": "address[]"
-          },
-          {
-            "name": "blankVotesShares",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getProposalCompleteById",
-    "inputs": [
-      {
-        "name": "_proposalId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
     "outputs": [
       {
         "name": "",
@@ -1797,6 +1580,136 @@ export const ballot_abi = [
                 "internalType": "string"
               }
             ]
+          },
+          {
+            "name": "blankVotesShares",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getCurrentStatus",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint8",
+        "internalType": "enum BallotWorkflowStatus"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getMinimalProposals",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple[]",
+        "internalType": "struct MinimalProposalView[]",
+        "components": [
+          {
+            "name": "id",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "internalType": "string"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getNbOfProposals",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getNextProposalId",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getProposal",
+    "inputs": [
+      {
+        "name": "_proposalId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct Proposal",
+        "components": [
+          {
+            "name": "isRegistered",
+            "type": "bool",
+            "internalType": "bool"
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "votingResult",
+            "type": "uint8",
+            "internalType": "enum VotingResult"
+          },
+          {
+            "name": "approvals",
+            "type": "address[]",
+            "internalType": "address[]"
+          },
+          {
+            "name": "approvalShares",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "refusals",
+            "type": "address[]",
+            "internalType": "address[]"
+          },
+          {
+            "name": "refusalShares",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "blankVotes",
+            "type": "address[]",
+            "internalType": "address[]"
           },
           {
             "name": "blankVotesShares",
@@ -1987,14 +1900,8 @@ export const ballot_abi = [
   },
   {
     "type": "function",
-    "name": "getVotersOfProposals",
-    "inputs": [
-      {
-        "name": "_proposalId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
+    "name": "getVotersOfCurrentProposal",
+    "inputs": [],
     "outputs": [
       {
         "name": "",

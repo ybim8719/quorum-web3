@@ -288,7 +288,6 @@ contract GMBallot is Ownable {
     /*//////////////////////////////////////////////////////////////
                             VIEW func
     //////////////////////////////////////////////////////////////*/
-
     function getCurrentStatus() external view returns (BallotWorkflowStatus) {
         return s_currentStatus;
     }

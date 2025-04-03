@@ -17,21 +17,23 @@ const VoteInput = ({ onValidate }: IVoteInput) => {
 
   function handleSubmit(e: React.MouseEvent<HTMLFormElement>) {
     e.preventDefault();
+    console.log(selectedProposalId, "selectedProposalId sent to VOTE!!!")
     if (selectedProposalId) {
       onValidate(+selectedProposalId);
     }
+    setSelectedProposalId("");
   }
 
   return (
     <div className="section">
       <form method="post" onSubmit={handleSubmit}>
         <label>
-          Vote for your best proposal:
+          Vote for this proposal:
           <select
             value={selectedProposalId}
             onChange={(e) => setSelectedProposalId(e.target.value)}
           >
-            <option value="" defaultValue={""}>Select a vote</option>
+            <option value="" defaultValue={""}>Select a choice</option>
             {VOTING_PROPOSALS.map((p) => {
               return (
                 <option value={p.id} key={`p-${p.id}`}>

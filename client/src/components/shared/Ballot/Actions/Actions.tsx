@@ -1,4 +1,3 @@
-import classes from "./Actions.module.css";
 import {
   WAITING_FOR_GM_DATA_KEY,
   PROPOSALS_SUBMITTING_OPEN_KEY,
@@ -21,7 +20,7 @@ import SubmitProposalInput from "../Forms/SubmitProposalInput";
 interface IActions {
   userVoted: boolean;
   hasProposal: boolean;
-  ballotHasVotes: boolean;
+  votesRegistered: number;
   onLoadSharesAndCustomersToBallot: () => void;
   onSubmittedProposal: (description: string) => void;
   onCloseSubmittingProposals: () => void;
@@ -35,7 +34,7 @@ interface IActions {
 const Actions = ({
   userVoted,
   hasProposal,
-  ballotHasVotes,
+  votesRegistered,
   onLoadSharesAndCustomersToBallot,
   onSubmittedProposal,
   onCloseSubmittingProposals,
@@ -56,33 +55,36 @@ const Actions = ({
     if (globalCtx.role === OWNER_ROLE) {
       switch (globalCtx.ballotStatus) {
         case WAITING_FOR_GM_DATA_KEY:
-          actionToDisplay = <SwitchToNextStepButton onValidate={onLoadSharesAndCustomersToBallot} btnDescription="Transfer voters and open subMITTING PROPOSALS" />;
+          actionToDisplay = <SwitchToNextStepButton onValidate={onLoadSharesAndCustomersToBallot} instructions="Transfer voters and open proposal Submission" />;
           break;
         case PROPOSALS_SUBMITTING_OPEN_KEY:
           if (hasProposal) {
-            actionToDisplay = <SwitchToNextStepButton onValidate={onCloseSubmittingProposals} btnDescription="CLOSE SUBMITTING PROPOSALS" />;
+            actionToDisplay = <SwitchToNextStepButton onValidate={onCloseSubmittingProposals} instructions="CLOSE SUBMITTING PROPOSALS" />;
           } else {
             actionToDisplay = <p>Wait for at least one proposal</p>
           }
           break;
         case PROPOSAL_SUBMITTING_CLOSED_KEY:
-          actionToDisplay = <SwitchToNextStepButton onValidate={onOpenProposalForDiscussingOrEndGm} btnDescription="Open 1st proposal for discussing" />;
+          actionToDisplay = <SwitchToNextStepButton onValidate={onOpenProposalForDiscussingOrEndGm} instructions="Open 1st proposal for discussing" />;
           break;
         case PROPOSAL_BEING_DISCUSSED_KEY:
-          actionToDisplay = <SwitchToNextStepButton onValidate={onOpenProposalForVoting} btnDescription="Open Voting" />;
+          actionToDisplay = <SwitchToNextStepButton onValidate={onOpenProposalForVoting} instructions="Open Voting when tals are achieved" />;
           break;
         case PROPOSAL_VOTING_OPEN_KEY:
-          if (ballotHasVotes) {
-            actionToDisplay = <SwitchToNextStepButton onValidate={onCloseVoting} btnDescription="Close ballot for current proposal" />;
+          if (votesRegistered > 0) {
+            actionToDisplay = <>
+              <p>{votesRegistered} owners have voted !</p>
+              <SwitchToNextStepButton onValidate={onCloseVoting} instructions="Close ballot for current proposal" />
+            </>;
           } else {
             actionToDisplay = <p>Wait for at least one Vote</p>
           }
           break;
         case PROPOSAL_VOTING_COUNT_REVEALED_KEY:
-          actionToDisplay = <SwitchToNextStepButton onValidate={onOpenProposalForDiscussingOrEndGm} btnDescription="Handle Next Proposal (or end all)" />;
+          actionToDisplay = <SwitchToNextStepButton onValidate={onOpenProposalForDiscussingOrEndGm} instructions="Handle Next Proposal (or end all)" />;
           break;
         case MEETING_ENDED_KEY:
-          actionToDisplay = <SwitchToNextStepButton onValidate={onLockContract} btnDescription="Confirm Locking of contract" />;
+          actionToDisplay = <SwitchToNextStepButton onValidate={onLockContract} instructions="Confirm Locking of contract" />;
           break;
         case CONTRACT_LOCKED_KEY:
           actionToDisplay = null;
@@ -98,7 +100,7 @@ const Actions = ({
           if (userVoted === false) {
             actionToDisplay = <VoteInput onValidate={onVoted} />;
           } else {
-            actionToDisplay = <p>You already voted. wait for count reveal</p>;
+            actionToDisplay = <p>You already voted. wait for count reveal, {votesRegistered} owners have voted !</p>;
           }
       }
     }

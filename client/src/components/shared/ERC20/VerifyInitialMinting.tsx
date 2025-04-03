@@ -19,8 +19,8 @@ const VerifyInitialMinting = ({ balanceOfOwner, totalSupply, onValidate, role, c
                 <p>{TOKEN_STATUS_INSTRUCTIONS[INITIAL_MINTING_KEY].ownerInstruction}</p>}
             {role === CUSTOMER_ROLE &&
                 <p>{TOKEN_STATUS_INSTRUCTIONS[INITIAL_MINTING_KEY].customerInstruction}</p>}
-            <p>Total minted:{totalSupply}/1000</p>
-            <p>On Owner's balance:{balanceOfOwner}/1000</p>
+            <p>Total minted: {totalSupply}/1000</p>
+            <p>Owner's balance: {balanceOfOwner}/1000</p>
             {(role === OWNER_ROLE && currentStatus === INITIAL_MINTING_KEY) && <button className="nes-btn is-primary" onClick={() => onValidate()}>VALIDATE</button>}
         </div>
     );

@@ -14,20 +14,30 @@ export enum VotingResult {
   Draw
 }
 
+export const votingResultKeys: Record<
+  string,
+  string
+> = {
+  "0": "Pending",
+  "1": "Approved",
+  "2": "Refused",
+  "3": "Draw",
+}
+
+export type VoterInfo = {
+  firstName: string;
+  lastName: string;
+  lotOfficialNumber: string;
+  shares: number;
+  vote: string;
+}
 
 export type BallotCountResults = {
   approvals: number;
   refusals: number;
   blank: number;
   winner: string;
-  details: {
-    customerAddress: string;
-    firstName: string;
-    lastName: string;
-    lotOfficialNumber: number;
-    shares: number;
-    vote: string;
-  }[]
+  details: VoterInfo[]
 }
 
 export type CompleteBallotCountResults = {
@@ -35,6 +45,13 @@ export type CompleteBallotCountResults = {
   proposalId: number;
   proposalDescription: string;
 }
+
+
+export type ProposalCompleted = {
+  id: number;
+  description: string;
+  votingResult: BallotCountResults | null,
+} | null
 
 export const BALLOT_STATUS_INSTRUCTIONS: Record<
   string,
@@ -90,7 +107,7 @@ export const BALLOT_STATUS_INSTRUCTIONS: Record<
   },
   [PROPOSAL_VOTING_COUNT_REVEALED_KEY]: {
     statusId: 5,
-    title: "Prposal Voting Count Revealed",
+    title: "Proposal Voting Count Revealed",
     description: "Current Ballot results are now available.",
     ownerInstruction: "Step over to Next proposal submission when ready",
     customerInstruction: "",

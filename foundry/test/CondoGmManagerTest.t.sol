@@ -36,15 +36,22 @@ contract CondoGmManagerTest is Test {
     string public constant CUSTOMER2_FIRST_NAME = "Ulrich";
     string public constant CUSTOMER2_LAST_NAME = unicode"Ramé'";
     address public constant CUSTOMER2_ADDRESS = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
-    address public constant NOT_REGISTERED = 0x976EA74026E726554dB657fA54763abd0C3a0aa9;
+    string public constant CUSTOMER3_FIRST_NAME = "JeanMi";
+    string public constant CUSTOMER3_LAST_NAME = unicode"ChelLarqué'";
+    address public constant CUSTOMER3_ADDRESS = 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC;
+    address public constant NOT_REGISTERED = 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720;
+
     string public constant LOT1_OFFICIAL_CODE = "TX023";
     uint256 public constant LOT1_SHARES = 450;
     uint256 public constant LOT1_ID = 1;
     string public constant LOT2_OFFICIAL_CODE = "PP0023Y";
     uint256 public constant LOT2_SHARES = 550;
     uint256 public constant LOT2_ID = 2;
+    uint256 public constant LOT3_ID = 3;
+
     string public constant LOT3_OFFICIAL_CODE = "Coco198";
     uint256 public constant LOT3_SHARES = 600;
+
     string public constant PROPOSAL1 = "Travaux du sol du couloir batiment B (parties communes)";
     string public constant PROPOSAL2 = "Augmenter de 15% le salaire du gardien";
     uint256 public constant PROPOSAL1_ID = 1;
@@ -201,6 +208,62 @@ contract CondoGmManagerTest is Test {
         s_ballot.voteForCurrentProposal(uint256(VoteType.Blank));
         vm.prank(CUSTOMER2_ADDRESS);
         s_ballot.voteForCurrentProposal(uint256(VoteType.Approval));
+        vm.startPrank(msg.sender);
+        s_ballot.setCurrentProposalVotingCountReveal();
+        // end all votes
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        s_ballot.lockContract();
+        vm.stopPrank();
+        _;
+    }
+
+    modifier finalTest() {
+        vm.startPrank(msg.sender);
+        s_manager.registerLot(LOT1_OFFICIAL_CODE, 200);
+        s_manager.registerLot(LOT2_OFFICIAL_CODE, 350);
+        s_manager.registerLot(LOT3_OFFICIAL_CODE, 450);
+        s_manager.registerCustomer(CUSTOMER1_FIRST_NAME, CUSTOMER1_LAST_NAME, CUSTOMER1_ADDRESS);
+        s_manager.registerCustomer(CUSTOMER2_FIRST_NAME, CUSTOMER2_LAST_NAME, CUSTOMER2_ADDRESS);
+        s_manager.registerCustomer(CUSTOMER3_FIRST_NAME, CUSTOMER3_LAST_NAME, CUSTOMER3_ADDRESS);
+
+        s_manager.linkCustomerToLot(CUSTOMER1_ADDRESS, LOT1_ID);
+        s_manager.linkCustomerToLot(CUSTOMER2_ADDRESS, LOT2_ID);
+        s_manager.linkCustomerToLot(CUSTOMER3_ADDRESS, LOT3_ID);
+
+        s_manager.createGMSharesToken();
+        s_manager.openTokenizingOfShares();
+        s_manager.convertLotSharesToToken(LOT1_ID);
+        s_manager.convertLotSharesToToken(LOT2_ID);
+        s_manager.convertLotSharesToToken(LOT3_ID);
+        s_manager.loadSharesAndCustomersToBallot();
+        // s_ballot.setProposalsSubmittingOpen();
+        vm.stopPrank();
+        vm.startPrank(CUSTOMER1_ADDRESS);
+        s_ballot.submitProposal(PROPOSAL1);
+        s_ballot.submitProposal(PROPOSAL2);
+        vm.stopPrank();
+        vm.startPrank(msg.sender);
+        s_ballot.setProposalsSubmittingClosed();
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        s_ballot.setProposalVotingOpenStatus();
+        vm.stopPrank();
+        vm.prank(CUSTOMER1_ADDRESS);
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Blank));
+        vm.prank(CUSTOMER2_ADDRESS);
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Refusal));
+        vm.prank(CUSTOMER3_ADDRESS);
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Approval));
+        vm.startPrank(msg.sender);
+        s_ballot.setCurrentProposalVotingCountReveal();
+        s_ballot.setProposalBeingDiscussedStatusOrEndBallot();
+        s_ballot.setProposalVotingOpenStatus();
+        vm.stopPrank();
+        vm.prank(CUSTOMER1_ADDRESS);
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Approval));
+        vm.prank(CUSTOMER2_ADDRESS);
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Blank));
+        vm.prank(CUSTOMER3_ADDRESS);
+        s_ballot.voteForCurrentProposal(uint256(VoteType.Refusal));
         vm.startPrank(msg.sender);
         s_ballot.setCurrentProposalVotingCountReveal();
         // end all votes
@@ -979,5 +1042,61 @@ contract CondoGmManagerTest is Test {
         // console.log(s_ballot.getVotersOfProposals(1)[1]);
         // console.log(s_ballot.getVotersOfProposals(2)[0]);
         // console.log(s_ballot.getVotersOfProposals(2)[1]);
+    }
+
+    function test_final() public finalTest {
+        assertEq(s_ballot.getProposalsComplete()[0].id, 1);
+
+        // console.log(s_ballot.getProposalsComplete()[0].description, " desc proposition 1");
+        // console.log(s_ballot.getProposalsComplete()[0].id, " ID proposition 1");
+
+        // console.log(uint256(s_ballot.getProposalsComplete()[0].votingResult), " ID proposition 1 RESULT FINAL ");
+        // console.log(s_ballot.getProposalsComplete()[0].approvals.length, "ID proposition 1 / approval lebgth ");
+        // console.log(s_ballot.getProposalsComplete()[0].refusals.length, "ID proposition 1 / refusal lebgth ");
+        // console.log(s_ballot.getProposalsComplete()[0].blankVotes.length, "ID proposition 1 / blankVotes lebgth ");
+
+        // console.log(s_ballot.getProposalsComplete()[0].approvals[0].firstName, "ID proposition 1 / approval firstnma ");
+        // console.log(s_ballot.getProposalsComplete()[0].approvals[0].lastName, "ID proposition 1 / approval lastname ");
+        // console.log(s_ballot.getProposalsComplete()[0].approvals[0].shares, "ID proposition 1 / approval shares ");
+
+        // console.log(s_ballot.getProposalsComplete()[0].refusals[0].firstName, "ID proposition 1 / refusals firstnma ");
+        // console.log(s_ballot.getProposalsComplete()[0].refusals[0].lastName, "ID proposition 1 / refusals lastname ");
+        // console.log(s_ballot.getProposalsComplete()[0].refusals[0].shares, "ID proposition 1 / refusals shares ");
+
+        // console.log(
+        //     s_ballot.getProposalsComplete()[0].blankVotes[0].firstName, "ID proposition 1 / blankVotes firstnma "
+        // );
+        // console.log(
+        //     s_ballot.getProposalsComplete()[0].blankVotes[0].lastName, "ID proposition 1 / blankVotes lastname "
+        // );
+        // console.log(s_ballot.getProposalsComplete()[0].blankVotes[0].shares, "ID proposition 1 / blankVotes shares ");
+
+        console.log(s_ballot.getProposalsComplete()[1].description, " desc proposition 2");
+        console.log(s_ballot.getProposalsComplete()[1].id, " ID proposition 21");
+
+        console.log(uint256(s_ballot.getProposalsComplete()[1].votingResult), " ID proposition 2 RESULT FINAL ");
+        console.log(s_ballot.getProposalsComplete()[1].approvals.length, "ID proposition 2 / approval lebgth ");
+        console.log(s_ballot.getProposalsComplete()[1].refusals.length, "ID proposition 2 / refusal lebgth ");
+        console.log(s_ballot.getProposalsComplete()[1].blankVotes.length, "ID proposition 2 / blankVotes lebgth ");
+
+        console.log(s_ballot.getProposalsComplete()[1].approvals[0].firstName, "ID proposition 2 / approval firstnma ");
+        console.log(s_ballot.getProposalsComplete()[1].approvals[0].lastName, "ID proposition 2 / approval lastname ");
+        console.log(s_ballot.getProposalsComplete()[1].approvals[0].shares, "ID proposition 2 / approval shares ");
+
+        console.log(s_ballot.getProposalsComplete()[1].refusals[0].firstName, "ID 2 / refusals firstnma ");
+        console.log(s_ballot.getProposalsComplete()[1].refusals[0].lastName, "ID proposition 2 / refusals lastname ");
+        console.log(s_ballot.getProposalsComplete()[1].refusals[0].shares, "ID proposition 2 / refusals shares ");
+
+        console.log(
+            s_ballot.getProposalsComplete()[1].blankVotes[0].firstName, "ID proposition 2 / blankVotes firstnma "
+        );
+        console.log(
+            s_ballot.getProposalsComplete()[1].blankVotes[0].lastName, "ID proposition 2 / blankVotes lastname "
+        );
+        console.log(s_ballot.getProposalsComplete()[1].blankVotes[0].shares, "ID proposition 2 / blankVotes shares ");
+
+        // console.log(uint256(s_ballot.getProposalsComplete()[0].refusalShares));
+        // console.log(uint256(s_ballot.getProposalsComplete()[0].approvalShares));
+        // console.log(uint256(s_ballot.getProposalsComplete()[0].blankVotes.length));
     }
 }

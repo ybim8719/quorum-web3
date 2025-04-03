@@ -29,8 +29,8 @@ const TokenizedLots = ({ lots, role, balanceOfOwner, onVerify, onTokenize }: ITo
           </td>
           <td className="">{l.shares}</td>
           <td className="">
-            {l.customer && l.customer.firstName} /{" "}
-            {l.customer && l.customer.lastName} /{" "}
+            {l.customer && l.customer.firstName}{" "}
+            {l.customer && l.customer.lastName} /
             {l.customer && `${l.customer.address.slice(0, 12)}...`}
           </td>
           <td className="">{l.isTokenized ? "yes" : "no"}</td>
@@ -54,7 +54,7 @@ const TokenizedLots = ({ lots, role, balanceOfOwner, onVerify, onTokenize }: ITo
         <p><u>Instructions: </u> {TOKEN_STATUS_INSTRUCTIONS[TRANSFERING_SHARES_KEY].ownerInstruction}</p>}
       {role === CUSTOMER_ROLE &&
         <p><u>Instructions: </u>{TOKEN_STATUS_INSTRUCTIONS[TRANSFERING_SHARES_KEY].customerInstruction}</p>}
-      <p>On Owner's balance:{balanceOfOwner}/1000</p>
+      <p>On Owner's balance: {balanceOfOwner}/1000</p>
       <h3>
         <u>Lots ({lots.length})</u>
       </h3>

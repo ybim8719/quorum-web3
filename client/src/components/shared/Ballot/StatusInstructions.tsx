@@ -1,5 +1,5 @@
 import { BALLOT_STATUS_INSTRUCTIONS } from "../../../models/ballot";
-import { ADMIN_ROLE } from "../../../models/roles";
+import { OWNER_ROLE } from "../../../models/roles";
 
 interface StatusProps {
   status: keyof typeof BALLOT_STATUS_INSTRUCTIONS | null;
@@ -12,7 +12,7 @@ const StatusInstructions = ({ status, role }: StatusProps) => {
   }
 
   let instructions = BALLOT_STATUS_INSTRUCTIONS[status]["customerInstruction"];
-  if (role === ADMIN_ROLE) {
+  if (role === OWNER_ROLE) {
     instructions = BALLOT_STATUS_INSTRUCTIONS[status]["ownerInstruction"];
   }
 

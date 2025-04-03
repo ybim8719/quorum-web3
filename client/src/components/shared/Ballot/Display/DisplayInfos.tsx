@@ -9,8 +9,7 @@ import {
     MEETING_ENDED_KEY,
     CONTRACT_LOCKED_KEY,
     BALLOT_STATUS_INSTRUCTIONS,
-    BallotCountResults,
-    CompleteBallotCountResults,
+    ProposalCompleted,
 } from "../../../../models/ballot";
 
 import ProposalsList from "./children/ProposalList";
@@ -21,12 +20,8 @@ import CompleteVotingResults from "./children/CompleteVotingResults";
 
 interface IActions {
     minProposals: string[] | null;
-    currentProposal: {
-        id: number;
-        description: string;
-        votingResult: BallotCountResults,
-    } | null
-    completeVotingResults: CompleteBallotCountResults[];
+    currentProposal: ProposalCompleted
+    completeVotingResults: ProposalCompleted[];
 }
 
 const DisplayInfos = ({
@@ -60,7 +55,7 @@ const DisplayInfos = ({
                 break;
             case PROPOSAL_VOTING_COUNT_REVEALED_KEY:
                 if (currentProposal) {
-                    display = <ProposalVotingResult id={currentProposal.id} description={currentProposal.description} votingResult={currentProposal.votingResult} />;
+                    display = <ProposalVotingResult currentProposal={currentProposal} />;
                 }
                 break;
             case MEETING_ENDED_KEY:
