@@ -1,12 +1,8 @@
-- Derniers TU pour les nouveaux getters => 80 %
 - Encore un test end to end
 - GHActions => forge test
 - deploy sur vercel 
-
-- faire le natspec
-- review la liste des sécu appliquées au projet 
-- mettre des unchecked ++i
+- review la liste des sécu appliquées au projet + bonnes pratiques
 - deployer sur sepolia les 2 contrats + recup addresses
 - tester is export const config = createConfig({ ne casse pas tout 
-- faire une vidéo de demo 
+
 
