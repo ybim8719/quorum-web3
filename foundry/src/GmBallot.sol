@@ -320,7 +320,6 @@ contract GMBallot is Ownable {
         return s_proposals[_proposalId];
     }
 
-    // TODO COVER WITH TEST
     /// @notice returns all ballot results in a format adapted to client
     function getProposalsComplete() external view returns (ProposalView[] memory) {
         ProposalView[] memory toReturn = new ProposalView[](s_nbOfProposals);
@@ -339,7 +338,6 @@ contract GMBallot is Ownable {
         return toReturn;
     }
 
-    // TODO COVER WITH TEST
     function getCurrentProposalComplete() external view returns (ProposalView memory) {
         return _buildCompleteProposal(s_currentProposalBeingVoted);
     }
@@ -409,7 +407,6 @@ contract GMBallot is Ownable {
         return s_nbOfProposals;
     }
 
-    // TODO COVER WITH TEST
     function getMinimalProposals() external view returns (MinimalProposalView[] memory) {
         MinimalProposalView[] memory toReturn = new MinimalProposalView[](s_nbOfProposals);
         // prpoposal id start at 1
@@ -424,7 +421,6 @@ contract GMBallot is Ownable {
         return toReturn;
     }
 
-    // TODO COVER WITH TEST
     function getCurrentMinimalProposal() external view returns (MinimalProposalView memory) {
         return MinimalProposalView({
             id: s_currentProposalBeingVoted,
