@@ -32,7 +32,7 @@ le GmBallot est un contrat qui va stocker les propositions qui seront discutées
 
 - React + RainbowKit + Wagmi + ethers (connexion wallet de browser)
 - Solidity + Foundry (tests et script) + open zeppelin (ERC20 + Ownable)
-- Application déployée sur vercel
+- Application déployée sur vercel ici : TODO 
 
 ### TODO
 
@@ -45,13 +45,13 @@ le GmBallot est un contrat qui va stocker les propositions qui seront discutées
 - Utilisation de mapping plutôt que des arrays 
 - Elimination des contrôles superflus
 
-### Non-Application des bonnes pratiques solidity : 
+### Bonnes pratiques solidity qui n'ont pas pu être implémentées : 
 - State packing
 - Limitation de la taille des uint
 
 ### Sécurité soliidty appliquée: 
 - Prévention du reentrancy avec des flags avant les call externes
-- Ajout d'un fallback et receive
+- Ajout d'un fallback et receive (force feeding)
 
 ## Failles du projet: 
 - pas de max 
@@ -59,50 +59,24 @@ le GmBallot est un contrat qui va stocker les propositions qui seront discutées
 - et des getters qui coutent bcp
 - transfer mint sont locked mais pas approve et transferFrom 
 - back: si vote en cours, rendre impossible la lecture des votes d'un proposal non clos. (get Proposal et getProposals) => modifs tests
+=> dos gas limit
+
 
 
 ## Déploiements effectués : 
 
 - Contrats déployés sur sepolia (vérifié ??): XXXXXXX et XXXXXX TODO put address
-- Front end déployé sur vercel: XXXXXXX TODO put address (ppinte vers les contrats sépolia) (push sur main)
+- Front end déployé sur vercel: [link](https://quorum-web3.vercel.app/) (pointe vers les contrats anvil)
 
 
 ## Tests et CI
 
-- Couverture de test : XXXX %
+- Résultats de couverture de test : > 80%
 
 TODO METTRE screenshots : 
 
 - Qui bénéficient de tests unitaires et de Fuzz tests
 - Implémentation d'un Github actions qui trigger les T.U Foundry à chaque push sur main
-
-
-
-## Features restants à implémenter
-
-- le CondoGmManager devrait plutôt gérer des lots et devenir un factory de contract ERC20Shares et Ballots 
-- ajouts et suppression de customers / lots / 
-- token : modification possible quand on tokenize les tantièmes
-- vote par anticipation 
-- gestion du quorum
-- gestion documentaire sur un serveur dédié
-- UX/UI à revoir totalement 
-- intégration CSS ad hoc 
-
-## Améliorations tech restantes à implémenter
-
-- Routing un peu bancal / => système de guard par identifiant
-- utitilisation du context un peu grossière 
-- Des composants + petits 
-- Une GH actions mieux mieux qui lance un linter + prettier côté front 
-- Un système de precommit 
-- + de fuzz tests et d'invariants  
-- Front : Events listener to check status changes 
-- back: ERC20 : lock transferFrom && approval 
-- Front : camemberts et charts de scrutins
-- back: loadSharesAndCustomersToBallot pue car ça loope sur un array qui peut causer un gas limit 
-- rules de dépouillement pas ouf 
-- code react dégueu pas opti
 
 
 ## Lancer les tests avec forge : 
@@ -148,7 +122,7 @@ aide :
 https://ethereum.stackexchange.com/questions/164536/how-can-i-add-anvil-token-from-the-test-token-provided-to-my-metamask-account
 
 
-2) Déployez le contrat sur anvil (avec le account1 d'Anvil):
+2) Déployez les 2 contrats sur anvil (avec le account1 d'Anvil):
 
 Ouvrez un nouveau terminal et: 
 
@@ -169,7 +143,7 @@ npm run dev
 ```
 Puis allez sur : http://localhost:5173/
 
-(L'adresse du contrat déployé sur Anvil et l'abi sont intégrés dans le code front-end)
+(L'adresse des contrats déployés sur Anvil et l'abi sont intégrés dans le code front-end)
 
 
 Voici quelques addresses publiques mises à dispo par Anvil pour vos tests : 
@@ -191,9 +165,9 @@ et les PK associées (pour import dans metamask et pour switcher d'un compte à 
 ```
 
 
-## B. Contrat sur Sepolia et IHM sur Vercel (vous avez besoin de faucets):
+## B. Contrats sur Sepolia et IHM sur Vercel (vous avez besoin de faucets):
 
-Le contrat a déjà été déployé à l'adresse suivante :
+Les 2 contrats ont déjà été déployés aux adresses suivantes :
 
 ```
 [0xd23eAC9890b3Ab0e38492be4A75aB765B68784eD](https://sepolia.etherscan.io/address/0xd23eac9890b3ab0e38492be4a75ab765b68784ed)
@@ -204,8 +178,7 @@ Le contrat a déjà été déployé à l'adresse suivante :
 Et voici l'URL vers l'IHM déployée sur Vercel.
 
 ```
-https://web3-alyra-use-cases.vercel.app/
-** TODO ** 
+https://quorum-web3.vercel.app/
 ```
 
 
@@ -240,41 +213,72 @@ cd foundry
 forge script script/DeployCondoGmManagerAndBallot.s.sol --private-key $PRIVATE_KEY --rpc-url $SEPOLIA_RPC_URL --broadcast
 ```
 
-Vérifiez sur etherscan: 
+Vérifiez sur etherscan vos 2 contrats: 
 
 ```shell
-forge verify-contract <address-du-contrat-deployé>  ./src/VotingOpti.sol:VotingOpti --rpc-url $SEPOLIA_RPC_URL --watch
+forge verify-contract <address-du-manager-deployé>  ./src/CondoGmManager.sol:CondoGmManager --rpc-url $SEPOLIA_RPC_URL --watch
+forge verify-contract <address-du-ballot-deployé>  ./src/GmBallot.sol:GMBallot --rpc-url $SEPOLIA_RPC_URL --watch
 ```
 
 ## Todo
-Changez la valeur de l'adresse sepolia dans :
+Changez la valeur des adresses sepolia dans :
 
 ```
-web3-alyra-use-cases/P3/ethers-client/constants/deployed.ts
-
-export const deployed = {
-  anvil: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-  // replace here when deployed on sepolia
-  sepolia: ""
+quorum-web3/client/constants/deployed.ts
+sepolia: {
+  manager: "// replace here when deployed on sepolia",
+  ballot: "// replace here when deployed on sepolia"
 }
 ```
 
-puis dans : 
+puis dans :
+
 ```
-web3-alyra-use-cases/P3/ethers-client/pages/Home.tsx
+quorum-web3/client/src/context/globalContext.tsx
 ```
 
 remplacez :
 ```
-const contractAddress = deployed.anvil;
+  const deployedManagerAddress = network.anvil.manager;
+  const deployedBallotAddress = network.anvil.ballot;
 ```
 par
 ```
-const contractAddress = deployed.sepolia;
+  const deployedManagerAddress = network.sepolia.manager;
+  const deployedBallotAddress = network.sepolia.ballot;
 ```
 
-Et enfin lancez, react depuis votre local sur web3-alyra-use-cases/P3/ethers-client
+Et enfin lancez, react depuis votre local sur /client
 
 ```
 npm run dev 
 ```
+
+
+## Features restants à implémenter
+
+- Le CondoGmManager devrait plutôt gérer des lots et devenir un factory de contract ERC20Shares / Ballots 
+- CRUD de customers / lots 
+- Rendre le rollback possible quand on fait les transferts owner -> customer
+- Vote par anticipation 
+- Vote par procuration 
+- Enrichissement du modèle Proposal (quorum, montants, détails, etc...)
+- Gestion documentaire sur un serveur dédié (compte-rendus, convocations)
+- UX/UI à revoir totalement 
+- Intégration CSS ad hoc 
+
+
+## Améliorations tech restantes à implémenter
+
+- Front : Routing un peu bancal / => système de guard par identifiant
+- Front : Utitilisation du context un peu grossière 
+- Front : Des composants trop gros (optimisations de hooks et découpage de composants) 
+- Front : Une GH actions mieux mieux qui lance un linter + prettier côté front 
+- All :Un système de precommit 
+- Back : + de fuzz tests et d'invariants 
+- Front : Events listener to check status changes and other logs
+- Back : ERC20 : lock transferFrom && approval 
+- Front : camemberts et charts de scrutins
+- Back: loadSharesAndCustomersToBallot pue car ça loope sur un array qui peut causer un gas limit 
+- Rules de dépouillement pas ouf
+- Back : essayer Mythril et Slither

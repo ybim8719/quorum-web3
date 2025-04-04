@@ -155,10 +155,9 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
   }
 
   if (isZeroAddress(globalCtx.erc20Address) || globalCtx.erc20Address === undefined) {
-    return <p>NO ERC20 deployed yet</p>;
+    return <h1>NO ERC20 deployed yet</h1>;
   }
 
-  // 
   const onValidateMintingHandler = () => {
     if (globalCtx.deployedManagerAddress) {
       setIsLoading(true);
@@ -200,8 +199,8 @@ function ERC20({ onRefetchStatus }: IERC20Props) {
         })
     }
   }
-  // error in tx / open error modal
 
+  // error in tx / open error modal
   let mainContent;
   if (globalCtx.erc20Status === INITIAL_MINTING_KEY && totalSupply && ownersBalance) {
     mainContent = <VerifyInitialMinting balanceOfOwner={ownersBalance} totalSupply={totalSupply} onValidate={onValidateMintingHandler} role={globalCtx.role} currentStatus={globalCtx.erc20Status} />
