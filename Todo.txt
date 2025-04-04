@@ -1,3 +1,5 @@
 - modify abi et Encore un test end to end
 - readme
 - deployer sur sepolia les 2 contrats + recup addresses
+
+vercel faire pointer FE sur le network sepolia

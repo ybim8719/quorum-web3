@@ -32,6 +32,14 @@ export const manager_abi = [
     "stateMutability": "nonpayable"
   },
   {
+    "type": "fallback",
+    "stateMutability": "payable"
+  },
+  {
+    "type": "receive",
+    "stateMutability": "payable"
+  },
+  {
     "type": "function",
     "name": "convertLotSharesToToken",
     "inputs": [
@@ -547,6 +555,19 @@ export const manager_abi = [
     "type": "event",
     "name": "ERC20DeployedIsPossible",
     "inputs": [],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "LogDepositReceived",
+    "inputs": [
+      {
+        "name": "sender",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
+    ],
     "anonymous": false
   },
   {

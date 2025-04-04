@@ -15,7 +15,7 @@ L'objectif de ce POC est de simuler ce que pourrait être une version minimale d
 
 ## Features et rôles des contrats
 
-En utiisant le script forge associé, 2 contrats sont déployés : le CondoGmManager et le GmBallot. 
+En utiisant le script forge associé, 2 contrats sont déployés : le **CondoGmManager**  et le **GmBallot**. 
 
 CondoGmManager est une sorte de contrat admin qui permet à un syndic de : 
 
@@ -23,60 +23,57 @@ CondoGmManager est une sorte de contrat admin qui permet à un syndic de :
 - d'ajouter des clients (qui sont les propriétaires des lots)
 - de créer un ERC20 nommé et de minter un montant initial de 1000 (nombre de parts dans une copro)
 - de transferer les parts (appelées tantièmes) en équivalent token aux propriétaires concernés et rattachés via leur address wallet
-- de verouiiller le contrat ERC20 
+- de verouiiller ledit contrat ERC20 
 
 le GmBallot est un contrat qui va stocker les propositions qui seront discutées en séances, et les votes de chacun associés. 
 
 
 ## Technos 
-
-- React + RainbowKit + Wagmi + ethers (connexion wallet de browser)
+- React + RainbowKit + Wagmi + Viem + tanstackQuery (connexion wallet de browser)
 - Solidity + Foundry (tests et script) + open zeppelin (ERC20 + Ownable)
-- Application déployée sur vercel ici : TODO 
-
-### TODO
-
-![screenshot](screenshots/vercel.png)
+- Github Actions (exécution auto des tests unitaires foundry)
 
 
-### Application des bonnes pratiques solidity : 
+## Application des bonnes pratiques solidity : 
 - NatSpec
 - Uitlisation du unchecked dans les boucles 
 - Utilisation de mapping plutôt que des arrays 
 - Elimination des contrôles superflus
 
-### Bonnes pratiques solidity qui n'ont pas pu être implémentées : 
+## Bonnes pratiques solidity qui n'ont pas pu être implémentées : 
 - State packing
 - Limitation de la taille des uint
 
-### Sécurité soliidty appliquée: 
+## Sécurité solidity appliquée: 
 - Prévention du reentrancy avec des flags avant les call externes
 - Ajout d'un fallback et receive (force feeding)
 
-## Failles du projet: 
-- pas de max 
-- y a des fonctions qui font trop de transactions successives
-- et des getters qui coutent bcp
-- transfer mint sont locked mais pas approve et transferFrom 
-- back: si vote en cours, rendre impossible la lecture des votes d'un proposal non clos. (get Proposal et getProposals) => modifs tests
-=> dos gas limit
-
+## Failles de sécurité et métiers observées : 
+- Quelques fonctions view font des opérations très longues 
+- Une fonction du Manager fait des call sucessifs vers un contrat externe au sein d'une boucle dans un tableau => dos gas limit
+- Les fonctions transferFrom et approve héritées de ERC20.sol ne sont pas locked
+- Au cours d'un scrutin, une view function permet de récupérer les suffrages exprimés alors que le vote n'est pas encore clos => failles de partialité
 
 
 ## Déploiements effectués : 
+- Contrats déployés et vérifiés sur sepolia: Manager => [0x2f557407E27027e9ec580A30FD9cdB2317a41d3F](https://sepolia.etherscan.io/address/0x2f557407E27027e9ec580A30FD9cdB2317a41d3F) et Ballot =>[0x71E7Dc3B83C6600a5Af51e658f03646071bF2E92](https://sepolia.etherscan.io/address/0x71E7Dc3B83C6600a5Af51e658f03646071bF2E92)
+- Front end déployé sur vercel: https://quorum-web3.vercel.app/ (pointe vers les contrats sepolia)
 
-- Contrats déployés sur sepolia (vérifié ??): XXXXXXX et XXXXXX TODO put address
-- Front end déployé sur vercel: [link](https://quorum-web3.vercel.app/) (pointe vers les contrats anvil)
+
+![Alt text](docs/vercel-deployed.png)
 
 
 ## Tests et CI
 
-- Résultats de couverture de test : > 80%
-
-TODO METTRE screenshots : 
-
 - Qui bénéficient de tests unitaires et de Fuzz tests
+
+![Alt text](docs/test-coverage.png)
+
 - Implémentation d'un Github actions qui trigger les T.U Foundry à chaque push sur main
+
+![Alt text](docs/gh-recap.png)
+
+![Alt text](docs/gha2.png)
 
 
 ## Lancer les tests avec forge : 
@@ -105,7 +102,7 @@ forge coverage
 
 ## Deployer le projet (3 méthodes) 
 
-## A. Lancer le contrat et l'IHM en local :
+### A. Lancer le contrat et l'IHM en local :
 
 0) Lancez Anvil :
 ```shell
@@ -145,7 +142,6 @@ Puis allez sur : http://localhost:5173/
 
 (L'adresse des contrats déployés sur Anvil et l'abi sont intégrés dans le code front-end)
 
-
 Voici quelques addresses publiques mises à dispo par Anvil pour vos tests : 
 
 ```
@@ -165,14 +161,14 @@ et les PK associées (pour import dans metamask et pour switcher d'un compte à 
 ```
 
 
-## B. Contrats sur Sepolia et IHM sur Vercel (vous avez besoin de faucets):
+### B. Contrats sur Sepolia et IHM sur Vercel (vous avez besoin de faucets):
 
 Les 2 contrats ont déjà été déployés aux adresses suivantes :
 
-```
-[0xd23eAC9890b3Ab0e38492be4A75aB765B68784eD](https://sepolia.etherscan.io/address/0xd23eac9890b3ab0e38492be4a75ab765b68784ed)
-** TODO ** 
 
+```
+Manager => [0x2f557407E27027e9ec580A30FD9cdB2317a41d3F](https://sepolia.etherscan.io/address/0x2f557407E27027e9ec580A30FD9cdB2317a41d3F) 
+Ballot =>[0x71E7Dc3B83C6600a5Af51e658f03646071bF2E92](https://sepolia.etherscan.io/address/0x71E7Dc3B83C6600a5Af51e658f03646071bF2E92)
 ```
 
 Et voici l'URL vers l'IHM déployée sur Vercel.
@@ -182,8 +178,7 @@ https://quorum-web3.vercel.app/
 ```
 
 
-
-## C. Déployer soi-même le contrat sur Sepolia (déconseillé): 
+### C. Déployer soi-même le contrat sur Sepolia (déconseillé): 
 
 Si vous avez un peu de faucet:
 
@@ -220,11 +215,11 @@ forge verify-contract <address-du-manager-deployé>  ./src/CondoGmManager.sol:Co
 forge verify-contract <address-du-ballot-deployé>  ./src/GmBallot.sol:GMBallot --rpc-url $SEPOLIA_RPC_URL --watch
 ```
 
-## Todo
 Changez la valeur des adresses sepolia dans :
 
 ```
 quorum-web3/client/constants/deployed.ts
+
 sepolia: {
   manager: "// replace here when deployed on sepolia",
   ballot: "// replace here when deployed on sepolia"
@@ -255,7 +250,7 @@ npm run dev
 ```
 
 
-## Features restants à implémenter
+## Features restants à implémenter dans le futur
 
 - Le CondoGmManager devrait plutôt gérer des lots et devenir un factory de contract ERC20Shares / Ballots 
 - CRUD de customers / lots 
@@ -268,7 +263,7 @@ npm run dev
 - Intégration CSS ad hoc 
 
 
-## Améliorations tech restantes à implémenter
+## Améliorations tech restantes à implémenter dans le futur
 
 - Front : Routing un peu bancal / => système de guard par identifiant
 - Front : Utitilisation du context un peu grossière 
