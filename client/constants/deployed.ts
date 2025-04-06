@@ -4,8 +4,8 @@ export const network = {
     ballot: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
   },
   sepolia: {
-    manager: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-    ballot: "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+    manager: "0x2f557407E27027e9ec580A30FD9cdB2317a41d3F",
+    ballot: "0x71E7Dc3B83C6600a5Af51e658f03646071bF2E92"
   }
 }
 

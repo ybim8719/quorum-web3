@@ -27,13 +27,18 @@ type ContextProviderProps = {
   children: React.ReactNode;
 };
 
+
+const NETWORK_TYPE = "sepolia";
+// const NETWORK_TYPE = "sepolia";
+
 export const GlobalContextProvider = ({ children }: ContextProviderProps) => {
   const [role, setRole] = useState<string>(UNAUTHORIZED_ROLE);
   const [erc20Address, setErc20Address] = useState<string>("");
   const [owner, setOwner] = useState<string>("");
   const [customersAddresses, setCustomersAddresses] = useState<string[]>([]);
-  const deployedManagerAddress = network.anvil.manager;
-  const deployedBallotAddress = network.anvil.ballot;
+  const deployedManagerAddress = network[NETWORK_TYPE].manager;
+  const deployedBallotAddress = network[NETWORK_TYPE].ballot;
+
   const [erc20Status, setErc20Status] = useState<string | null>(null);
   const [ballotStatus, setBallotStatus] = useState<string | null>(null);
 

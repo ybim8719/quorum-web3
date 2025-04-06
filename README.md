@@ -56,7 +56,7 @@ le GmBallot est un contrat qui va stocker les propositions qui seront discutées
 
 
 ## Déploiements effectués : 
-- Contrats déployés et vérifiés sur sepolia: Manager => [0x2f557407E27027e9ec580A30FD9cdB2317a41d3F](https://sepolia.etherscan.io/address/0x2f557407E27027e9ec580A30FD9cdB2317a41d3F) et Ballot =>[0x71E7Dc3B83C6600a5Af51e658f03646071bF2E92](https://sepolia.etherscan.io/address/0x71E7Dc3B83C6600a5Af51e658f03646071bF2E92)
+- Contrats déployés sur sepolia: Manager => [0x2f557407E27027e9ec580A30FD9cdB2317a41d3F](https://sepolia.etherscan.io/address/0x2f557407E27027e9ec580A30FD9cdB2317a41d3F) et Ballot =>[0x71E7Dc3B83C6600a5Af51e658f03646071bF2E92](https://sepolia.etherscan.io/address/0x71E7Dc3B83C6600a5Af51e658f03646071bF2E92)
 - Front end déployé sur vercel: https://quorum-web3.vercel.app/ (pointe vers les contrats sepolia)
 
 
@@ -277,3 +277,7 @@ npm run dev
 - Back: loadSharesAndCustomersToBallot pue car ça loope sur un array qui peut causer un gas limit 
 - Rules de dépouillement pas ouf
 - Back : essayer Mythril et Slither
+
+
+### small bug :
+calling owner() deployed sepolia returns lowercase 
