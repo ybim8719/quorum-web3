@@ -78,15 +78,6 @@ contract CondoGmManager is Ownable {
     /*//////////////////////////////////////////////////////////////
                             MODIFIERS
     //////////////////////////////////////////////////////////////*/
-    /// @dev is owner or customer
-
-    modifier hasAccess() {
-        if (s_customersInfo[_msgSender()].isRegistered == false && _msgSender() != owner()) {
-            revert CondoGmManager__Unauthorized(_msgSender());
-        }
-        _;
-    }
-
     /// @dev args are just general info about the related condo
     constructor(string memory _name, string memory _description, string memory _postalAddress) Ownable(_msgSender()) {
         s_nextLotIndex = 1;

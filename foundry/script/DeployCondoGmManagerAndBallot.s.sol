@@ -6,6 +6,11 @@ import {CondoGmManager} from "../src/CondoGmManager.sol";
 import {GMBallot} from "../src/GmBallot.sol";
 
 contract DeployCondoGmManagerAndBallot is Script {
+    string constant CONDO_TITLE = unicode"La résidence tranquille des cocos cossus";
+    string constant CONDO_DESCRIPTION = unicode"Une copropriété de 35 lots située à proximité des Monts d'Arrée";
+    string constant CONDO_ADDRESS = "45 rue Fontaine Michalon, 29300 LANGRENEUC-MARIAKER";
+    string constant GM_DESCRIPTION = unicode"AGO des propriétés du  6 mai 2025";
+
     CondoGmManager public s_manager;
     GMBallot public s_ballot;
 
@@ -16,8 +21,8 @@ contract DeployCondoGmManagerAndBallot is Script {
 
     function deployApp() public {
         vm.startBroadcast();
-        s_manager = new CondoGmManager("Copro des cocos", "Une retraite paisible", "rue du soleil levant 223");
-        s_ballot = new GMBallot("AGO des copro mai 2025", address(s_manager));
+        s_manager = new CondoGmManager(CONDO_TITLE, CONDO_DESCRIPTION, CONDO_ADDRESS);
+        s_ballot = new GMBallot(GM_DESCRIPTION, address(s_manager));
         s_manager.setGMBallotAddress(address(s_ballot));
         vm.stopBroadcast();
     }

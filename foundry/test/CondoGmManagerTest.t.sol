@@ -21,13 +21,6 @@ contract CondoGmManagerTest is Test {
     GMBallot public s_ballot;
 
     /*//////////////////////////////////////////////////////////////
-                            MOCK CONSTANTS / constructor
-    //////////////////////////////////////////////////////////////*/
-    string public constant DESCRIPTION = "Une villa cossue pleine de gens qui jouent au polo";
-    string public constant NAME = "Le refuge des nantis";
-    string public constant POSTAL_ADDRESS = "15 rue de l'ISF, Puteaux";
-
-    /*//////////////////////////////////////////////////////////////
                             MOCK CONSTANTS / states
     //////////////////////////////////////////////////////////////*/
     string public constant CUSTOMER1_FIRST_NAME = "Thierry";
@@ -70,6 +63,8 @@ contract CondoGmManagerTest is Test {
         assertEq(nbCustomers, 1);
         assertEq(s_manager.getLotsInfos()[0].lastName, "");
         assertEq(s_manager.getLotsInfos()[0].shares, LOT1_SHARES);
+        assertEq(s_manager.getBallotAddress(), address(s_ballot));
+        assertEq(s_manager.getNbOfLots(), 1);
         vm.stopPrank();
         _;
     }
@@ -184,7 +179,6 @@ contract CondoGmManagerTest is Test {
         s_manager.convertLotSharesToToken(LOT1_ID);
         s_manager.convertLotSharesToToken(LOT2_ID);
         s_manager.loadSharesAndCustomersToBallot();
-        // s_ballot.setProposalsSubmittingOpen();
         vm.stopPrank();
         vm.startPrank(CUSTOMER1_ADDRESS);
         s_ballot.submitProposal(PROPOSAL1);
