@@ -29,7 +29,7 @@ type ContextProviderProps = {
 
 
 const NETWORK_TYPE = "sepolia";
-// const NETWORK_TYPE = "sepolia";
+// const NETWORK_TYPE = "anvil";
 
 export const GlobalContextProvider = ({ children }: ContextProviderProps) => {
   const [role, setRole] = useState<string>(UNAUTHORIZED_ROLE);

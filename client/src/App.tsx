@@ -40,16 +40,11 @@ function App() {
       fetchedCustomersAddressesData !== null &&
       connectedAccount
     ) {
-      console.log(connectedAccount, "")
-      console.log(fetchedOwnerData, "fetchedOwnerData")
-
       // owner and customers addresses are mandatory to set the role
       globalCtx.setOwner(fetchedOwnerData.toString());
       globalCtx.setCustomersAddresses(fetchedCustomersAddressesData as string[]);
 
       if (connectedAccount === fetchedOwnerData.toString()) {
-        console.log('dedede1')
-
         globalCtx.setRole(OWNER_ROLE);
       } else {
         if ((fetchedCustomersAddressesData as string[]).includes(connectedAccount as string)) {
